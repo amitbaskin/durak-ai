@@ -9,17 +9,15 @@ class AiPlayerDumb(Player):
         attack_card = random.choice(self.cards)
         self.remove_card(attack_card)
         table.update_table(attack_card)
-        print('{} attack with {}'.format(self.nickname, attack_card))
+        print('{} attack with {} of {}'.format(self.nickname, attack_card.number, attack_card.suit))
         return attack_card
 
-    def defend(self, table):
-        if self.defending_options(table):
-            defence_card = random.choice(self.defending_options(table))
+    def defend(self, table, trump_card):
+        if self.defending_options(table, trump_card):
+            defence_card = random.choice(self.defending_options(table, trump_card))
             self.remove_card(defence_card)
             table.update_table(defence_card)
-            #print('Ai defend table\n{}'.format(table.show()))
             print('{} defended with {}'.format(self.nickname, defence_card))
-            #print('T def: {}'.format(table.show()))
             return defence_card
         print(r"{} can't defend".format(self.nickname))
         print('table:', table.show())

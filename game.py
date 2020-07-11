@@ -7,7 +7,7 @@ from player import HumanPlayer
 
 class Game:
     def __init__(self, players_list):
-        players_list = self.players_list
+        self.players_list = players_list
 
 
 p1 = AiPlayerDumb('WALL E')
@@ -28,8 +28,8 @@ logger.info({'Game' : 0})
 def game_instance(list_of_players, logger=None):
     deck = Deck(36)
     print(deck)
-    g = GameProcess(players_list, deck, logger)
-    ptr = Pointer(players_list)
+    g = GameProcess(list_of_players, deck, logger)
+    ptr = Pointer(list_of_players)
     g.play()
 
 print(game_instance(players_list, logger))

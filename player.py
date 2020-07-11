@@ -2,18 +2,23 @@ class Player:
     def __init__(self, nickname):
         self.nickname = nickname
         self.cards = []
+        self.human = False
+        self.attacking = False
+
+    def options(self, table, trump_suit):
+        if self.attacking:
+            return self.attacking_options()
+        return self.defending_options(table, trump_suit)
 
     def draw_cards(self, deck_instance):
         n_cards_to_draw = 6 - len(self.cards)
         if n_cards_to_draw < 0:
             n_cards_to_draw = 0
-        n_of_cards_left = len(deck_instance.encoded_cards)
+        n_of_cards_left = len(deck_instance.cards)
         if n_of_cards_left > n_cards_to_draw:
-            self.cards += deck_instance.encoded_cards[:n_cards_to_draw]
-            deck_instance.update_deck(n_cards_to_draw)
+            self.cards += deck_instance.draw_cards(n_cards_to_draw)
         elif n_of_cards_left <= n_cards_to_draw:
-            self.cards += deck_instance.encoded_cards[:]
-            deck_instance.update_deck(n_of_cards_left)
+            self.cards += deck_instance.draw_cards(n_of_cards_left)
         else:
             print('no cards to draw')
 
@@ -24,21 +29,23 @@ class Player:
         return self.cards
 
     def adding_card_options(self, table):
-        table_card_types = [i[0] for i in table.cards]
-        potential_cards = [card for card in self.cards if card[0] in table_card_types]
+        table_card_types = [i.number for i in table.cards]
+        potential_cards = [card for card in self.cards if card.number in table_card_types]
         return potential_cards
 
-    def defending_options(self, table):
+    def defending_options(self, table, trump_suit):
         #checking if incoming_card (last card on a table) is trump
+        if len(table.cards) == 0:
+            return []
         incoming_card = table.cards[-1]
-        if incoming_card[1] == 0:
+        if incoming_card.suit == trump_suit:
             possible_options = [card for card in self.cards
-                                if (card[1] == 0 and card[0] >= incoming_card[0])]
+                                if (card.suit == trump_suit and card.number >= incoming_card.number)]
         #checking possible options to beat non trump card
         else:
             non_trump_options = [card for card in self.cards if
-                                 (card[1] == incoming_card[1] and card[0] >= incoming_card[0])]
-            trump_cards = [card for card in self.cards if card[1] == 0]
+                                 (card.suit == incoming_card.suit and card.number >= incoming_card.number)]
+            trump_cards = [card for card in self.cards if card.suit == trump_suit]
             possible_options = non_trump_options + trump_cards
         return possible_options
 
@@ -53,6 +60,7 @@ class Player:
 class HumanPlayer(Player):
     def __init__(self, nickname):
         super().__init__(nickname)
+        self.human = True
 
     def attack(self, table):
         #print('n', print(len(self.cards)))
