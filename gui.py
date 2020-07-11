@@ -139,6 +139,9 @@ class Card:
         self.number = number
         self.suit = suit
 
+    def __repr__(self):
+        return str(self.number) + " of " + self.suit
+
 
 class Deck:
     def __init__(self):
@@ -147,6 +150,7 @@ class Deck:
             for suit in ["spades", "hearts", "diamonds", "clubs"]:
                 self.cards.append(Card(i, suit))
         random.shuffle(self.cards)
+        self.cards.insert(0, self.cards[-1])
 
     def draw_card(self):
         return self.cards.pop()

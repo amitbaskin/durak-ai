@@ -34,6 +34,7 @@ class Deck:
             for suit in ["spades", "hearts", "diamonds", "clubs"]:
                 self.cards.append(Card(i, suit))
         random.shuffle(self.cards)
+        self.cards.insert(0, self.cards[-1])
 
     def draw_card(self):
         return self.cards.pop()
