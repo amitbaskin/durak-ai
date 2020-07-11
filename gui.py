@@ -6,6 +6,7 @@ import os
 from game_mechanics import Pointer, Table, Pile
 import random
 from player import Player, HumanPlayer
+import time
 from durak_ai import AiPlayerDumb
 
 
@@ -286,7 +287,7 @@ class RoundWithAI(Round):
             self.gui.update_gui(self, None, self.status, True)
             return self.status
         if self._first_stage() == True:
-            self.gui.update_gui(self, None, True)
+            self.gui.update_gui(self, None, self.status, True)
             self.round()
             return "first_stage_finish"
         self.gui.update_gui(self, None, self.status, True)
@@ -357,9 +358,15 @@ class Durak_GUI(tk.Tk):
 
         tk.Tk.wm_title(self, "Durak")
 
-        self.container = None
+        self.container = tk.Frame(self)
+        self.container.pack(side="top", fill="both", expand=True)
         self.player_list = players_list
-        self.game = DurakGame(self, players_list)
+
+        self.play = ttk.Button(self.container, text="Play", command=self.start_game)
+        self.play.grid(row=0, column=0)
+
+    def start_game(self):
+        self.game = DurakGame(self, self.player_list)
 
     def update_gui(self, game, choose_card_callback, status, show_all=False):
         self.enemy_player_hand.destroy()
@@ -394,6 +401,7 @@ class Durak_GUI(tk.Tk):
             self.admit_defeat.grid(row=2, column=2)
         else:
             self.admit_defeat.grid_forget()
+        tk.Tk.update(self)
 
     def build_gui(self, game, choose_card_callback, status, show_all=False):
         if self.container is not None:
@@ -442,10 +450,11 @@ class Durak_GUI(tk.Tk):
         self.admit_defeat.grid(row=2, column=2)
         if len(playable_cards) != 0:
             self.admit_defeat.grid_forget()
+        tk.Tk.update(self)
 
 
 if __name__ == "__main__":
     player1 = AiPlayerDumb("Wall E")
-    player2 = HumanPlayer("Eva")
+    player2 = AiPlayerDumb("Eva")
     app = Durak_GUI([player1, player2], None)
     app.mainloop()
