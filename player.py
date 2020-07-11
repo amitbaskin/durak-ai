@@ -74,24 +74,24 @@ class HumanPlayer(Player):
         table.update_table(attack_card)
         return attack_card
 
-    def defend(self, table):
+    def defend(self, table, trump_card):
         print('T: {}'.format(table.show()))
         #print('n', print(len(self.cards)))
         #print(table.cards)
         print(self.cards)
-        if self.defending_options(table):
+        if self.defending_options(table, trump_card):
             print("Your Turn to defend, {}:".format(self.nickname))
             def_card_num = input("{}\nPick a card number from 0 till {}\n'g' to grab cards\n't' to check table\n"
-                                 .format(self.defending_options(table),
-                                         len(self.defending_options(table))-1))
+                                 .format(self.defending_options(table, trump_card),
+                                         len(self.defending_options(table, trump_card))-1))
             if def_card_num == 'g':
                 self.grab_table(table)
                 return None
             elif def_card_num == 't':
-                return 'T: {}'.format(self.defend(table))
+                return 'T: {}'.format(self.defend(table, trump_card))
             #elif def_card_num == 'c':
             #    return self.cards
-            defend_card = self.defending_options(table)[int(def_card_num)]
+            defend_card = self.defending_options(table, trump_card)[int(def_card_num)]
             print('card {} added'.format(defend_card))
             self.remove_card(defend_card)
             table.update_table(defend_card)

@@ -19,54 +19,79 @@ from enum import Enum
 # fix Ai grab option
 # fix Player commands during attack\defence
 
+class Card:
+    def __init__(self, number, suit):
+        self.number = number
+        self.suit = suit
+
+    def __repr__(self):
+        return str(self.number) + " of " + self.suit
+
 class Deck:
-    '''
-    Class Deck is needed to simulate the card Deck.
-    It has following methods:
-    To initialize Deck instance needed to specify size (36 or 52 cards)
-    '''
+    def __init__(self):
+        self.cards = []
+        for i in range(6, 15):
+            for suit in ["spades", "hearts", "diamonds", "clubs"]:
+                self.cards.append(Card(i, suit))
+        random.shuffle(self.cards)
 
-    def __init__(self, size):
-        self.size = size
-        self.cards = self.get_deck()
-        self.encoded_cards = DeckEncoder(self).encode()
-        self.encode_legend = DeckEncoder(self).suit_encode()
+    def draw_card(self):
+        return self.cards.pop()
 
-    def get_deck(self):
-        '''
-        Generates deck
-        '''
+    def draw_cards(self, number):
+        cards = []
+        for _ in range(number):
+            cards.append(self.draw_card())
+        return cards
 
-        def card_range():
-            try:
-                if self.size == 52:
-                    card_numbers = [i for i in range(2, 15)]
-                elif self.size == 36:
-                    card_numbers = [i for i in range(6, 15)]
-                return card_numbers
-            except UnboundLocalError as card_amount_err:
-                print("{} Wrong amount of cards".format(card_amount_err))
-                sys.exit(1)
-
-        def suits():
-            suits_pack_ = ['Diamonds', 'Hearts', 'Spades', 'Clubs']
-            return suits_pack_
-
-        def random_deck():
-            cards = []
-            for number in card_range():
-                for suit in suits():
-                    cards.append(str(number) + '_' + str(suit))
-                    random.shuffle(cards)
-            return cards
-
-        return random_deck()
-
-    def update_deck(self, num_of_cards):
-        self.encoded_cards = self.encoded_cards[num_of_cards:]
-
-    def show_last_card(self):
-        return self.encoded_cards[-1]
+# class Deck:
+#     '''
+#     Class Deck is needed to simulate the card Deck.
+#     It has following methods:
+#     To initialize Deck instance needed to specify size (36 or 52 cards)
+#     '''
+#
+#     def __init__(self, size):
+#         self.size = size
+#         self.cards = self.get_deck()
+#         self.encoded_cards = DeckEncoder(self).encode()
+#         self.encode_legend = DeckEncoder(self).suit_encode()
+#
+#     def get_deck(self):
+#         '''
+#         Generates deck
+#         '''
+#
+#         def card_range():
+#             try:
+#                 if self.size == 52:
+#                     card_numbers = [i for i in range(2, 15)]
+#                 elif self.size == 36:
+#                     card_numbers = [i for i in range(6, 15)]
+#                 return card_numbers
+#             except UnboundLocalError as card_amount_err:
+#                 print("{} Wrong amount of cards".format(card_amount_err))
+#                 sys.exit(1)
+#
+#         def suits():
+#             suits_pack_ = ['Diamonds', 'Hearts', 'Spades', 'Clubs']
+#             return suits_pack_
+#
+#         def random_deck():
+#             cards = []
+#             for number in card_range():
+#                 for suit in suits():
+#                     cards.append(str(number) + '_' + str(suit))
+#                     random.shuffle(cards)
+#             return cards
+#
+#         return random_deck()
+#
+#     def update_deck(self, num_of_cards):
+#         self.encoded_cards = self.encoded_cards[num_of_cards:]
+#
+#     def show_last_card(self):
+#         return self.encoded_cards[-1]
 
 
 class DeckEncoder:
@@ -186,11 +211,12 @@ class Pointer:
 
 
 class Round:
-    def __init__(self, players_list, pointer, deck, pile, logger=None):
+    def __init__(self, players_list, pointer, deck, pile, trump_card, logger=None):
         self.players_list = players_list
         self.pointer = pointer
         self.deck = deck
         self.logger = logger
+        self.trump_card = trump_card
         self.attacker = players_list[pointer.attacker_id]
         self.defender = players_list[pointer.defender_id]
         self.table = Table()
@@ -206,7 +232,7 @@ class Round:
         self._second_stage()
 
     def check_cards(self):
-        if self.deck.encoded_cards:
+        if self.deck.cards:
             pass
         else:
             return self.check_winner()
@@ -232,14 +258,14 @@ class Round:
     def _first_stage(self):
         print('atk', len(self.attacker.cards))
         print('def', len(self.defender.cards))
-        print('deck', len(self.deck.encoded_cards))
+        print('deck', len(self.deck.cards))
         self.attacker.attack(self.table)
         if self.logger:
             log_d = {"1_atk": str(self.table.cards[-1]), "nick": str(self.attacker.nickname),
                      "hand": str(self.attacker.cards), "hand_size": len(self.attacker.cards)}
             self.logger.info(log_d)
         # defender can't defend
-        if self.defender.defend(self.table) is None:
+        if self.defender.defend(self.table, self.trump_card) is None:
             if self.logger:
                 log_d = {"grab": str(self.defender.nickname), "hand": str(self.defender.cards),
                          "hand_size": len(self.defender.cards)}
@@ -263,7 +289,7 @@ class Round:
                     log_d = {"{}_add".format(cnt): str(self.table.cards[-1]), "nick": str(self.attacker.nickname),
                              "hand": str(self.attacker.cards), "hand_size": len(self.attacker.cards)}
                     self.logger.info(log_d)
-                if self.defender.defend(self.table) is not None:
+                if self.defender.defend(self.table, self.trump_card) is not None:
                     if self.logger:
                         log_d = {"{}_def".format(cnt): str(self.table.cards[-1]), "nick": str(self.defender.nickname),
                                  "hand": str(self.defender.cards), "hand_size": len(self.defender.cards)}
@@ -292,11 +318,15 @@ class GameProcess:
     def __init__(self, players_list, deck, logger=None):
         self.players_list = players_list
         self.deck = deck
+        self.draw_card_for_trump()
         self.logger = logger
         self.get_cards()
-        self.pointer = Pointer(players_list)
+        self.pointer = Pointer(players_list, self.trump_card)
         self.table = Table()
         self.pile = Pile()
+
+    def draw_card_for_trump(self):
+        self.trump_card = self.deck.draw_card()
 
     def _refresh_game(self):
         for p in self.players_list:
@@ -307,10 +337,10 @@ class GameProcess:
             player.draw_cards(self.deck)
 
     def play(self):
-        r = Round(self.players_list, self.pointer, self.deck, self.pile, self.logger)
+        r = Round(self.players_list, self.pointer, self.deck, self.pile, self.trump_card, self.logger)
         i = 0
         if self.logger:
-            round_dict = {"Round": i, "pile": self.pile.show(), "cards_left": len(self.deck.encoded_cards)}
+            round_dict = {"Round": i, "pile": self.pile.show(), "cards_left": len(self.deck.cards)}
             self.logger.info(round_dict)
         t = time.time()
         while r.status is None:
@@ -319,7 +349,7 @@ class GameProcess:
             r.round()
             i += 1
             if self.logger:
-                round_dict = {"Round": i, "pile": self.pile.show(), "cards_left": len(self.deck.encoded_cards)}
+                round_dict = {"Round": i, "pile": self.pile.show(), "cards_left": len(self.deck.cards)}
                 self.logger.info(round_dict)
         if r.status is not None:
             self._refresh_game()

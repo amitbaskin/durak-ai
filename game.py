@@ -11,7 +11,7 @@ class Game:
 
 
 p1 = AiPlayerDumb('WALL E')
-p2 = HumanPlayer('EVA')
+p2 = AiPlayerDumb('EVA')
 players_list = [p1, p2]
 
 if os.path.isfile('game.log'):
@@ -26,10 +26,10 @@ logger.info({'Game' : 0})
 
 
 def game_instance(list_of_players, logger=None):
-    deck = Deck(36)
+    deck = Deck()
     print(deck)
     g = GameProcess(list_of_players, deck, logger)
-    ptr = Pointer(list_of_players)
+    # ptr = Pointer(list_of_players)
     g.play()
 
 print(game_instance(players_list, logger))
