@@ -110,6 +110,9 @@ class TableFrame(ttk.Frame):
         for i, card_pair in enumerate(self.card_pairs):
             card_pair.place(x=self.padding * i + (CARD_WIDTH + 15) * i, y=0, anchor="nw")
 
+    def reset_table(self):
+        self.card_pairs = []
+
 
 class PlayerHand(ttk.Frame):
     def __init__(self, parent, hand, options, callback, shown=True):
@@ -256,7 +259,7 @@ class RoundWithHuman(Round):
                 self.attacker, self.defender = self.defender, self.attacker
                 self.attacking = not self.attacking
                 self.status = "Attacking" if self.attacking else "Defending"
-        self.gui.build_gui(self, self.card_pick_callback, self.status)
+        self.gui.update_gui(self, self.card_pick_callback, self.status)
 
     def round(self):
         if self.check_cards():
@@ -280,13 +283,13 @@ class RoundWithAI(Round):
         self.gui.build_gui(self, None, self.status, True)
         if self.check_cards():
             print(self.status)
-            self.gui.build_gui(self, None, self.status, True)
+            self.gui.update_gui(self, None, self.status, True)
             return self.status
         if self._first_stage() == True:
-            self.gui.build_gui(self, None, True)
+            self.gui.update_gui(self, None, True)
             self.round()
             return "first_stage_finish"
-        self.gui.build_gui(self, None, self.status, True)
+        self.gui.update_gui(self, None, self.status, True)
         self._second_stage()
 
         self.round()
@@ -307,7 +310,7 @@ class RoundWithAI(Round):
     def _second_stage(self):
         cnt = 1
         while True and cnt < 6:
-            self.gui.build_gui(self, None, self.status, True)
+            self.gui.update_gui(self, None, self.status, True)
             if self.attacker.adding_card(self.table) is not None:
                 cnt += 1
                 if self.defender.defend(self.table, self.trump_card) is None:
@@ -321,7 +324,7 @@ class RoundWithAI(Round):
                 self.pile.update(self.table)
                 self.table.clear()
                 self.attacker, self.defender = self.defender, self.attacker
-                self.gui.build_gui(self, None, self.status, True)
+                self.gui.update_gui(self, None, self.status, True)
                 return False
         print('second_stage no cards')
 
@@ -357,6 +360,40 @@ class Durak_GUI(tk.Tk):
         self.container = None
         self.player_list = players_list
         self.game = DurakGame(self, players_list)
+
+    def update_gui(self, game, choose_card_callback, status, show_all=False):
+        self.enemy_player_hand.destroy()
+        self.enemy_player_hand = PlayerHand(self.container, self.player_list[0].cards, [], choose_card_callback,
+                                            shown=show_all)
+        self.enemy_player_hand.grid(row=0, column=1)
+
+        self.attacking_label.configure(text=status)
+
+        self.table.reset_table()
+        for i in range(0, len(game.table.cards), 2):
+            pair = CardPair(self.table)
+            bottom_card = PlayingCardFrame(pair, game.table.cards[i])
+            pair.set_bottom_card(bottom_card)
+            if i + 1 < len(game.table.cards):
+                top_card = PlayingCardFrame(pair, game.table.cards[i+1])
+                pair.set_top_card(top_card)
+            self.table.add_card_pair(pair)
+        self.table.update_view()
+
+        self.deck.destroy()
+        self.deck = DeckFrame(self.container, len(game.deck.cards))
+        self.deck.grid(row=1, column=2)
+
+        playable_cards = self.player_list[1].options(game.table, game.trump_card.suit)
+        self.player_hand.destroy()
+        self.player_hand = PlayerHand(self.container, self.player_list[1].cards,
+                                      playable_cards, choose_card_callback, shown=True)
+        self.player_hand.grid(row=2, column=1)
+
+        if len(playable_cards) == 0:
+            self.admit_defeat.grid(row=2, column=2)
+        else:
+            self.admit_defeat.grid_forget()
 
     def build_gui(self, game, choose_card_callback, status, show_all=False):
         if self.container is not None:
@@ -400,14 +437,15 @@ class Durak_GUI(tk.Tk):
                                       playable_cards, choose_card_callback, shown=True)
         self.player_hand.grid(row=2, column=1)
 
-        if len(playable_cards) == 0:
-            self.admit_defeat = ttk.Button(self.container, text="Can't defend, press here",
-                                           command=lambda: choose_card_callback(None, None))
-            self.admit_defeat.grid(row=2, column=2)
+        self.admit_defeat = ttk.Button(self.container, text="Can't defend, press here",
+                                       command=lambda: choose_card_callback(None, None))
+        self.admit_defeat.grid(row=2, column=2)
+        if len(playable_cards) != 0:
+            self.admit_defeat.grid_forget()
 
 
 if __name__ == "__main__":
     player1 = AiPlayerDumb("Wall E")
-    player2 = AiPlayerDumb("Eva")
+    player2 = HumanPlayer("Eva")
     app = Durak_GUI([player1, player2], None)
     app.mainloop()
