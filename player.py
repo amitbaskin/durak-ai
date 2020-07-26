@@ -7,7 +7,7 @@ class Player:
 
     def options(self, table, trump_suit):
         if self.attacking:
-            return self.attacking_options()
+            return self.attacking_options(table)
         return self.defending_options(table, trump_suit)
 
     def draw_cards(self, deck_instance):
@@ -25,8 +25,12 @@ class Player:
     def remove_card(self, card):
         self.cards.remove(card)
 
-    def attacking_options(self):
-        return self.cards
+    def attacking_options(self, table):
+        if len(table.cards) == 0:
+            return self.cards
+
+        table_number = [card.number for card in table.cards]
+        return [card for card in self.cards if card.number in table_number]
 
     def adding_card_options(self, table):
         table_card_types = [i.number for i in table.cards]
@@ -34,20 +38,20 @@ class Player:
         return potential_cards
 
     def defending_options(self, table, trump_suit):
-        #checking if incoming_card (last card on a table) is trump
         if len(table.cards) == 0:
             return []
-        incoming_card = table.cards[-1]
-        if incoming_card.suit == trump_suit:
-            possible_options = [card for card in self.cards
-                                if (card.suit == trump_suit and card.number >= incoming_card.number)]
-        #checking possible options to beat non trump card
-        else:
-            non_trump_options = [card for card in self.cards if
-                                 (card.suit == incoming_card.suit and card.number >= incoming_card.number)]
-            trump_cards = [card for card in self.cards if card.suit == trump_suit]
-            possible_options = non_trump_options + trump_cards
-        return possible_options
+
+        attacking_card = table.cards[-1]
+
+        # Checking if attacking_card (last card on a table) is trump.
+        if attacking_card.suit == trump_suit:
+            return [card for card in self.cards if (card.suit == trump_suit and card.number >= attacking_card.number)]
+
+        # Checking possible options to beat non trump card.
+        non_trump_options = [card for card in self.cards if
+                             (card.suit == attacking_card.suit and card.number >= attacking_card.number)]
+        trump_cards = [card for card in self.cards if card.suit == trump_suit]
+        return non_trump_options + trump_cards
 
     def grab_table(self, table):
         self.cards += table.cards

@@ -6,7 +6,10 @@ class AiPlayerDumb(Player):
         super().__init__(nickname)
 
     def attack(self, table):
-        attack_card = random.choice(self.cards)
+        possible_cards = self.attacking_options(table)
+        if len(possible_cards) == 0:
+            return None
+        attack_card = random.choice(possible_cards)
         self.remove_card(attack_card)
         table.update_table(attack_card)
         print('{} attack with {} of {}'.format(self.nickname, attack_card.number, attack_card.suit))
