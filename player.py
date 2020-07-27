@@ -5,6 +5,24 @@ class Player:
         self.human = False
         self.attacking = False
 
+    def play_move(self, round):
+        if self.attacking:
+            if len(round.table.cards) == 0:
+                return self.attack(round)
+            else:
+                return self.adding_card(round)
+        else:
+            return self.defend(round)
+
+    def attack(self, round):
+        return None
+
+    def defend(self, round):
+        return None
+
+    def adding_card(self, round):
+        return None
+
     def options(self, table, trump_suit):
         if self.attacking:
             return self.attacking_options(table)
@@ -29,8 +47,7 @@ class Player:
         if len(table.cards) == 0:
             return self.cards
 
-        table_number = [card.number for card in table.cards]
-        return [card for card in self.cards if card.number in table_number]
+        return self.adding_card_options(table)
 
     def adding_card_options(self, table):
         table_card_types = [i.number for i in table.cards]
@@ -66,7 +83,7 @@ class HumanPlayer(Player):
         super().__init__(nickname)
         self.human = True
 
-    def attack(self, table):
+    def attack(self, round):
         #print('n', print(len(self.cards)))
         #print(table.cards)
         print("Your Turn to attack, {}:".format(self.nickname))
@@ -75,49 +92,49 @@ class HumanPlayer(Player):
         attack_card = self.attacking_options()[int(attack_card_num)]
         print('card {} added'.format(attack_card))
         self.remove_card(attack_card)
-        table.update_table(attack_card)
+        round.table.update_table(attack_card)
         return attack_card
 
-    def defend(self, table, trump_card):
-        print('T: {}'.format(table.show()))
+    def defend(self, round):
+        print('T: {}'.format(round.table.show()))
         #print('n', print(len(self.cards)))
         #print(table.cards)
         print(self.cards)
-        if self.defending_options(table, trump_card):
+        if self.defending_options(round.table, round.trump_card):
             print("Your Turn to defend, {}:".format(self.nickname))
             def_card_num = input("{}\nPick a card number from 0 till {}\n'g' to grab cards\n't' to check table\n"
-                                 .format(self.defending_options(table, trump_card),
-                                         len(self.defending_options(table, trump_card))-1))
+                                 .format(self.defending_options(round.table, round.trump_card),
+                                         len(self.defending_options(round.table, round.trump_card))-1))
             if def_card_num == 'g':
-                self.grab_table(table)
+                self.grab_table(round.table)
                 return None
             elif def_card_num == 't':
-                return 'T: {}'.format(self.defend(table, trump_card))
+                return 'T: {}'.format(self.defend(round))
             #elif def_card_num == 'c':
             #    return self.cards
-            defend_card = self.defending_options(table, trump_card)[int(def_card_num)]
+            defend_card = self.defending_options(round.table, round.trump_card)[int(def_card_num)]
             print('card {} added'.format(defend_card))
             self.remove_card(defend_card)
-            table.update_table(defend_card)
+            round.table.update_table(defend_card)
             return defend_card
         print(r"you can't defend, {}".format(self.nickname))
-        self.grab_table(table)
+        self.grab_table(round.table)
         return None
 
-    def adding_card(self, table):
+    def adding_card(self, round):
         #print('n', print(len(self.cards)))
-        if self.adding_card_options(table):
+        if self.adding_card_options(round.table):
             #print('T: {}'.format(table.show()))
             print("Add card, {}:".format(self.nickname))
             adding_card_num = input("{}\nPick a card number from 0 till {}\n'p' to pass\n"
-                                    .format(self.adding_card_options(table),
-                                            len(self.adding_card_options(table))-1))
+                                    .format(self.adding_card_options(round.table),
+                                            len(self.adding_card_options(round.table))-1))
             if adding_card_num == 'p':
                 return None
-            card_to_add = self.adding_card_options(table)[int(adding_card_num)]
+            card_to_add = self.adding_card_options(round.table)[int(adding_card_num)]
             print('card {} added'.format(card_to_add))
             self.remove_card(card_to_add)
-            table.update_table(card_to_add)
-            print('T: {}'.format(table.show()))
+            round.table.update_table(card_to_add)
+            print('T: {}'.format(round.table.show()))
             return card_to_add
         return None

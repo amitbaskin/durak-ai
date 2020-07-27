@@ -7,7 +7,7 @@ from game_mechanics import Pointer, Table, Pile
 import random
 from player import Player, HumanPlayer
 import time
-from durak_ai import AiPlayerDumb
+from durak_ai import AiPlayerDumb, SimplePlayer, HandicappedSimplePlayer
 
 
 CARD_WIDTH = 69 + 4
@@ -207,7 +207,7 @@ class Round:
                 self.status = winners[0]
                 return 'WIN'
 
-    def check_cards(self):
+    def check_win(self):
         if self.deck.cards:
             pass
         else:
@@ -227,11 +227,20 @@ class RoundWithHuman(Round):
 
         self.round()
 
+    def round(self):
+        if self.check_win():
+            print(self.status)
+            self.gui.winner_decided(self.status)
+            return self.status
+        if not self.attacker.human:
+            self.attacker.attack(self)
+        self.gui.build_gui(self, self.card_pick_callback, self.status, is_attacker_first_round=self.attacking)
+
     def _first_stage(self, choice, card):
         if self.attacking:
             self.table.update_table(card)
             self.attacker.remove_card(card)
-            if self.defender.defend(self.table, self.trump_card) is None:
+            if self.defender.defend(self) is None:
                 self.defender.grab_table(self.table)
             self.draw_cards_for_players()
         else:
@@ -242,13 +251,86 @@ class RoundWithHuman(Round):
             else:
                 self.table.update_table(card)
                 self.defender.remove_card(card)
-            self.attacker.attack(self.table)
+            self.attacker.attack(self)
             self.draw_cards_for_players()
         self.count += 1
 
-    def card_pick_callback(self, choice, card):
-        if self.check_cards():
+    def swap_players(self):
+        self.attacker, self.defender = self.defender, self.attacker
+        self.defender.attacking = False
+        self.attacker.attacking = True
+        self.attacking = not self.attacking
+        self.status = "Attacking" if self.attacking else "Defending"
+
+    def second_stage_reset_round(self):
+        self.round_over = True
+        print('_second_stage no options for attacker')
+        self.draw_cards_for_players()
+        self.pile.update(self.table)
+        self.table.clear()
+
+        self.swap_players()
+
+    def second_stage_attacking(self, choice, card):
+        if choice is None:
+            self.second_stage_reset_round()
+            self.attacker.attack(self)
+        else:
+            self.table.update_table(card)
+            self.attacker.remove_card(card)
+            self.count += 1
+            if self.defender.defend(self) is None:
+                self.attacker.draw_cards(self.deck)
+                self.round_over = True
+
+    def second_stage_defending(self, choice, card):
+        if choice is None:
+            self.defender.grab_table(self.table)
+
+            self.draw_cards_for_players()
             self.gui.update_gui(self, self.card_pick_callback, self.status)
+            if not self.check_win():
+                self.count = 0
+                self.attacker.attack(self)
+                self.draw_cards_for_players()
+            self.gui.update_gui(self, self.card_pick_callback, self.status)
+            return
+        else:
+            self.defender.remove_card(card)
+            self.table.update_table(card)
+
+        if self.attacker.adding_card(self) is not None:
+            self.count += 1
+
+            self.gui.update_gui(self, self.card_pick_callback, self.status)
+            if self.check_win():
+                self.gui.winner_decided(self.status)
+            return
+        else:
+            self.second_stage_reset_round()
+
+            self.gui.update_gui(self, self.card_pick_callback, self.status, is_attacker_first_round=True)
+            if self.check_win():
+                self.gui.winner_decided(self.status)
+                return
+            return False
+
+    def second_stage_round_over(self, choice):
+        if choice is None:
+            self.defender.grab_table(self.table)
+        else:
+            self.pile.update(self.table)
+
+        self.draw_cards_for_players()
+        self.table.clear()
+
+        self.swap_players()
+
+        self.count = 0
+
+    def card_pick_callback(self, choice, card):
+        if self.check_win():
+            self.gui.winner_decided(self.status)
             return
 
         if self.round_over:
@@ -257,113 +339,18 @@ class RoundWithHuman(Round):
 
         if self.count == 0:
             self._first_stage(choice, card)
-        elif 1 <= self.count < 6:
+        elif 1 <= self.count < 6:  # Second stage.
             if self.attacking:
-                if choice is None:
-                    self.round_over = True
-                    print('_second_stage no options for attacker')
-                    self.draw_cards_for_players()
-                    self.pile.update(self.table)
-                    self.table.clear()
-
-                    self.attacker.attacking = False
-                    self.defender.attacking = True
-                    self.attacker, self.defender = self.defender, self.attacker
-
-                    self.attacking = not self.attacking
-                    self.status = "Attacking" if self.attacking else "Defending"
-
-                    self.attacker.attack(self.table)
-                else:
-                    self.table.update_table(card)
-                    self.attacker.remove_card(card)
-                    self.count += 1
-                    if self.defender.defend(self.table, self.trump_card) is None:
-                        self.attacker.draw_cards(self.deck)
-                        self.round_over = True
+                self.second_stage_attacking(choice, card)
             else:
-                if choice is None:
-                    self.defender.grab_table(self.table)
-
-                    self.draw_cards_for_players()
-                    self.gui.update_gui(self, self.card_pick_callback, self.status)
-                    if not self.check_cards():
-                        self.count = 0
-                        self.attacker.attack(self.table)
-                        self.draw_cards_for_players()
-                    self.gui.update_gui(self, self.card_pick_callback, self.status)
-                    return
-                else:
-                    self.defender.remove_card(card)
-                    self.table.update_table(card)
-
-                if self.attacker.adding_card(self.table) is not None:
-                    self.count += 1
-
-                    self.gui.update_gui(self, self.card_pick_callback, self.status)
-                    if self.check_cards():
-                        self.gui.update_gui(self, self.card_pick_callback, self.status)
-                    return
-                else:
-                    self.round_over = True
-                    self.attacker.draw_cards(self.deck)
-                    self.defender.draw_cards(self.deck)
-                    self.pile.update(self.table)
-                    self.table.clear()
-
-                    self.attacker, self.defender = self.defender, self.attacker
-                    self.defender.attacking = False
-                    self.attacker.attacking = True
-
-                    self.attacking = not self.attacking
-                    self.status = "Attacking" if self.attacking else "Defending"
-                    self.gui.update_gui(self, self.card_pick_callback, self.status)
-                    if self.check_cards():
-                        self.gui.update_gui(self, self.card_pick_callback, self.status)
-                        return
-                    return False
+                return self.second_stage_defending(choice, card)
         else:
-            if choice is None:
-                self.defender.grab_table(self.table)
-            else:
-                self.pile.update(self.table)
+            self.second_stage_round_over(choice)
 
-            self.attacker.draw_cards(self.deck)
-            self.defender.draw_cards(self.deck)
-            self.table.clear()
-
-            self.attacker, self.defender = self.defender, self.attacker
-            self.attacker.attacking = True
-            self.defender.attacking = False
-
-            self.attacking = not self.attacking
-            self.status = "Attacking" if self.attacking else "Defending"
-            self.count = 0
-
-        if self.check_cards():
-            self.gui.update_gui(self, self.card_pick_callback, self.status)
+        if self.check_win():
+            self.gui.winner_decided(self.status)
             return
         self.gui.update_gui(self, self.card_pick_callback, self.status)
-
-    def complete_second_stage(self, choice, card):
-        if choice is None:
-            print('_second_stage no options for defender')
-            self.attacker.attack(self.table)
-        else:
-            self.table.update_table(card)
-            self.defender.remove_card(card)
-
-        self.draw_cards_for_players()
-        self.gui.update_gui(self, self.card_pick_callback, self.status)
-        return
-
-    def round(self):
-        if self.check_cards():
-            print(self.status)
-            return self.status
-        if not self.attacker.human:
-            self.attacker.attack(self.table)
-        self.gui.build_gui(self, self.card_pick_callback, self.status)
 
 
 class RoundWithAI(Round):
@@ -377,9 +364,9 @@ class RoundWithAI(Round):
 
     def round(self):
         self.gui.build_gui(self, None, self.status, True)
-        if self.check_cards():
+        if self.check_win():
             print(self.status)
-            self.gui.update_gui(self, None, self.status, True)
+            self.gui.winner_decided(self.status)
             return self.status
         if self._first_stage() == True:
             self.gui.update_gui(self, None, self.status, True)
@@ -395,7 +382,7 @@ class RoundWithAI(Round):
         print(self.attacker.nickname, 'num cards', len(self.attacker.cards))
         print(self.defender.nickname, 'defender num cards', len(self.defender.cards))
         print('deck num cards', len(self.deck.cards))
-        if self.attacker.attack(self.table) == None:
+        if self.attacker.attack(self) == None:
             self.pile.update(self.table)
             self.table.clear()
 
@@ -406,7 +393,7 @@ class RoundWithAI(Round):
             self._first_stage()
             return
         # defender can't defend
-        if self.defender.defend(self.table, self.trump_card) is None:
+        if self.defender.defend(self) is None:
             print('_first_stage no options for defender')
             self.attacker.draw_cards(self.deck)
             return True
@@ -417,9 +404,9 @@ class RoundWithAI(Round):
         cnt = 1
         while True and cnt < 6:
             self.gui.update_gui(self, None, self.status, True)
-            if self.attacker.adding_card(self.table) is not None:
+            if self.attacker.adding_card(self) is not None:
                 cnt += 1
-                if self.defender.defend(self.table, self.trump_card) is None:
+                if self.defender.defend(self) is None:
                     print('_second_stage no options for defender')
                     self.attacker.draw_cards(self.deck)
                     return False
@@ -458,7 +445,6 @@ class DurakGame:
             self.curr_round = RoundWithAI(self.player_list, self.deck, self.pile, self.gui)
 
 
-
 class Durak_GUI(tk.Tk):
     def __init__(self, players_list, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
@@ -473,9 +459,22 @@ class Durak_GUI(tk.Tk):
         self.play.grid(row=0, column=0)
 
     def start_game(self):
+        for player in self.player_list:
+            player._refresh()
         self.game = DurakGame(self, self.player_list)
 
-    def update_gui(self, game, choose_card_callback, status, show_all=False):
+    def winner_decided(self, nickname):
+        self.container.destroy()
+        self.container = tk.Frame(self)
+        self.container.pack(side="top", fill="both", expand=True)
+
+        self.winner_label = ttk.Label(self.container, text=nickname + " has won!!!!", font=('Helvetica', 25))
+        self.winner_label.pack()
+
+        self.replay_button = ttk.Button(self.container, text="New Game", command=self.start_game)
+        self.replay_button.pack()
+
+    def update_gui(self, game, choose_card_callback, status, show_all=False, is_attacker_first_round=False):
         self.enemy_player_hand.destroy()
         self.enemy_player_hand = PlayerHand(self.container, self.player_list[0].cards, [], choose_card_callback,
                                             shown=show_all)
@@ -504,13 +503,13 @@ class Durak_GUI(tk.Tk):
                                       playable_cards, choose_card_callback, shown=True)
         self.player_hand.grid(row=2, column=1)
 
-        if len(playable_cards) == 0:
+        if not is_attacker_first_round:
             self.admit_defeat.grid(row=2, column=2)
         else:
             self.admit_defeat.grid_forget()
         tk.Tk.update(self)
 
-    def build_gui(self, game, choose_card_callback, status, show_all=False):
+    def build_gui(self, game, choose_card_callback, status, show_all=False, is_attacker_first_round=False):
         if self.container is not None:
             self.container.destroy()
         self.container = tk.Frame(self)
@@ -552,16 +551,17 @@ class Durak_GUI(tk.Tk):
                                       playable_cards, choose_card_callback, shown=True)
         self.player_hand.grid(row=2, column=1)
 
-        self.admit_defeat = ttk.Button(self.container, text="Can't defend, press here",
+        self.admit_defeat = ttk.Button(self.container, text="Forfeit round",
                                        command=lambda: choose_card_callback(None, None))
         self.admit_defeat.grid(row=2, column=2)
-        if len(playable_cards) != 0:
+        if is_attacker_first_round:
             self.admit_defeat.grid_forget()
         tk.Tk.update(self)
 
 
 if __name__ == "__main__":
-    player1 = AiPlayerDumb("Wall E")
-    player2 = HumanPlayer("Eva")
+    player1 = HandicappedSimplePlayer("Wall E")
+    player2 = AiPlayerDumb("Eva")
+    # player2 = HumanPlayer("Eva")
     app = Durak_GUI([player1, player2], None)
     app.mainloop()
