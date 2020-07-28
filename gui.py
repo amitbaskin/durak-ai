@@ -455,8 +455,11 @@ class Durak_GUI(tk.Tk):
         self.container.pack(side="top", fill="both", expand=True)
         self.player_list = players_list
 
-        self.play = ttk.Button(self.container, text="Play", command=self.start_game)
-        self.play.grid(row=0, column=0)
+        self.winners = []
+        self.amount_of_games = 0
+        self.amount_of_games_won = 0
+
+        self.after(0, func=self.start_game)
 
     def start_game(self):
         for player in self.player_list:
@@ -464,6 +467,11 @@ class Durak_GUI(tk.Tk):
         self.game = DurakGame(self, self.player_list)
 
     def winner_decided(self, nickname):
+        self.winners.append(nickname)
+
+        self.amount_of_games += 1
+        self.amount_of_games_won += 1 if nickname == self.player_list[1].nickname else 0
+
         self.container.destroy()
         self.container = tk.Frame(self)
         self.container.pack(side="top", fill="both", expand=True)
@@ -471,8 +479,13 @@ class Durak_GUI(tk.Tk):
         self.winner_label = ttk.Label(self.container, text=nickname + " has won!!!!", font=('Helvetica', 25))
         self.winner_label.pack()
 
-        self.replay_button = ttk.Button(self.container, text="New Game", command=self.start_game)
-        self.replay_button.pack()
+        if self.amount_of_games < 50:
+            self.after(0, func=self.start_game)
+        else:
+            print("Player 2 win rate:", self.amount_of_games_won / self.amount_of_games)
+
+        # self.replay_button = ttk.Button(self.container, text="New Game", command=self.start_game)
+        # self.replay_button.pack()
 
     def update_gui(self, game, choose_card_callback, status, show_all=False, is_attacker_first_round=False):
         self.enemy_player_hand.destroy()
@@ -561,7 +574,7 @@ class Durak_GUI(tk.Tk):
 
 if __name__ == "__main__":
     player1 = HandicappedSimplePlayer("Wall E")
-    player2 = AiPlayerDumb("Eva")
+    player2 = SimplePlayer("Eva")
     # player2 = HumanPlayer("Eva")
     app = Durak_GUI([player1, player2], None)
     app.mainloop()
