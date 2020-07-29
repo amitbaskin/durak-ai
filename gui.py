@@ -118,9 +118,13 @@ class TableFrame(ttk.Frame):
 
 
 class PlayerHand(ttk.Frame):
+    TOO_MANY_CARDS = 6
+    OVERFLOW_COEFF = 3
+    MIN_PADDING = -CARD_WIDTH / 2
+
     def __init__(self, parent, hand, options, callback, shown=True):
         self.padding = 6
-        width = (CARD_WIDTH + self.padding) * len(hand)
+        width = self.calculate_width(hand)
         height = CARD_HEIGHT + self.padding * 2
         ttk.Frame.__init__(self, parent, width=width, height=height)
         self.hand = hand
@@ -129,12 +133,35 @@ class PlayerHand(ttk.Frame):
 
         self.update_hand(hand, options)
 
-    def update_hand(self, hand, options):
-        for i, card in enumerate(hand):
-            playing_card = InteractablePlayingCard(self, card, i, card in options,self.callback) \
-                if self.shown else BlankCardFrame(self)
-            playing_card.place(x=(CARD_WIDTH + self.padding) * i, y=0, anchor="nw")
+    def calculate_width(self, hand):
+        max_x = 0
+        padding = self.padding
+        if len(hand) > self.TOO_MANY_CARDS:
+            cards_over = len(hand) - self.TOO_MANY_CARDS
+            padding -= self.OVERFLOW_COEFF * cards_over
+            padding = max(padding, self.MIN_PADDING)
+            max_x = (CARD_WIDTH + padding) * (len(hand) + 1) + self.padding
+            return max_x
+        else:
+            return (CARD_WIDTH + self.padding) * len(hand)
 
+    def update_hand(self, hand, options):
+        max_x = 0
+        padding = self.padding
+        if len(hand) > self.TOO_MANY_CARDS:
+            cards_over = len(hand) - self.TOO_MANY_CARDS
+            padding -= self.OVERFLOW_COEFF * cards_over
+            padding = max(padding, self.MIN_PADDING)
+            for i, card in enumerate(hand):
+                playing_card = InteractablePlayingCard(self, card, i, card in options,self.callback) \
+                    if self.shown else BlankCardFrame(self)
+                playing_card.place(x=(CARD_WIDTH + padding) * i, y=0, anchor="nw")
+                max_x = (CARD_WIDTH + padding) * i + CARD_WIDTH + padding
+        else:
+            for i, card in enumerate(hand):
+                playing_card = InteractablePlayingCard(self, card, i, card in options,self.callback) \
+                    if self.shown else BlankCardFrame(self)
+                playing_card.place(x=(CARD_WIDTH + padding) * i, y=0, anchor="nw")
 
 class Card:
     def __init__(self, number, suit):
@@ -479,7 +506,7 @@ class Durak_GUI(tk.Tk):
         self.winner_label = ttk.Label(self.container, text=nickname + " has won!!!!", font=('Helvetica', 25))
         self.winner_label.pack()
 
-        if self.amount_of_games < 50:
+        if self.amount_of_games < 500:
             self.after(0, func=self.start_game)
         else:
             print("Player 2 win rate:", self.amount_of_games_won / self.amount_of_games)
@@ -573,8 +600,8 @@ class Durak_GUI(tk.Tk):
 
 
 if __name__ == "__main__":
-    player1 = HandicappedSimplePlayer("Wall E")
-    player2 = SimplePlayer("Eva")
+    player1 = HandicappedSimplePlayer()
+    player2 = SimplePlayer()
     # player2 = HumanPlayer("Eva")
     app = Durak_GUI([player1, player2], None)
     app.mainloop()

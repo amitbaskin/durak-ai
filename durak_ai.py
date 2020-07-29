@@ -2,8 +2,9 @@ import random
 from player import Player
 
 class AiPlayerDumb(Player):
-    def __init__(self, nickname):
-        super().__init__(nickname)
+    def __init__(self):
+        self.nickname = "Random Player"
+        super().__init__(self.nickname)
 
     def attack(self, round):
         possible_cards = self.attacking_options(round.table)
@@ -56,8 +57,9 @@ def choose_min_card( possible_cards, trump_suit):
     return non_trump_cards[0]
 
 class SimplePlayer(Player):
-    def __init__(self, nickname):
-        super().__init__(nickname)
+    def __init__(self):
+        self.nickname = "Simple Player"
+        super().__init__(self.nickname)
 
     def attack(self, round):
         possible_cards = self.attacking_options(round.table)
@@ -97,8 +99,9 @@ class SimplePlayer(Player):
 
 
 class HandicappedSimplePlayer(Player):
-    def __init__(self, nickname):
-        super().__init__(nickname)
+    def __init__(self):
+        self.nickname = "Handicapped Simple Player"
+        super().__init__(self.nickname)
 
     def attack(self, round):
         if len(round.deck.cards) == 0:

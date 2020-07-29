@@ -254,19 +254,19 @@ class Round:
                 self.status = winners[0]
                 if self.logger:
                     self.logger.info({"Winner": str(self.status)})
-                return 'WIN'
+                return self.status
 
     def _first_stage(self):
         print('atk', len(self.attacker.cards))
         print('def', len(self.defender.cards))
         print('deck', len(self.deck.cards))
-        self.attacker.attack(self.table)
+        self.attacker.attack(self)
         if self.logger:
             log_d = {"1_atk": str(self.table.cards[-1]), "nick": str(self.attacker.nickname),
                      "hand": str(self.attacker.cards), "hand_size": len(self.attacker.cards)}
             self.logger.info(log_d)
         # defender can't defend
-        if self.defender.defend(self.table, self.trump_card) is None:
+        if self.defender.defend(self) is None:
             if self.logger:
                 log_d = {"grab": str(self.defender.nickname), "hand": str(self.defender.cards),
                          "hand_size": len(self.defender.cards)}
@@ -284,13 +284,13 @@ class Round:
     def _second_stage(self):
         cnt = 1
         while True and cnt < 6:
-            if self.attacker.adding_card(self.table) is not None:
+            if self.attacker.adding_card(self) is not None:
                 cnt += 1
                 if self.logger:
                     log_d = {"{}_add".format(cnt): str(self.table.cards[-1]), "nick": str(self.attacker.nickname),
                              "hand": str(self.attacker.cards), "hand_size": len(self.attacker.cards)}
                     self.logger.info(log_d)
-                if self.defender.defend(self.table, self.trump_card) is not None:
+                if self.defender.defend(self) is not None:
                     if self.logger:
                         log_d = {"{}_def".format(cnt): str(self.table.cards[-1]), "nick": str(self.defender.nickname),
                                  "hand": str(self.defender.cards), "hand_size": len(self.defender.cards)}
@@ -352,6 +352,7 @@ class GameProcess:
             if self.logger:
                 round_dict = {"Round": i, "pile": self.pile.show(), "cards_left": len(self.deck.cards)}
                 self.logger.info(round_dict)
+        return r.status
         if r.status is not None:
             self._refresh_game()
 
@@ -378,7 +379,7 @@ class RoundForGUI:
             print(self.status)
             return self.status
         if not self.attacker.human:
-            self.attacker.attack(self.table)
+            self.attacker.attack(self)
 
             if self.defender.defending_options(self.table):
                 self.waiting_for_input = WaitType.DEFEND
@@ -427,9 +428,9 @@ class RoundForGUI:
         print('atk', len(self.attacker.cards))
         print('def', len(self.defender.cards))
         print('deck', len(self.deck.encoded_cards))
-        self.attacker.attack(self.table)
+        self.attacker.attack(self)
         # defender can't defend
-        if self.defender.defend(self.table) is None:
+        if self.defender.defend(self) is None:
             print('_first_stage no options for defender')
             self.attacker.draw_cards(self.deck)
             return True
@@ -439,9 +440,9 @@ class RoundForGUI:
     def _second_stage(self):
         cnt = 1
         while True and cnt < 6:
-            if self.attacker.adding_card(self.table) is not None:
+            if self.attacker.adding_card(self) is not None:
                 cnt += 1
-                if self.defender.defend(self.table) is None:
+                if self.defender.defend(self) is None:
                     print('_second_stage no options for defender')
                     self.attacker.draw_cards(self.deck)
                     return False
