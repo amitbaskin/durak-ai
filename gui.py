@@ -134,19 +134,16 @@ class PlayerHand(ttk.Frame):
         self.update_hand(hand, options)
 
     def calculate_width(self, hand):
-        max_x = 0
         padding = self.padding
         if len(hand) > self.TOO_MANY_CARDS:
             cards_over = len(hand) - self.TOO_MANY_CARDS
             padding -= self.OVERFLOW_COEFF * cards_over
             padding = max(padding, self.MIN_PADDING)
-            max_x = (CARD_WIDTH + padding) * (len(hand) + 1) + self.padding
-            return max_x
+            return (CARD_WIDTH + padding) * (len(hand) + 1) + self.padding
         else:
             return (CARD_WIDTH + self.padding) * len(hand)
 
     def update_hand(self, hand, options):
-        max_x = 0
         padding = self.padding
         if len(hand) > self.TOO_MANY_CARDS:
             cards_over = len(hand) - self.TOO_MANY_CARDS
@@ -156,7 +153,6 @@ class PlayerHand(ttk.Frame):
                 playing_card = InteractablePlayingCard(self, card, i, card in options,self.callback) \
                     if self.shown else BlankCardFrame(self)
                 playing_card.place(x=(CARD_WIDTH + padding) * i, y=0, anchor="nw")
-                max_x = (CARD_WIDTH + padding) * i + CARD_WIDTH + padding
         else:
             for i, card in enumerate(hand):
                 playing_card = InteractablePlayingCard(self, card, i, card in options,self.callback) \
@@ -601,7 +597,7 @@ class Durak_GUI(tk.Tk):
 
 if __name__ == "__main__":
     player1 = HandicappedSimplePlayer()
-    player2 = SimplePlayer()
-    # player2 = HumanPlayer("Eva")
+    # player2 = SimplePlayer()
+    player2 = HumanPlayer("Eva")
     app = Durak_GUI([player1, player2], None)
     app.mainloop()
