@@ -383,10 +383,11 @@ class RoundWithAI(Round):
         self.status = ""
         self.player_won = False
 
+        self.gui.build_gui(self, None, self.status, True)
         self.round()
 
     def round(self):
-        self.gui.build_gui(self, None, self.status, True)
+        self.gui.update_gui(self, None, self.status, True)
         if self.check_win():
             print(self.status)
             self.gui.winner_decided(self.status)
@@ -499,13 +500,20 @@ class Durak_GUI(tk.Tk):
         self.container = tk.Frame(self)
         self.container.pack(side="top", fill="both", expand=True)
 
-        self.winner_label = ttk.Label(self.container, text=nickname + " has won!!!!", font=('Helvetica', 25))
-        self.winner_label.pack()
-
-        if self.amount_of_games < 500:
+        if self.amount_of_games < 50:
             self.after(0, func=self.start_game)
         else:
             print("Player 2 win rate:", self.amount_of_games_won / self.amount_of_games)
+
+        win_text = nickname + " has won " + str(self.amount_of_games_won / self.amount_of_games
+                                                if nickname == self.player_list[1].nickname
+                                                else 1 - self.amount_of_games_won / self.amount_of_games) \
+                   + " of the games"
+        self.winner_label = ttk.Label(self.container,
+                                      text=win_text,
+                                      font=('Helvetica', 25))
+        # self.winner_label = ttk.Label(self.container, text=nickname + " has won!!!!", font=('Helvetica', 25))
+        self.winner_label.pack()
 
         # self.replay_button = ttk.Button(self.container, text="New Game", command=self.start_game)
         # self.replay_button.pack()
@@ -515,6 +523,10 @@ class Durak_GUI(tk.Tk):
         self.enemy_player_hand = PlayerHand(self.container, self.player_list[0].cards, [], choose_card_callback,
                                             shown=show_all)
         self.enemy_player_hand.grid(row=0, column=1)
+
+        progress_text = "Games played so far: " + str(self.amount_of_games) + "\nWin rate: " + \
+                        str(self.amount_of_games_won / self.amount_of_games if self.amount_of_games != 0 else 0)
+        self.progress_label.configure(text=progress_text)
 
         self.attacking_label.configure(text=status)
 
@@ -557,6 +569,10 @@ class Durak_GUI(tk.Tk):
         self.enemy_player_hand = PlayerHand(self.container, self.player_list[0].cards, [], choose_card_callback, shown=show_all)
         self.enemy_player_hand.grid(row=0, column=1)
 
+        progress_text = "Games played so far: " + str(self.amount_of_games)
+        self.progress_label = ttk.Label(self.container, text=progress_text, font=('Helvetica', 15))
+        self.progress_label.grid(row=0, column=2)
+
         self.attacking_label = ttk.Label(self.container, text=status)
         self.attacking_label.grid(row=1, column=0)
 
@@ -596,8 +612,8 @@ class Durak_GUI(tk.Tk):
 
 
 if __name__ == "__main__":
-    player1 = HandicappedSimplePlayer()
-    # player2 = SimplePlayer()
-    player2 = HumanPlayer("Eva")
+    player1 = AiPlayerDumb()
+    player2 = SimplePlayer()
+    # player2 = HumanPlayer("Eva")
     app = Durak_GUI([player1, player2], None)
     app.mainloop()
