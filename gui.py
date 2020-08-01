@@ -470,6 +470,8 @@ class DurakGame:
 
 
 class Durak_GUI(tk.Tk):
+    BASE_AMOUNT_OF_GAMES = 50
+
     def __init__(self, players_list, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
@@ -482,6 +484,7 @@ class Durak_GUI(tk.Tk):
         self.winners = []
         self.amount_of_games = 0
         self.amount_of_games_won = 0
+        self.stop_at = self.BASE_AMOUNT_OF_GAMES
 
         self.after(0, func=self.start_game)
 
@@ -500,10 +503,11 @@ class Durak_GUI(tk.Tk):
         self.container = tk.Frame(self)
         self.container.pack(side="top", fill="both", expand=True)
 
-        if self.amount_of_games < 50:
+        if self.amount_of_games < self.stop_at:
             self.after(0, func=self.start_game)
         else:
             print("Player 2 win rate:", self.amount_of_games_won / self.amount_of_games)
+            self.stop_at += self.BASE_AMOUNT_OF_GAMES
 
         win_text = nickname + " has won " + str(self.amount_of_games_won / self.amount_of_games
                                                 if nickname == self.player_list[1].nickname
@@ -515,8 +519,8 @@ class Durak_GUI(tk.Tk):
         # self.winner_label = ttk.Label(self.container, text=nickname + " has won!!!!", font=('Helvetica', 25))
         self.winner_label.pack()
 
-        # self.replay_button = ttk.Button(self.container, text="New Game", command=self.start_game)
-        # self.replay_button.pack()
+        self.replay_button = ttk.Button(self.container, text="Run again, compound results", command=self.start_game)
+        self.replay_button.pack()
 
     def update_gui(self, game, choose_card_callback, status, show_all=False, is_attacker_first_round=False):
         self.enemy_player_hand.destroy()
