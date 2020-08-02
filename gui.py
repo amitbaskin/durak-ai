@@ -9,6 +9,7 @@ from player import Player, HumanPlayer
 import time
 from durak_ai import AiPlayerDumb, SimplePlayer, HandicappedSimplePlayer
 from search import SearchProblem
+from copy import deepcopy
 
 
 CARD_WIDTH = 69 + 4
@@ -170,12 +171,12 @@ class Card:
 
 
 class Round(SearchProblem):
-    def __init__(self, players_list, deck, pile, gui=None):
+    def __init__(self, players_list, deck, pile, gui_needed=False):
         self.players_list = players_list
         self.deck = deck
         self.table = Table()
         self.pile = pile
-        self.gui = gui
+        self.gui_needed = gui_needed
 
         self.draw_card_for_trump()
 
@@ -252,10 +253,13 @@ class Round(SearchProblem):
         else:
             return self.check_winner()
 
+    def copy(self):
+        return deepcopy(self)
+
 
 class RoundWithHuman(Round):
-    def __init__(self, players_list, deck, pile, gui=None):
-        Round.__init__(self, players_list, deck, pile, gui)
+    def __init__(self, players_list, deck, pile, gui_needed=False):
+        Round.__init__(self, players_list, deck, pile, gui_needed)
         
         self.human_player = self.attacker if self.attacker.human else self.defender
         self.attacking = self.attacker.human
@@ -269,11 +273,11 @@ class RoundWithHuman(Round):
     def round(self):
         if self.check_win():
             print(self.status)
-            self.gui.winner_decided(self.status)
+            gui.winner_decided(self.status)
             return self.status
         if not self.attacker.human:
             self.attacker.attack(self)
-        self.gui.build_gui(self, self.card_pick_callback, self.status, is_attacker_first_round=self.attacking)
+        gui.build_gui(self, self.card_pick_callback, self.status, is_attacker_first_round=self.attacking)
 
     def _first_stage(self, choice, card):
         if self.attacking:
@@ -327,12 +331,12 @@ class RoundWithHuman(Round):
             self.defender.grab_table(self.table)
 
             self.draw_cards_for_players()
-            self.gui.update_gui(self, self.card_pick_callback, self.status)
+            gui.update_gui(self, self.card_pick_callback, self.status)
             if not self.check_win():
                 self.count = 0
                 self.attacker.attack(self)
                 self.draw_cards_for_players()
-            self.gui.update_gui(self, self.card_pick_callback, self.status)
+            gui.update_gui(self, self.card_pick_callback, self.status)
             return
         else:
             self.defender.remove_card(card)
@@ -341,16 +345,16 @@ class RoundWithHuman(Round):
         if self.attacker.adding_card(self) is not None:
             self.count += 1
 
-            self.gui.update_gui(self, self.card_pick_callback, self.status)
+            gui.update_gui(self, self.card_pick_callback, self.status)
             if self.check_win():
-                self.gui.winner_decided(self.status)
+                gui.winner_decided(self.status)
             return
         else:
             self.second_stage_reset_round()
 
-            self.gui.update_gui(self, self.card_pick_callback, self.status, is_attacker_first_round=True)
+            gui.update_gui(self, self.card_pick_callback, self.status, is_attacker_first_round=True)
             if self.check_win():
-                self.gui.winner_decided(self.status)
+                gui.winner_decided(self.status)
                 return
             return False
 
@@ -369,7 +373,7 @@ class RoundWithHuman(Round):
 
     def card_pick_callback(self, choice, card):
         if self.check_win():
-            self.gui.winner_decided(self.status)
+            gui.winner_decided(self.status)
             return
 
         if self.round_over:
@@ -387,33 +391,33 @@ class RoundWithHuman(Round):
             self.second_stage_round_over(choice)
 
         if self.check_win():
-            self.gui.winner_decided(self.status)
+            gui.winner_decided(self.status)
             return
-        self.gui.update_gui(self, self.card_pick_callback, self.status)
+        gui.update_gui(self, self.card_pick_callback, self.status)
 
 
 class RoundWithAI(Round):
-    def __init__(self, players_list, deck, pile, gui=None):
-        Round.__init__(self, players_list, deck, pile, gui)
+    def __init__(self, players_list, deck, pile, gui_needed=False):
+        Round.__init__(self, players_list, deck, pile, gui_needed)
 
         self.status = ""
         self.player_won = False
 
-        if self.gui is not None:
-            self.gui.build_gui(self, None, self.status, True)
+        if gui_needed:
+            gui.build_gui(self, None, self.status, True)
             self.round()
 
     def round(self):
-        self.gui.update_gui(self, None, self.status, True)
+        gui.update_gui(self, None, self.status, True)
         if self.check_win():
             print(self.status)
-            self.gui.winner_decided(self.status)
+            gui.winner_decided(self.status)
             return self.status
         if self._first_stage() == True:
-            self.gui.update_gui(self, None, self.status, True)
+            gui.update_gui(self, None, self.status, True)
             self.round()
             return "first_stage_finish"
-        self.gui.update_gui(self, None, self.status, True)
+        gui.update_gui(self, None, self.status, True)
         self._second_stage()
 
         self.round()
@@ -444,7 +448,7 @@ class RoundWithAI(Round):
     def _second_stage(self):
         cnt = 1
         while True and cnt < 6:
-            self.gui.update_gui(self, None, self.status, True)
+            gui.update_gui(self, None, self.status, True)
             if self.attacker.adding_card(self) is not None:
                 cnt += 1
                 if self.defender.defend(self) is None:
@@ -460,7 +464,7 @@ class RoundWithAI(Round):
                 self.attacker, self.defender = self.defender, self.attacker
                 self.attacker.attacking = True
                 self.defender.attacking = False
-                self.gui.update_gui(self, None, self.status, True)
+                gui.update_gui(self, None, self.status, True)
                 return False
         print('second_stage no cards')
 
@@ -482,9 +486,9 @@ class DurakGame:
 
     def round(self):
         if self.is_human_playing:
-            self.curr_round = RoundWithHuman(self.player_list, self.deck, self.pile, self.gui)
+            self.curr_round = RoundWithHuman(self.player_list, self.deck, self.pile, gui_needed=True)
         else:
-            self.curr_round = RoundWithAI(self.player_list, self.deck, self.pile, self.gui)
+            self.curr_round = RoundWithAI(self.player_list, self.deck, self.pile, gui_needed=True)
 
 
 class Durak_GUI(tk.Tk):
@@ -633,9 +637,10 @@ class Durak_GUI(tk.Tk):
         tk.Tk.update(self)
 
 
+player1 = HandicappedSimplePlayer()
+player2 = SimplePlayer()
+# player2 = HumanPlayer("Eva")
+gui = Durak_GUI([player1, player2], None)
+
 if __name__ == "__main__":
-    player1 = HandicappedSimplePlayer()
-    player2 = SimplePlayer()
-    # player2 = HumanPlayer("Eva")
-    app = Durak_GUI([player1, player2], None)
-    app.mainloop()
+    gui.mainloop()
