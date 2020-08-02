@@ -1,7 +1,6 @@
 from search import *
-from game_mechanics import Round as RoundNonGui, Deck, Pointer, GameProcess, Pile
-from player import Player
-from gui import Round as RoundGui, RoundWithAI
+from game_mechanics import Deck, GameProcess, Pile
+from gui import RoundWithAI
 
 
 class DurakSearchProblem(SearchProblem):
