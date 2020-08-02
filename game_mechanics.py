@@ -2,6 +2,7 @@ import random
 import sys
 import time
 from enum import Enum
+from copy import deepcopy
 
 # TODO:
 '''
@@ -26,6 +27,11 @@ class Card:
 
     def __repr__(self):
         return str(self.number) + " of " + self.suit
+
+    def __eq__(self, other):
+        if other is None:
+            return False
+        return self.suit == other.suit and self.number == other.number
 
 class Deck:
     def __init__(self):
@@ -212,17 +218,18 @@ class Pointer:
 
 
 class Round:
-    def __init__(self, players_list, pointer, deck, pile, trump_card, logger=None):
+    def __init__(self, players_list, pointer, deck, pile, trump_card, table=None, status=None):
         self.players_list = players_list
         self.pointer = pointer
         self.deck = deck
-        self.logger = logger
         self.trump_card = trump_card
         self.attacker = players_list[pointer.attacker_id]
         self.defender = players_list[pointer.defender_id]
-        self.table = Table()
+        self.table = Table() if table is None else table
         self.pile = pile
-        self.status = None
+        self.status = None if status is None else status
+        self.current_player = self.attacker
+        self.count = 0
 
     def round(self):
         if self.check_cards():
@@ -238,6 +245,8 @@ class Round:
         else:
             return self.check_winner()
 
+        return None
+
     def check_winner(self):
         winners = []
         if not self.attacker.cards:
@@ -247,63 +256,70 @@ class Round:
         if winners:
             if len(winners) == 2:
                 self.status = 'Draw'
-                if self.logger:
-                    self.logger.info({"Winner": "Draw"})
                 return 'DRAW'
             else:
                 self.status = winners[0]
-                if self.logger:
-                    self.logger.info({"Winner": str(self.status)})
                 return self.status
+
+        return None
+
+    def get_next_state_given_card(self, card):
+        if self.count >= 7:
+            self.pile.update(self.table)
+            self.table.clear()
+            self.current_player = self.defender
+            self.attacker, self.defender = self.defender, self.attacker
+            self.attacker.draw_cards()
+            self.defender.draw_cards()
+            self.count = 0
+            return self
+
+        if card is None:
+            if self.defender == self.current_player:
+                self.current_player.grab_table()
+                self.current_player = self.attacker
+            else:
+                self.current_player = self.defender
+                self.attacker, self.defender = self.defender, self.attacker
+                self.pile.update(self.table)
+                self.table.clear()
+        else:
+            self.table.update_table(card)
+            self.current_player.remove_card(card)
+            self.current_player.draw_cards()
+
+            if self.defender == self.current_player:
+                self.current_player = self.attacker
+            else:
+                self.current_player = self.defender
+
+        self.count += 1
+        return self
 
     def _first_stage(self):
         print('atk', len(self.attacker.cards))
         print('def', len(self.defender.cards))
         print('deck', len(self.deck.cards))
+        self.current_player = self.attacker
         self.attacker.attack(self)
-        if self.logger:
-            log_d = {"1_atk": str(self.table.cards[-1]), "nick": str(self.attacker.nickname),
-                     "hand": str(self.attacker.cards), "hand_size": len(self.attacker.cards)}
-            self.logger.info(log_d)
         # defender can't defend
+        self.current_player = self.defender
         if self.defender.defend(self) is None:
-            if self.logger:
-                log_d = {"grab": str(self.defender.nickname), "hand": str(self.defender.cards),
-                         "hand_size": len(self.defender.cards)}
-                self.logger.info(log_d)
             print('_first_stage no options for defender')
             self.attacker.draw_cards(self.deck)
             return True
         # defender defended successfully
-        if self.logger:
-            log_d = {"1_def": str(self.table.cards[-1]), "nick": str(self.defender.nickname),
-                     "hand": str(self.defender.cards), "hand_size": len(self.defender.cards)}
-            self.logger.info(log_d)
         return False
 
     def _second_stage(self):
         cnt = 1
         while True and cnt < 6:
+            self.current_player = self.attacker
             if self.attacker.adding_card(self) is not None:
                 cnt += 1
-                if self.logger:
-                    log_d = {"{}_add".format(cnt): str(self.table.cards[-1]), "nick": str(self.attacker.nickname),
-                             "hand": str(self.attacker.cards), "hand_size": len(self.attacker.cards)}
-                    self.logger.info(log_d)
-                if self.defender.defend(self) is not None:
-                    if self.logger:
-                        log_d = {"{}_def".format(cnt): str(self.table.cards[-1]), "nick": str(self.defender.nickname),
-                                 "hand": str(self.defender.cards), "hand_size": len(self.defender.cards)}
-                        self.logger.info(log_d)
-
-                else:
-                    print('_second_stage no options for defender')
-                    self.attacker.draw_cards(self.deck)
-                    if self.logger:
-                        log_d = {"grab": str(self.defender.nickname),
-                                 "hand": str(self.defender.cards), "hand_size": len(self.defender.cards)}
-                        self.logger.info(log_d)
-                    return False
+                print('_second_stage no options for defender')
+                self.attacker.draw_cards(self.deck)
+                return False
             else:
                 print('_second_stage no options for attacker')
                 self.attacker.draw_cards(self.deck)
@@ -314,15 +330,17 @@ class Round:
                 return False
         print('second_stage no cards')
 
+    def copy(self):
+        return deepcopy(self)
+
 
 class GameProcess:
-    def __init__(self, players_list, deck, logger=None):
+    def __init__(self, players_list, deck):
         self.players_list = players_list
         self.deck = deck
         self.draw_card_for_trump()
-        self.logger = logger
         self.get_cards()
-        self.pointer = Pointer(players_list, self.trump_card)
+        self.pointer = Pointer(players_list, self.trump_card.suit)
         self.table = Table()
         self.pile = Pile()
 
@@ -337,24 +355,18 @@ class GameProcess:
         for player in self.players_list:
             player.draw_cards(self.deck)
 
+    def get_initial_round(self):
+        return Round(self.players_list, self.pointer, self.deck, self.pile, self.trump_card)
+
     def play(self):
-        r = Round(self.players_list, self.pointer, self.deck, self.pile, self.trump_card, self.logger)
+        r = self.get_initial_round()
         i = 0
-        if self.logger:
-            round_dict = {"Round": i, "pile": self.pile.show(), "cards_left": len(self.deck.cards)}
-            self.logger.info(round_dict)
-        t = time.time()
         while r.status is None:
             print('\n')
             print("round {}".format(i))
             r.round()
             i += 1
-            if self.logger:
-                round_dict = {"Round": i, "pile": self.pile.show(), "cards_left": len(self.deck.cards)}
-                self.logger.info(round_dict)
         return r.status
-        if r.status is not None:
-            self._refresh_game()
 
 
 class WaitType(Enum):

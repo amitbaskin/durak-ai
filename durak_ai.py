@@ -17,8 +17,8 @@ class AiPlayerDumb(Player):
         return attack_card
 
     def defend(self, round):
-        if self.defending_options(round.table, round.trump_card):
-            defence_card = random.choice(self.defending_options(round.table, round.trump_card))
+        if self.defending_options(round.table, round.trump_card.suit):
+            defence_card = random.choice(self.defending_options(round.table, round.trump_card.suit))
             self.remove_card(defence_card)
             round.table.update_table(defence_card)
             print('{} defended with {}'.format(self.nickname, defence_card))
@@ -72,7 +72,7 @@ class SimplePlayer(Player):
         return attack_card
 
     def defend(self, round):
-        possible_cards = self.defending_options(round.table, round.trump_card)
+        possible_cards = self.defending_options(round.table, round.trump_card.suit)
         if possible_cards:
             defence_card = choose_min_card(possible_cards, round.trump_card.suit)
             self.remove_card(defence_card)
@@ -125,8 +125,8 @@ class HandicappedSimplePlayer(Player):
 
     def defend(self, round):
         if len(round.deck.cards) == 0:
-            if self.defending_options(round.table, round.trump_card):
-                defence_card = random.choice(self.defending_options(round.table, round.trump_card))
+            if self.defending_options(round.table, round.trump_card.suit):
+                defence_card = random.choice(self.defending_options(round.table, round.trump_card.suit))
                 self.remove_card(defence_card)
                 round.table.update_table(defence_card)
                 print('{} defended with {}'.format(self.nickname, defence_card))
@@ -136,7 +136,7 @@ class HandicappedSimplePlayer(Player):
             self.grab_table(round.table)
             return None
 
-        possible_cards = self.defending_options(round.table, round.trump_card)
+        possible_cards = self.defending_options(round.table, round.trump_card.suit)
         if possible_cards:
             defence_card = choose_min_card(possible_cards, round.trump_card.suit)
             self.remove_card(defence_card)

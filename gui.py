@@ -3,11 +3,12 @@ import tkinter as tk
 from PIL import Image, ImageTk
 from imageio import imread
 import os
-from game_mechanics import Pointer, Table, Pile
+from game_mechanics import Pointer, Table, Pile, Deck
 import random
 from player import Player, HumanPlayer
 import time
 from durak_ai import AiPlayerDumb, SimplePlayer, HandicappedSimplePlayer
+from search import SearchProblem
 
 
 CARD_WIDTH = 69 + 4
@@ -168,27 +169,8 @@ class Card:
         return str(self.number) + " of " + self.suit
 
 
-class Deck:
-    def __init__(self):
-        self.cards = []
-        for i in range(6, 15):
-            for suit in ["spades", "hearts", "diamonds", "clubs"]:
-                self.cards.append(Card(i, suit))
-        random.shuffle(self.cards)
-        self.cards.insert(0, self.cards[-1])
-
-    def draw_card(self):
-        return self.cards.pop()
-
-    def draw_cards(self, number):
-        cards = []
-        for _ in range(number):
-            cards.append(self.draw_card())
-        return cards
-
-
-class Round:
-    def __init__(self, players_list, deck, pile, gui):
+class Round(SearchProblem):
+    def __init__(self, players_list, deck, pile, gui=None):
         self.players_list = players_list
         self.deck = deck
         self.table = Table()
@@ -203,8 +185,42 @@ class Round:
         self.defender = players_list[self.pointer.defender_id]
         self.defender.attacking = False
         self.status = None
+        self.count = 0
 
         self.draw_cards_for_players()
+
+    def get_next_state_given_card(self, card):
+        if self.count >= 7:
+            self.pile.update(self.table)
+            self.table.clear()
+            self.current_player = self.defender
+            self.attacker, self.defender = self.defender, self.attacker
+            self.attacker.draw_cards()
+            self.defender.draw_cards()
+            self.count = 0
+            return self
+
+        if card is None:
+            if self.defender == self.current_player:
+                self.current_player.grab_table()
+                self.current_player = self.attacker
+            else:
+                self.current_player = self.defender
+                self.attacker, self.defender = self.defender, self.attacker
+                self.pile.update(self.table)
+                self.table.clear()
+        else:
+            self.table.update_table(card)
+            self.current_player.remove_card(card)
+            self.current_player.draw_cards()
+
+            if self.defender == self.current_player:
+                self.current_player = self.attacker
+            else:
+                self.current_player = self.defender
+
+        self.count += 1
+        return self
 
     def round(self):
         pass
@@ -238,7 +254,7 @@ class Round:
 
 
 class RoundWithHuman(Round):
-    def __init__(self, players_list, deck, pile, gui):
+    def __init__(self, players_list, deck, pile, gui=None):
         Round.__init__(self, players_list, deck, pile, gui)
         
         self.human_player = self.attacker if self.attacker.human else self.defender
@@ -377,14 +393,15 @@ class RoundWithHuman(Round):
 
 
 class RoundWithAI(Round):
-    def __init__(self, players_list, deck, pile, gui):
+    def __init__(self, players_list, deck, pile, gui=None):
         Round.__init__(self, players_list, deck, pile, gui)
 
         self.status = ""
         self.player_won = False
 
-        self.gui.build_gui(self, None, self.status, True)
-        self.round()
+        if self.gui is not None:
+            self.gui.build_gui(self, None, self.status, True)
+            self.round()
 
     def round(self):
         self.gui.update_gui(self, None, self.status, True)
@@ -406,7 +423,7 @@ class RoundWithAI(Round):
         print(self.attacker.nickname, 'num cards', len(self.attacker.cards))
         print(self.defender.nickname, 'defender num cards', len(self.defender.cards))
         print('deck num cards', len(self.deck.cards))
-        if self.attacker.attack(self) == None:
+        if self.attacker.attack(self) is None:
             self.pile.update(self.table)
             self.table.clear()
 
@@ -449,7 +466,7 @@ class RoundWithAI(Round):
 
 
 class DurakGame:
-    def __init__(self, gui, player_list):
+    def __init__(self, player_list, gui=None):
         self.deck = Deck()
         self.player_list = player_list
         self.pile = Pile()
@@ -460,7 +477,8 @@ class DurakGame:
                 self.is_human_playing = True
 
         self.curr_round = None
-        self.round()
+        if self.gui is not None:
+            self.round()
 
     def round(self):
         if self.is_human_playing:
@@ -491,7 +509,7 @@ class Durak_GUI(tk.Tk):
     def start_game(self):
         for player in self.player_list:
             player._refresh()
-        self.game = DurakGame(self, self.player_list)
+        self.game = DurakGame(self.player_list, self)
 
     def winner_decided(self, nickname):
         self.winners.append(nickname)
@@ -616,7 +634,7 @@ class Durak_GUI(tk.Tk):
 
 
 if __name__ == "__main__":
-    player1 = AiPlayerDumb()
+    player1 = HandicappedSimplePlayer()
     player2 = SimplePlayer()
     # player2 = HumanPlayer("Eva")
     app = Durak_GUI([player1, player2], None)
