@@ -1,7 +1,10 @@
 from search import *
 from game_mechanics import Deck, GameProcess, Pile
 from gui import RoundWithAI
-from Agents import *
+
+
+def diff(l1, l2):
+    return [item for item in l1 if item not in l2]
 
 
 class DurakSearchProblem(SearchProblem):
@@ -9,7 +12,7 @@ class DurakSearchProblem(SearchProblem):
         self.player_list = player_list
         self.player_nickname = player_nickname
         deck = Deck()
-        self.possible_cards = set(deck.cards)
+        self.possible_cards = deck.cards
         self.trump_card = None
 
         self.expanded = 0
@@ -35,13 +38,15 @@ class DurakSearchProblem(SearchProblem):
         return sum([card.number for card in cards_played])
 
     def get_possible_cards(self, round):
-        if round.current_player.nickname == self.player_nickname:
-            return set(round.current_player.options(round.table,
-                                               round.trump_card.suit))
-        else:
-            possible_cards = self.possible_cards.difference(set(round.pile.cards))
-            player = next(p for p in self.player_list if p is not round.current_player)
-            return possible_cards.difference(set(player.cards))
+        return round.current_player.options(round.table,
+                                            round.trump_card.suit)
+        # if round.current_player.nickname == self.player_nickname:
+        #     return round.current_player.options(round.table,
+        #                                        round.trump_card.suit)
+        # else:
+        #     possible_cards = diff(self.possible_cards, round.pile.pile)
+        #     player = next(p for p in self.player_list if p is not round.current_player)
+        #     return diff(possible_cards, player.cards)
 
     def generate_successor(self, round, card):
         copied_round = round.copy()
@@ -52,9 +57,9 @@ class DurakSearchProblem(SearchProblem):
         if round.current_player.nickname == self.player_nickname:
             possible_cards = set(round.current_player.options(round.table, round.trump_card.suit))
         else:
-            possible_cards = self.possible_cards.difference(set(round.pile.cards))
+            possible_cards = diff(self.possible_cards, round.pile.cards)
             player = next(p for p in self.player_list if p is not round.current_player)
-            possible_cards = possible_cards.difference(set(player.cards))
+            possible_cards = diff(possible_cards, player.cards)
 
         next_possible_rounds = []
 

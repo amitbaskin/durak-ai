@@ -1,8 +1,6 @@
 import abc
 import numpy as np
-from DurakSearchProblem import *
 from DurakSearchProblem import DurakSearchProblem
-
 
 class Agent(object):
     def __init__(self):
@@ -42,7 +40,7 @@ class MiniMaxAgent(MultiAgentSearchAgent):
             if max_turn:
                 possible_rounds = []
                 for possible_card in self.searcher.get_possible_cards(curr_round):
-                    round = curr_round.generate_successor(curr_round, possible_card)
+                    round = self.searcher.generate_successor(curr_round, possible_card)
                     if card_to_play is None:
                         curr_card_to_play = possible_card
                     else:
@@ -58,7 +56,7 @@ class MiniMaxAgent(MultiAgentSearchAgent):
             else:
                 possible_rounds = []
                 for possible_card in self.searcher.get_possible_cards(curr_round):
-                    round = curr_round.generate_successor(curr_round, possible_card)
+                    round = self.searcher.generate_successor(curr_round, possible_card)
                     if card_to_play is None:
                         curr_card_to_play = possible_card
                     else:
@@ -87,7 +85,7 @@ class MiniMaxAgent(MultiAgentSearchAgent):
                 possible_states = []
                 max_eval = -np.inf, None
                 for possible_card in self.searcher.get_possible_cards(curr_round):
-                    round = curr_round.generate_successor(0, possible_card)
+                    round = self.searcher.generate_successor(0, possible_card)
                     if card_to_play is None:
                         curr_action = possible_card
                     else:
@@ -110,7 +108,7 @@ class MiniMaxAgent(MultiAgentSearchAgent):
                 possible_states = []
                 min_eval = np.inf, None
                 for possible_card in curr_round.get_legal_actions(1):
-                    round = curr_round.generate_successor(1, possible_card)
+                    round = self.searcher.generate_successor(1, possible_card)
                     if card_to_play is None:
                         curr_action = possible_card
                     else:

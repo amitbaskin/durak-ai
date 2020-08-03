@@ -1,7 +1,10 @@
 import random
 from player import Player
-from Agents import *
-from DurakSearchProblem import *
+from Agents import MiniMaxAgent
+
+
+def diff(l1, l2):
+    return [item for item in l1 if item not in l2]
 
 
 class AiPlayerDumb(Player):
@@ -193,7 +196,7 @@ class SmartPlayer(Player):
 
 
     def round_evaluation(self, round):
-        return self.get_opponent(round).cards - self.cards
+        return len(diff(self.get_opponent(round).cards, self.cards))
 
 
     def attack(self, round):

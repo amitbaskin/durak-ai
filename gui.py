@@ -6,7 +6,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 from imageio import imread
 
-from durak_ai import SimplePlayer, HandicappedSimplePlayer
+# from durak_ai import SimplePlayer, HandicappedSimplePlayer
 from game_mechanics import Pointer, Table, Pile, Deck
 from search import SearchProblem
 
@@ -635,10 +635,10 @@ class Durak_GUI(tk.Tk):
         tk.Tk.update(self)
 
 
-player1 = HandicappedSimplePlayer()
-player2 = SimplePlayer()
+# player1 = HandicappedSimplePlayer()
+# player2 = SimplePlayer()
 # player2 = HumanPlayer("Eva")
-gui = Durak_GUI([player1, player2], None)
+# gui = Durak_GUI([player1, player2], None)
 
-if __name__ == "__main__":
-    gui.mainloop()
+# if __name__ == "__main__":
+    # gui.mainloop()

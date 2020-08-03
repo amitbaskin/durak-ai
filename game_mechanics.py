@@ -224,6 +224,7 @@ class Round:
         self.deck = deck
         self.trump_card = trump_card
         self.attacker = players_list[pointer.attacker_id]
+        self.attacker.attacking = True
         self.defender = players_list[pointer.defender_id]
         self.table = Table() if table is None else table
         self.pile = pile
@@ -269,29 +270,38 @@ class Round:
             self.table.clear()
             self.current_player = self.defender
             self.attacker, self.defender = self.defender, self.attacker
-            self.attacker.draw_cards()
-            self.defender.draw_cards()
+            self.attacker.attacking, self.defender.attacking = True, False
+            self.attacker.draw_cards(self.deck)
+            self.defender.draw_cards(self.deck)
             self.count = 0
             return self
 
         if card is None:
             if self.defender == self.current_player:
                 self.current_player.grab_table()
-                self.current_player = self.attacker
+                self.attacker, self.defender = self.defender, self.attacker
+                self.current_player.attacking, self.defender.attacking = \
+                    True, False
             else:
                 self.current_player = self.defender
                 self.attacker, self.defender = self.defender, self.attacker
+                self.attacker.attacking, self.defender.attacking = \
+                    True, False
                 self.pile.update(self.table)
                 self.table.clear()
         else:
             self.table.update_table(card)
-            self.current_player.remove_card(card)
-            self.current_player.draw_cards()
+            # self.current_player.remove_card(card)
+            self.current_player.draw_cards(self.deck)
 
             if self.defender == self.current_player:
                 self.current_player = self.attacker
+                self.current_player.attacking, self.defender.attacking = \
+                    True, False
             else:
+                self.defender.attacking = True
                 self.current_player = self.defender
+                self.current_player.attacking = False
 
         self.count += 1
         return self
@@ -301,9 +311,12 @@ class Round:
         print('def', len(self.defender.cards))
         print('deck', len(self.deck.cards))
         self.current_player = self.attacker
+        self.current_player.attacking = True
         self.attacker.attack(self)
+
         # defender can't defend
         self.current_player = self.defender
+        self.current_player.attacking = False
         if self.defender.defend(self) is None:
             print('_first_stage no options for defender')
             self.attacker.draw_cards(self.deck)
@@ -315,6 +328,7 @@ class Round:
         cnt = 1
         while True and cnt < 6:
             self.current_player = self.attacker
+            self.current_player.attacking = True
             if self.attacker.adding_card(self) is not None:
                 cnt += 1
                 print('_second_stage no options for defender')
@@ -327,6 +341,7 @@ class Round:
                 self.pile.update(self.table)
                 self.table.clear()
                 self.attacker, self.defender = self.defender, self.attacker
+                self.attacker.attacking, self.defender.attacking = True, False
                 return False
         print('second_stage no cards')
 
