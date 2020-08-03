@@ -1,6 +1,7 @@
 from search import *
 from game_mechanics import Deck, GameProcess, Pile
 from gui import RoundWithAI
+from Agents import *
 
 
 class DurakSearchProblem(SearchProblem):
@@ -32,6 +33,19 @@ class DurakSearchProblem(SearchProblem):
     def get_cost_of_actions(self, cards_played):
         # Maybe add price if card played was trump card
         return sum([card.number for card in cards_played])
+
+    def get_possible_cards(self, round):
+        if round.current_player.nickname == self.player_nickname:
+            return set(round.current_player.options(round.table,
+                                               round.trump_card.suit))
+        else:
+            possible_cards = self.possible_cards.difference(set(round.pile.cards))
+            player = next(p for p in self.player_list if p is not round.current_player)
+            return possible_cards.difference(set(player.cards))
+
+    def generate_successor(self, round, card):
+        copied_round = round.copy()
+        return copied_round.get_next_state_given_card(card)
 
     def get_successors(self, round):
         self.expanded += 1

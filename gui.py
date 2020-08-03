@@ -1,16 +1,14 @@
-from tkinter import ttk
+import os
 import tkinter as tk
+from copy import deepcopy
+from tkinter import ttk
+
 from PIL import Image, ImageTk
 from imageio import imread
-import os
-from game_mechanics import Pointer, Table, Pile, Deck
-import random
-from player import Player, HumanPlayer
-import time
-from durak_ai import AiPlayerDumb, SimplePlayer, HandicappedSimplePlayer
-from search import SearchProblem
-from copy import deepcopy
 
+from durak_ai import SimplePlayer, HandicappedSimplePlayer
+from game_mechanics import Pointer, Table, Pile, Deck
+from search import SearchProblem
 
 CARD_WIDTH = 69 + 4
 CARD_HEIGHT = 94 + 4

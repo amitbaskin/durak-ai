@@ -12,7 +12,10 @@ class Game:
 
 p1 = AiPlayerDumb()
 p2 = SimplePlayer()
+p3 = SmartPlayer(p2)
 players_list = [p1, p2]
+minimax_players_list = [p2, p3]
+
 
 def game_instance(list_of_players):
     win_count = 0
@@ -29,4 +32,5 @@ def game_instance(list_of_players):
     print("Player 2 win rate:", win_count / 100000)
 
 
-print(game_instance(players_list))
+# print(game_instance(players_list))
+print(game_instance(minimax_players_list))
