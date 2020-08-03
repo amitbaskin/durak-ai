@@ -15,7 +15,7 @@ class Agent(object):
 
 
 class MultiAgentSearchAgent(Agent):
-    def __init__(self, evaluation_function, depth=2):
+    def __init__(self, evaluation_function, depth=5):
         super().__init__()
         self.evaluation_function = evaluation_function
         self.depth = depth
@@ -85,7 +85,7 @@ class MiniMaxAgent(MultiAgentSearchAgent):
                 possible_states = []
                 max_eval = -np.inf, None
                 for possible_card in self.searcher.get_possible_cards(curr_round):
-                    round = self.searcher.generate_successor(0, possible_card)
+                    round = self.searcher.generate_successor(curr_round, possible_card)
                     if card_to_play is None:
                         curr_action = possible_card
                     else:
@@ -107,8 +107,10 @@ class MiniMaxAgent(MultiAgentSearchAgent):
             else:
                 possible_states = []
                 min_eval = np.inf, None
-                for possible_card in curr_round.get_legal_actions(1):
-                    round = self.searcher.generate_successor(1, possible_card)
+                for possible_card in self.searcher.get_possible_cards(
+                        curr_round):
+                    round = self.searcher.generate_successor(curr_round,
+                                                             possible_card)
                     if card_to_play is None:
                         curr_action = possible_card
                     else:
@@ -133,4 +135,4 @@ class MiniMaxAgent(MultiAgentSearchAgent):
 
 
     def get_card_to_play(self, round):
-        return self.minimax(0, round, self.depth)
+        return self.alpha_beta_pruning(0, round, self.depth)
