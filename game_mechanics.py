@@ -29,9 +29,22 @@ class Card:
         return str(self.number) + " of " + self.suit
 
     def __eq__(self, other):
-        if other is None:
+        if other is None or other == [None]:
             return False
         return self.suit == other.suit and self.number == other.number
+
+    def suit_num_delta(self):
+        if self.suit == "spades":
+            return 0
+        if self.suit == "hearts":
+            return 13
+        if self.suit == "diamonds":
+            return 26
+        if self.suit == "clubs":
+            return 39
+
+    def __hash__(self):
+        return self.number + self.suit_num_delta()
 
 class Deck:
     def __init__(self):
@@ -233,14 +246,14 @@ class Round:
         self.count = 0
 
     def round(self):
-        if self.check_cards():
+        if self.check_win():
             print(self.status)
             return self.status
         if self._first_stage() == True:
             return "first_stage_finish"
         self._second_stage()
 
-    def check_cards(self):
+    def check_win(self):
         if self.deck.cards:
             pass
         else:
@@ -278,7 +291,7 @@ class Round:
 
         if card is None:
             if self.defender == self.current_player:
-                self.current_player.grab_table()
+                self.current_player.grab_table(self.table)
                 self.attacker, self.defender = self.defender, self.attacker
                 self.current_player.attacking, self.defender.attacking = \
                     True, False

@@ -15,7 +15,7 @@ class Agent(object):
 
 
 class MultiAgentSearchAgent(Agent):
-    def __init__(self, evaluation_function, depth=6):
+    def __init__(self, evaluation_function, depth=3):
         super().__init__()
         self.evaluation_function = evaluation_function
         self.depth = depth
@@ -30,8 +30,7 @@ class MiniMaxAgent(MultiAgentSearchAgent):
         super().__init__(evaluation_function)
         self.searcher = DurakSearchProblem(players_list, nickname)
 
-    def minimax(self, currentDepth, current_round,
-                targetDepthToAdd):
+    def minimax(self, currentDepth, current_round,  targetDepthToAdd):
         def minimax_algorithm(depth, curr_round, max_turn,
                               target_depth, card_to_play):
             if depth == target_depth:
@@ -74,19 +73,19 @@ class MiniMaxAgent(MultiAgentSearchAgent):
 
     def alpha_beta_pruning(self, currentDepth, currentRound,
                            targetDepthToAdd):
-        def alpha_beta_pruning_algorithm(depth, curr_round, max_turn,
-                                         target_depth,
-                                         alpha, beta,
-                                         card_to_play):
+        def alpha_beta_pruning_algorithm(depth, curr_round, max_turn, target_depth, alpha, beta, card_to_play):
             if depth == target_depth:
+                return self.evaluation_function(curr_round), card_to_play
+
+            if self.searcher.is_game_over(curr_round):
                 return self.evaluation_function(curr_round), card_to_play
 
             if max_turn:
                 possible_states = []
                 max_eval = -np.inf, None
-                for possible_card in self.searcher.get_possible_cards(curr_round):
+                for possible_card in self.searcher.get_possible_cards(curr_round) + [None]:
                     round = self.searcher.generate_successor(curr_round, possible_card)
-                    if card_to_play is None:
+                    if depth == 0 and card_to_play is None:
                         curr_action = possible_card
                     else:
                         curr_action = card_to_play
@@ -107,11 +106,9 @@ class MiniMaxAgent(MultiAgentSearchAgent):
             else:
                 possible_states = []
                 min_eval = np.inf, None
-                for possible_card in self.searcher.get_possible_cards(
-                        curr_round):
-                    round = self.searcher.generate_successor(curr_round,
-                                                             possible_card)
-                    if card_to_play is None:
+                for possible_card in self.searcher.get_possible_cards(curr_round) + [None]:
+                    round = self.searcher.generate_successor(curr_round, possible_card)
+                    if depth == 0 and card_to_play is None:
                         curr_action = possible_card
                     else:
                         curr_action = card_to_play
