@@ -1,6 +1,7 @@
 import random
 from player import Player
 from Agents import MiniMaxAgent
+import numpy as np
 
 
 def diff(l1, l2):
@@ -196,7 +197,12 @@ class SmartPlayer(Player):
 
 
     def round_evaluation(self, round):
-        return len(diff(self.get_opponent(round).cards, self.cards))
+        my_cards_amount = len(self.cards)
+        opponent_cards = self.get_opponent(round).cards
+        opponent_cards_amount = len(opponent_cards)
+        if my_cards_amount == 0 and opponent_cards_amount > 0:
+            return np.inf
+        return len(diff(opponent_cards, self.cards))
 
 
     def attack(self, round):

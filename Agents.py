@@ -15,7 +15,7 @@ class Agent(object):
 
 
 class MultiAgentSearchAgent(Agent):
-    def __init__(self, evaluation_function, depth=5):
+    def __init__(self, evaluation_function, depth=6):
         super().__init__()
         self.evaluation_function = evaluation_function
         self.depth = depth
