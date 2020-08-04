@@ -1,6 +1,6 @@
 from search import *
 from game_mechanics import Deck, GameProcess, Pile
-from gui import RoundWithAI
+# from gui import RoundWithAI
 
 
 def diff(l1, l2):
@@ -31,7 +31,7 @@ class DurakSearchProblem(SearchProblem):
         return round.check_cards() == self.player_nickname
 
     def is_game_over(self, round):
-        return round.check_cards() is not None
+        return round.check_win() is not None
 
     def get_cost_of_actions(self, cards_played):
         # Maybe add price if card played was trump card
@@ -74,26 +74,26 @@ class DurakSearchProblem(SearchProblem):
         return next_possible_rounds
 
 
-class DurakSearchProblemNonGui(DurakSearchProblem):
-    def get_start_state(self):
-        for player in self.player_list:
-            player._refresh()
-        deck = Deck()
-
-        game_process = GameProcess(self.player_list, deck)
-        self.trump_card = game_process.trump_card
-
-        return game_process.get_initial_round()
-
-
-class DurakSearchProblemGui(DurakSearchProblem):
-    def get_start_state(self):
-        for player in self.player_list:
-            player._refresh()
-        deck = Deck()
-        pile = Pile()
-
-        round = RoundWithAI(self.player_list, deck, pile)
-        self.trump_card = round.trump_card
-
-        return round
+# class DurakSearchProblemNonGui(DurakSearchProblem):
+#     def get_start_state(self):
+#         for player in self.player_list:
+#             player._refresh()
+#         deck = Deck()
+#
+#         game_process = GameProcess(self.player_list, deck)
+#         self.trump_card = game_process.trump_card
+#
+#         return game_process.get_initial_round()
+#
+#
+# class DurakSearchProblemGui(DurakSearchProblem):
+#     def get_start_state(self):
+#         for player in self.player_list:
+#             player._refresh()
+#         deck = Deck()
+#         pile = Pile()
+#
+#         round = RoundWithAI(self.player_list, deck, pile)
+#         self.trump_card = round.trump_card
+#
+#         return round

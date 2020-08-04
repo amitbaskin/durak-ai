@@ -1,0 +1,146 @@
+# qlearningAgents.py
+# ------------------
+# Licensing Information: Please do not distribute or publish solutions to this
+# project. You are free to use and extend these projects for educational
+# purposes. The Pacman AI projects were developed at UC Berkeley, primarily by
+# John DeNero (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
+# For more info, see http://inst.eecs.berkeley.edu/~cs188/sp09/pacman.html
+
+from game import *
+from learningAgents import ReinforcementAgent
+from featureExtractors import *
+from DurakSearchProblem import DurakSearchProblem
+
+import random,util,math
+
+class QLearningAgent(ReinforcementAgent):
+  """
+    Q-Learning Agent
+
+    Functions you should fill in:
+      - getQValue
+      - getAction
+      - getValue
+      - getPolicy
+      - update
+
+    Instance variables you have access to
+      - self.epsilon (exploration prob)
+      - self.alpha (learning rate)
+      - self.discount (discount rate)
+
+    Functions you should use
+      - self.getLegalActions(state)
+        which returns legal actions
+        for a state
+  """
+  def __init__(self, **args):
+      "You can initialize Q-values here..."
+      ReinforcementAgent.__init__(self, **args)
+      self.q_values = util.Counter()
+
+  def getQValue(self, state, action):
+    """
+      Returns Q(state,action)
+      Should return 0.0 if we never seen
+      a state or (state,action) tuple
+    """
+    return self.q_values[(state, action)]
+
+
+  def getValue(self, state):
+    """
+      Returns max_action Q(state,action)
+      where the max is over legal actions.  Note that if
+      there are no legal actions, which is the case at the
+      terminal state, you should return a value of 0.0.
+    """
+    possible_actions = self.getLegalActions(state)
+    values = dict()
+    for action in possible_actions:
+      values[action] = self.getQValue(state, action)
+
+    return max(values.values()) if len(values) != 0 else 0.0
+
+  def getPolicy(self, state):
+    """
+      Compute the best action to take in a state.  Note that if there
+      are no legal actions, which is the case at the terminal state,
+      you should return None.
+    """
+    possible_actions = self.getLegalActions(state)
+    values = dict()
+    for action in possible_actions:
+        values[action] = self.getQValue(state, action)
+
+    max_actions = []
+    max_value = -np.inf
+    for action, value in values.items():
+        if value >= max_value:
+            if max_value != value:
+                max_actions.clear()
+            max_actions.append(action)
+            max_value = value
+    return random.choice(max_actions) if len(max_actions) != 0 else None
+
+  def getAction(self, state):
+    """
+      Compute the action to take in the current state.  With
+      probability self.epsilon, we should take a random action and
+      take the best policy action otherwise.  Note that if there are
+      no legal actions, which is the case at the terminal state, you
+      should choose None as the action.
+
+      HINT: You might want to use util.flipCoin(prob)
+      HINT: To pick randomly from a list, use random.choice(list)
+    """
+    legalActions = self.getLegalActions(state)
+    if len(legalActions) == 0:
+        return None
+    if util.flipCoin(self.epsilon):
+        return random.choice(legalActions)
+    else:
+        return self.getPolicy(state)
+
+  def update(self, state, action, nextState, reward):
+    """
+      The parent class calls this to observe a
+      state = action => nextState and reward transition.
+      You should do your Q-Value update here
+
+      NOTE: You should never call this function,
+      it will be called on your behalf
+    """
+    values = []
+    for next_action in self.getLegalActions(nextState):
+       values.append(self.q_values[(nextState, next_action)])
+    max_value = max(values) if len(values) !=  0 else 0
+    coefficient = reward + self.discount * max_value - self.q_values[(state, action)]
+    self.q_values[(state, action)] += self.alpha * coefficient
+
+
+class DurakQAgent(QLearningAgent):
+  def __init__(self, players_list, legalActions_ptr, epsilon=0.05,gamma=0.8,alpha=0.2, numTraining=0, **args):
+    """
+    These default parameters can be changed from the pacman.py command line.
+    For example, to change the exploration rate, try:
+        python pacman.py -p PacmanQLearningAgent -a epsilon=0.1
+
+    alpha    - learning rate
+    epsilon  - exploration rate
+    gamma    - discount factor
+    numTraining - number of training episodes, i.e. no learning after these many episodes
+    """
+    args['epsilon'] = epsilon
+    args['gamma'] = gamma
+    args['alpha'] = alpha
+    args['numTraining'] = numTraining
+    self.index = 0  # This is always Pacman
+    QLearningAgent.__init__(self, **args)
+    self.getLegalActions = legalActions_ptr
+    # self.searcher = DurakSearchProblem(players_list, "fdb")
+
+  def getAction(self, state):
+    action = QLearningAgent.getAction(self, state)
+    state.get_next_state_given_card(action)
+    return action
