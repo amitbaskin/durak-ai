@@ -41,6 +41,9 @@ class Player:
             print('no cards to draw')
 
     def remove_card(self, card):
+        print('to remove:', card)
+        if card is None:
+            return
         self.cards.remove(card)
 
     def attacking_options(self, table):
@@ -52,7 +55,7 @@ class Player:
     def adding_card_options(self, table):
         table_card_types = [i.number for i in table.cards]
         potential_cards = [card for card in self.cards if card.number in table_card_types]
-        return potential_cards
+        return potential_cards + [None]
 
     def defending_options(self, table, trump_suit):
         if len(table.cards) == 0:
@@ -68,7 +71,7 @@ class Player:
         non_trump_options = [card for card in self.cards if
                              (card.suit == attacking_card.suit and card.number >= attacking_card.number)]
         trump_cards = [card for card in self.cards if card.suit == trump_suit]
-        return non_trump_options + trump_cards
+        return non_trump_options + trump_cards + [None]
 
     def grab_table(self, table):
         self.cards += table.cards

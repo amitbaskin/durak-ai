@@ -153,6 +153,8 @@ class Table:
         self.cards = []
 
     def update_table(self, card):
+        if card is None:
+            return
         self.cards += [card]
 
     def move_to_pile(self):
@@ -278,7 +280,7 @@ class Round:
 
         if card is None:
             if self.defender == self.current_player:
-                self.current_player.grab_table()
+                self.current_player.grab_table(self.table)
                 self.attacker, self.defender = self.defender, self.attacker
                 self.current_player.attacking, self.defender.attacking = \
                     True, False

@@ -18,6 +18,8 @@ class AiPlayerDumb(Player):
         if len(possible_cards) == 0:
             return None
         attack_card = random.choice(possible_cards)
+        if attack_card is None:
+            return
         self.remove_card(attack_card)
         round.table.update_table(attack_card)
         print('{} attack with {} of {}'.format(self.nickname, attack_card.number, attack_card.suit))
@@ -25,7 +27,10 @@ class AiPlayerDumb(Player):
 
     def defend(self, round):
         if self.defending_options(round.table, round.trump_card.suit):
-            defence_card = random.choice(self.defending_options(round.table, round.trump_card.suit))
+            defence_card = random.choice(self.defending_options(round.table,
+                                                                round.trump_card.suit))
+            if defence_card is None:
+                return
             self.remove_card(defence_card)
             round.table.update_table(defence_card)
             print('{} defended with {}'.format(self.nickname, defence_card))
@@ -38,6 +43,8 @@ class AiPlayerDumb(Player):
     def adding_card(self, round):
         if self.adding_card_options(round.table):
             card_to_add = random.choice(self.adding_card_options(round.table))
+            if card_to_add is None:
+                return
             self.remove_card(card_to_add)
             round.table.update_table(card_to_add)
             print('{} adding card {}'.format(self.nickname, card_to_add))
@@ -52,8 +59,10 @@ def choose_min_card(possible_cards, trump_suit):
     if len(possible_cards) == 1:
         return possible_cards[0]
 
-    trump_cards = [card for card in possible_cards if card.suit == trump_suit]
-    non_trump_cards = [card for card in possible_cards if card.suit != trump_suit]
+    trump_cards = [card for card in possible_cards if card is not None
+    and card.suit == trump_suit]
+    non_trump_cards = [card for card in possible_cards if (card is not None and
+    card.suit != trump_suit)]
 
     non_trump_cards.sort(key=lambda x: x.number)
 
@@ -70,7 +79,8 @@ class SimplePlayer(Player):
         super().__init__(self.nickname)
 
     def attack(self, round):
-        possible_cards = self.attacking_options(round.table)
+        possible_cards = [card for card in self.attacking_options(
+            round.table) if card is not None]
         if len(possible_cards) == 0:
             return None
         attack_card = choose_min_card(possible_cards, round.trump_card.suit)
@@ -80,7 +90,7 @@ class SimplePlayer(Player):
         return attack_card
 
     def defend(self, round):
-        possible_cards = self.defending_options(round.table, round.trump_card.suit)
+        possible_cards = [card for card in self.defending_options(round.table, round.trump_card.suit) if card is not None]
         if possible_cards:
             defence_card = choose_min_card(possible_cards, round.trump_card.suit)
             self.remove_card(defence_card)
@@ -93,9 +103,12 @@ class SimplePlayer(Player):
         return None
 
     def adding_card(self, round):
-        possible_cards = self.adding_card_options(round.table)
-        if possible_cards:
+        possible_cards = [card for card in self.adding_card_options(
+                round.table) if card is not None]
+        if possible_cards :
             card_to_add = choose_min_card(possible_cards, round.trump_card.suit)
+            if card_to_add is None:
+                return
             self.remove_card(card_to_add)
             round.table.update_table(card_to_add)
             print('{} adding card {}'.format(self.nickname, card_to_add))
@@ -117,12 +130,15 @@ class HandicappedSimplePlayer(Player):
             if len(possible_cards) == 0:
                 return None
             attack_card = random.choice(possible_cards)
+            if attack_card is None:
+                return
             self.remove_card(attack_card)
             round.table.update_table(attack_card)
             print('{} attack with {} of {}'.format(self.nickname, attack_card.number, attack_card.suit))
             return attack_card
 
-        possible_cards = self.attacking_options(round.table)
+        possible_cards = [card for card in self.attacking_options(round.table)
+                          if card is not None]
         if len(possible_cards) == 0:
             return None
         attack_card = choose_min_card(possible_cards, round.trump_card.suit)
@@ -134,7 +150,10 @@ class HandicappedSimplePlayer(Player):
     def defend(self, round):
         if len(round.deck.cards) == 0:
             if self.defending_options(round.table, round.trump_card.suit):
-                defence_card = random.choice(self.defending_options(round.table, round.trump_card.suit))
+                defence_card = random.choice(self.defending_options(
+                    round.table, round.trump_card.suit))
+                if defence_card is None:
+                    return
                 self.remove_card(defence_card)
                 round.table.update_table(defence_card)
                 print('{} defended with {}'.format(self.nickname, defence_card))
@@ -144,7 +163,7 @@ class HandicappedSimplePlayer(Player):
             self.grab_table(round.table)
             return None
 
-        possible_cards = self.defending_options(round.table, round.trump_card.suit)
+        possible_cards = [card for card in self.defending_options(round.table, round.trump_card.suit) if card is not None]
         if possible_cards:
             defence_card = choose_min_card(possible_cards, round.trump_card.suit)
             self.remove_card(defence_card)
@@ -160,6 +179,8 @@ class HandicappedSimplePlayer(Player):
         if len(round.deck.cards) == 0:
             if self.adding_card_options(round.table):
                 card_to_add = random.choice(self.adding_card_options(round.table))
+                if card_to_add is None:
+                    return
                 self.remove_card(card_to_add)
                 round.table.update_table(card_to_add)
                 print('{} adding card {}'.format(self.nickname, card_to_add))
@@ -169,7 +190,8 @@ class HandicappedSimplePlayer(Player):
             print('table: {}'.format(round.table.show()))
             return None
 
-        possible_cards = self.adding_card_options(round.table)
+        possible_cards = [card for card in self.adding_card_options(
+            round.table) if card is not None]
         if possible_cards:
             card_to_add = choose_min_card(possible_cards, round.trump_card.suit)
             self.remove_card(card_to_add)
@@ -217,7 +239,7 @@ class SmartPlayer(Player):
             return attack_card
 
         possible_cards = self.attacking_options(round.table)
-        if len(possible_cards) == 0:
+        if len(possible_cards) == 1:
             return None
         attack_card = choose_min_card(possible_cards, round.trump_card.suit)
         self.remove_card(attack_card)
@@ -232,6 +254,8 @@ class SmartPlayer(Player):
             possible_cards = self.defending_options(round.table, round.trump_card.suit)
             if possible_cards:
                 defence_card = self.agent.get_card_to_play(round)
+                if defence_card is None:
+                    return
                 self.remove_card(defence_card)
                 round.table.update_table(defence_card)
                 print('{} defended with {}'.format(self.nickname, defence_card))
@@ -241,8 +265,7 @@ class SmartPlayer(Player):
             self.grab_table(round.table)
             return None
 
-        possible_cards = self.defending_options(round.table,
-                                                round.trump_card.suit)
+        possible_cards = [card for card in self.defending_options(round.table, round.trump_card.suit) if card is not None]
         if possible_cards:
             defence_card = choose_min_card(possible_cards,
                                            round.trump_card.suit)
@@ -260,6 +283,8 @@ class SmartPlayer(Player):
             possible_cards = self.adding_card_options(round.table)
             if possible_cards:
                 card_to_add = self.agent.get_card_to_play(round)
+                if card_to_add is None:
+                    return
                 self.remove_card(card_to_add)
                 round.table.update_table(card_to_add)
                 print('{} adding card {}'.format(self.nickname, card_to_add))
@@ -272,6 +297,8 @@ class SmartPlayer(Player):
         possible_cards = self.adding_card_options(round.table)
         if possible_cards:
             card_to_add = choose_min_card(possible_cards, round.trump_card.suit)
+            if card_to_add is None:
+                return
             self.remove_card(card_to_add)
             round.table.update_table(card_to_add)
             print('{} adding card {}'.format(self.nickname, card_to_add))
