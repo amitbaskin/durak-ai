@@ -57,9 +57,9 @@ class DurakSearchProblem(SearchProblem):
         if round.current_player.nickname == self.player_nickname:
             possible_cards = set(round.current_player.options(round.table, round.trump_card.suit))
         else:
-            possible_cards = diff(self.possible_cards, round.pile.cards)
+            possible_cards = diff(self.possible_cards, round.pile.playerCards)
             player = next(p for p in self.player_list if p is not round.current_player)
-            possible_cards = diff(possible_cards, player.cards)
+            possible_cards = diff(possible_cards, player.playerCards)
 
         next_possible_rounds = []
 
@@ -67,7 +67,7 @@ class DurakSearchProblem(SearchProblem):
             copied_round = round.copy()
             next_possible_rounds.append(copied_round.get_next_state_given_card(card))
 
-        if len(round.table.cards) != 0:
+        if len(round.table.playerCards) != 0:
             copied_round = round.copy()
             next_possible_rounds.append(copied_round.get_next_state_given_card(None))
 

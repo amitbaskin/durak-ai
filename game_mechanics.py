@@ -1,7 +1,7 @@
 import random
-import sys
-import time
-from enum import Enum
+# import sys
+# import time
+# from enum import Enum
 from copy import deepcopy
 
 # TODO:
@@ -125,7 +125,7 @@ class DeckEncoder:
         self.encode_legend = self.suit_encode()
 
     def suit_encode(self):
-        suits = [(i.split('_')[1]) for i in self.deck_instance.cards]
+        suits = [(i.split('_')[1]) for i in self.deck_instance.playerCards]
         trump = suits[-1]
         suits_except_trump = list(set(suits))
         suits_except_trump.remove(trump)
@@ -135,7 +135,7 @@ class DeckEncoder:
         return encode_dict
 
     def encode(self):
-        splitted_deck = [(i.split('_')) for i in self.deck_instance.cards]
+        splitted_deck = [(i.split('_')) for i in self.deck_instance.playerCards]
         for num, card in enumerate(splitted_deck):
             splitted_deck[num][0] = int(splitted_deck[num][0])
             splitted_deck[num][1] = self.encode_legend[card[1]]
@@ -155,10 +155,10 @@ class DeckDecoder:
         encode_legend_rev = dict([[v, k] for k, v in self.deck_instance.encode_legend.items()])
         decoded_deck = [str(i[0]) + '_' + str(encode_legend_rev[i[1]]) \
                         for i in self.deck_instance.encoded_cards]
-        self.deck_instance.cards = decoded_deck
+        self.deck_instance.playerCards = decoded_deck
 
     def example(self):
-        return ('input:\n{}\noutput:\n{}'.format(self.deck_instance.encoded_cards, self.deck_instance.cards))
+        return ('input:\n{}\noutput:\n{}'.format(self.deck_instance.encoded_cards, self.deck_instance.playerCards))
 
 
 class Table:
@@ -166,8 +166,6 @@ class Table:
         self.cards = []
 
     def update_table(self, card):
-        if card is None:
-            return
         self.cards += [card]
 
     def move_to_pile(self):
@@ -194,6 +192,10 @@ class Pile:
     def show(self):
         return self.pile
 
+    def sorted(self):
+        return [card.__repr__() for card in self.pile].sort()
+
+
 
 class Pointer:
     def __init__(self, list_of_player_instances, trump_suit):
@@ -208,7 +210,8 @@ class Pointer:
         start_dict = {}
         for the_player in self.list_of_player_instances:
             try:
-                start_dict[the_player] = min([i.number for i in the_player.cards if i.suit == self.trump_suit])
+                start_dict[the_player] = min([i.number for i in
+                                              the_player.cards if i.suit == self.trump_suit])
             except ValueError:
                 print(ValueError)
         try:
@@ -232,6 +235,19 @@ class Pointer:
         return (self.attacker_id, self.defender_id)
 
 
+
+class State:
+    def __init__(self, current_player, pile):
+        self.current_player = current_player
+        self.isAttacking = current_player.attacking
+        self.playerCards = current_player.sortedCards
+        self.pile = pile.sorted()
+
+    def __str__(self):
+        return '{}#{}#{}#{}'.format(self.current_player, self.isAttacking,
+                                    self.playerCards, self.pile)
+
+
 class Round:
     def __init__(self, players_list, pointer, deck, pile, trump_card, table=None, status=None):
         self.players_list = players_list
@@ -246,6 +262,11 @@ class Round:
         self.status = None if status is None else status
         self.current_player = self.attacker
         self.count = 0
+
+
+    def toState(self):
+        return State(self.current_player, self.pile)
+
 
     def round(self):
         if self.check_win():
@@ -327,6 +348,7 @@ class Round:
         print('deck', len(self.deck.cards))
         self.current_player = self.attacker
         self.current_player.attacking = True
+        self.defender.attacking = False
         self.attacker.attack(self)
 
         # defender can't defend

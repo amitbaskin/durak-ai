@@ -234,10 +234,10 @@ class Round(SearchProblem):
 
     def check_winner(self):
         winners = []
-        if not self.attacker.cards:
+        if not self.attacker.playerCards:
             winners.append(self.attacker.nickname)
-        if not self.defender.cards or (len(self.defender.options(self.table, self.trump_card.suit)) == 1 and
-                                       len(self.defender.cards) == 1):
+        if not self.defender.playerCards or (len(self.defender.options(self.table, self.trump_card.suit)) == 1 and
+                                             len(self.defender.playerCards) == 1):
             winners.append(self.defender.nickname)
         if winners:
             if len(winners) == 2:
@@ -248,7 +248,7 @@ class Round(SearchProblem):
                 return 'WIN'
 
     def check_win(self):
-        if self.deck.cards:
+        if self.deck.playerCards:
             return None
         else:
             return self.check_winner()
@@ -432,9 +432,9 @@ class RoundWithAI(Round):
 
     def _first_stage(self):
         print(self.trump_card)
-        print(self.attacker.nickname, 'num cards', len(self.attacker.cards))
-        print(self.defender.nickname, 'defender num cards', len(self.defender.cards))
-        print('deck num cards', len(self.deck.cards))
+        print(self.attacker.nickname, 'num cards', len(self.attacker.playerCards))
+        print(self.defender.nickname, 'defender num cards', len(self.defender.playerCards))
+        print('deck num cards', len(self.deck.playerCards))
         self.current_player = self.attacker
         if self.attacker.attack(self) is None:
             self.pile.update(self.table)
@@ -558,7 +558,7 @@ class Durak_GUI(tk.Tk):
 
     def update_gui(self, game, choose_card_callback, status, show_all=False, is_attacker_first_round=False):
         self.enemy_player_hand.destroy()
-        self.enemy_player_hand = PlayerHand(self.container, self.player_list[0].cards, [], choose_card_callback,
+        self.enemy_player_hand = PlayerHand(self.container, self.player_list[0].playerCards, [], choose_card_callback,
                                             shown=show_all)
         self.enemy_player_hand.grid(row=0, column=1)
 
@@ -569,23 +569,23 @@ class Durak_GUI(tk.Tk):
         self.attacking_label.configure(text=status)
 
         self.table.reset_table()
-        for i in range(0, len(game.table.cards), 2):
+        for i in range(0, len(game.table.playerCards), 2):
             pair = CardPair(self.table)
-            bottom_card = PlayingCardFrame(pair, game.table.cards[i])
+            bottom_card = PlayingCardFrame(pair, game.table.playerCards[i])
             pair.set_bottom_card(bottom_card)
-            if i + 1 < len(game.table.cards):
-                top_card = PlayingCardFrame(pair, game.table.cards[i+1])
+            if i + 1 < len(game.table.playerCards):
+                top_card = PlayingCardFrame(pair, game.table.playerCards[i + 1])
                 pair.set_top_card(top_card)
             self.table.add_card_pair(pair)
         self.table.update_view()
 
         self.deck.destroy()
-        self.deck = DeckFrame(self.container, len(game.deck.cards))
+        self.deck = DeckFrame(self.container, len(game.deck.playerCards))
         self.deck.grid(row=1, column=2)
 
         playable_cards = self.player_list[1].options(game.table, game.trump_card.suit)
         self.player_hand.destroy()
-        self.player_hand = PlayerHand(self.container, self.player_list[1].cards,
+        self.player_hand = PlayerHand(self.container, self.player_list[1].playerCards,
                                       playable_cards, choose_card_callback, shown=True)
         self.player_hand.grid(row=2, column=1)
 
@@ -604,7 +604,7 @@ class Durak_GUI(tk.Tk):
         self.enemy_label = ttk.Label(self.container, text=self.player_list[0].nickname)
         self.enemy_label.grid(row=0, column=0)
 
-        self.enemy_player_hand = PlayerHand(self.container, self.player_list[0].cards, [], choose_card_callback, shown=show_all)
+        self.enemy_player_hand = PlayerHand(self.container, self.player_list[0].playerCards, [], choose_card_callback, shown=show_all)
         self.enemy_player_hand.grid(row=0, column=1)
 
         progress_text = "Games played so far: " + str(self.amount_of_games)
@@ -617,17 +617,17 @@ class Durak_GUI(tk.Tk):
         self.table = TableFrame(self.container)
         self.table.grid(row=1, column=1)
 
-        for i in range(0, len(game.table.cards), 2):
+        for i in range(0, len(game.table.playerCards), 2):
             pair = CardPair(self.table)
-            bottom_card = PlayingCardFrame(pair, game.table.cards[i])
+            bottom_card = PlayingCardFrame(pair, game.table.playerCards[i])
             pair.set_bottom_card(bottom_card)
-            if i + 1 < len(game.table.cards):
-                top_card = PlayingCardFrame(pair, game.table.cards[i+1])
+            if i + 1 < len(game.table.playerCards):
+                top_card = PlayingCardFrame(pair, game.table.playerCards[i + 1])
                 pair.set_top_card(top_card)
             self.table.add_card_pair(pair)
         self.table.update_view()
 
-        self.deck = DeckFrame(self.container, len(game.deck.cards))
+        self.deck = DeckFrame(self.container, len(game.deck.playerCards))
         self.deck.grid(row=1, column=2)
 
         self.trump_card = PlayingCardFrame(self.container, game.trump_card)
@@ -637,7 +637,7 @@ class Durak_GUI(tk.Tk):
         self.player_label.grid(row=2, column=0)
 
         playable_cards = self.player_list[1].options(game.table, game.trump_card.suit)
-        self.player_hand = PlayerHand(self.container, self.player_list[1].cards,
+        self.player_hand = PlayerHand(self.container, self.player_list[1].playerCards,
                                       playable_cards, choose_card_callback, shown=True)
         self.player_hand.grid(row=2, column=1)
 

@@ -1,8 +1,8 @@
-import logging
-import os
+# import logging
+# import os
 from game_mechanics import *
-from durak_ai import *
-from player import HumanPlayer
+from durak_ai import SmartPlayer, SmartPlayer2
+# from player import HumanPlayer
 
 
 class Game:
@@ -12,9 +12,16 @@ class Game:
 #
 # # p1 = AiPlayerDumb()
 # p2 = SimplePlayer()
-# p3 = SmartPlayer(p2, "")
+p2 = None
+p3 = SmartPlayer2(p2, " one")
+p2 = SmartPlayer2(p3, " two")
+p4 = None
+p5 = SmartPlayer(p4, " one")
+p4 = SmartPlayer(p5, " two")
 # # players_list = [p1, p2]
-# minimax_players_list = [p2, p3]
+smart_players_2_list = [p2, p3]
+smart_players_list = [p4, p5]
+
 
 
 def game_instance(list_of_players):
@@ -33,4 +40,5 @@ def game_instance(list_of_players):
 
 
 # # print(game_instance(players_list))
-# print(game_instance(minimax_players_list))
+# print(game_instance(smart_players_2_list))
+print(game_instance(smart_players_list))

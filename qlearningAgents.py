@@ -6,12 +6,13 @@
 # John DeNero (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # For more info, see http://inst.eecs.berkeley.edu/~cs188/sp09/pacman.html
 
-from game import *
+# from game import *
 from learningAgents import ReinforcementAgent
-from featureExtractors import *
-from DurakSearchProblem import DurakSearchProblem
+# from featureExtractors import *
+# from DurakSearchProblem import DurakSearchProblem
 
 import random,util,math
+import numpy as np
 
 class QLearningAgent(ReinforcementAgent):
   """
@@ -39,39 +40,40 @@ class QLearningAgent(ReinforcementAgent):
       ReinforcementAgent.__init__(self, **args)
       self.q_values = util.Counter()
 
-  def getQValue(self, state, action):
+  def getQValue(self, round, action):
     """
       Returns Q(state,action)
       Should return 0.0 if we never seen
       a state or (state,action) tuple
     """
+    state = round.toState().__str__()
     return self.q_values[(state, action)]
 
 
-  def getValue(self, state):
+  def getValue(self, round):
     """
       Returns max_action Q(state,action)
       where the max is over legal actions.  Note that if
       there are no legal actions, which is the case at the
       terminal state, you should return a value of 0.0.
     """
-    possible_actions = self.getLegalActions(state)
+    possible_actions = self.getLegalActions(round)
     values = dict()
     for action in possible_actions:
-      values[action] = self.getQValue(state, action)
+      values[action] = self.getQValue(round, action)
 
     return max(values.values()) if len(values) != 0 else 0.0
 
-  def getPolicy(self, state):
+  def getPolicy(self, round):
     """
       Compute the best action to take in a state.  Note that if there
       are no legal actions, which is the case at the terminal state,
       you should return None.
     """
-    possible_actions = self.getLegalActions(state)
+    possible_actions = self.getLegalActions(round)
     values = dict()
     for action in possible_actions:
-        values[action] = self.getQValue(state, action)
+        values[action] = self.getQValue(round, action)
 
     max_actions = []
     max_value = -np.inf
@@ -83,7 +85,7 @@ class QLearningAgent(ReinforcementAgent):
             max_value = value
     return random.choice(max_actions) if len(max_actions) != 0 else None
 
-  def getAction(self, state):
+  def getAction(self, round):
     """
       Compute the action to take in the current state.  With
       probability self.epsilon, we should take a random action and
@@ -94,15 +96,15 @@ class QLearningAgent(ReinforcementAgent):
       HINT: You might want to use util.flipCoin(prob)
       HINT: To pick randomly from a list, use random.choice(list)
     """
-    legalActions = self.getLegalActions(state)
+    legalActions = self.getLegalActions(round)
     if len(legalActions) == 0:
         return None
     if util.flipCoin(self.epsilon):
         return random.choice(legalActions)
     else:
-        return self.getPolicy(state)
+        return self.getPolicy(round)
 
-  def update(self, state, action, nextState, reward):
+  def update(self, round, action, nextRound, reward):
     """
       The parent class calls this to observe a
       state = action => nextState and reward transition.
@@ -112,10 +114,13 @@ class QLearningAgent(ReinforcementAgent):
       it will be called on your behalf
     """
     values = []
-    for next_action in self.getLegalActions(nextState):
+    for next_action in self.getLegalActions(nextRound):
+       nextState = nextRound.toState().__str__()
        values.append(self.q_values[(nextState, next_action)])
     max_value = max(values) if len(values) !=  0 else 0
-    coefficient = reward + self.discount * max_value - self.q_values[(state, action)]
+    state = round.toState.__str__()
+    coefficient = reward + self.discount * max_value - self.q_values[(state,
+                                                                      action)]
     self.q_values[(state, action)] += self.alpha * coefficient
 
 
@@ -140,7 +145,9 @@ class DurakQAgent(QLearningAgent):
     self.getLegalActions = legalActions_ptr
     # self.searcher = DurakSearchProblem(players_list, "fdb")
 
-  def getAction(self, state):
-    action = QLearningAgent.getAction(self, state)
-    state.get_next_state_given_card(action)
-    return action
+  #
+  # def getAction(self, round):
+  #
+  #   action = QLearningAgent.getAction(self, round)
+  #   round.get_next_state_given_card(action)
+  #   return action
