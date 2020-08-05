@@ -5,8 +5,13 @@ class Player:
         self.human = False
         self.attacking = False
 
-    def sortedCards(self):
-        return [card.__repr__() for card in self.cards].sort()
+    def showCards(self):
+        cards = []
+        for card in self.cards:
+            curr_card = card.__repr__()
+            cards.append(curr_card)
+        cards.sort()
+        return cards
 
     def play_move(self, round):
         if self.attacking:
@@ -63,6 +68,9 @@ class Player:
     def defending_options(self, table, trump_suit):
         if len(table.cards) == 0:
             return []
+            # TODO: Should not get here because a player defends only if he
+            #  was attacked, so the table cannot be empty
+
 
         attacking_card = table.cards[-1]
 

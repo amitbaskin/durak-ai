@@ -30,7 +30,7 @@ def game_instance(list_of_players):
         for player in list_of_players:
             player._refresh()
         deck = Deck()
-        print(deck)
+        # print(deck)
         g = GameProcess(list_of_players, deck)
         # ptr = Pointer(list_of_players)
         if g.play() == list_of_players[1].nickname:

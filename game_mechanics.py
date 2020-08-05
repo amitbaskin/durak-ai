@@ -201,7 +201,8 @@ class Pointer:
     def __init__(self, list_of_player_instances, trump_suit):
         self.list_of_player_instances = list_of_player_instances
         self.trump_suit = trump_suit
-        self._move_pointer_condition = self._init_move_pointer()
+        self._move_pointer_condition = self._init_move_pointer()  #
+        # Determines who should be the attacker first
         self.attacker_id = self._move_pointer_condition[0]
         self.defender_id = self._move_pointer_condition[1]
         assert self.attacker_id != self.defender_id
@@ -240,7 +241,7 @@ class State:
     def __init__(self, current_player, pile):
         self.current_player = current_player
         self.isAttacking = current_player.attacking
-        self.playerCards = current_player.sortedCards
+        self.playerCards = current_player.showCards
         self.pile = pile.sorted()
 
     def __str__(self):
@@ -344,7 +345,10 @@ class Round:
 
     def _first_stage(self):
         print('atk', len(self.attacker.cards))
+        attackerCards = self.attacker.showCards()
+        print(attackerCards)
         print('def', len(self.defender.cards))
+        print(self.defender.showCards())
         print('deck', len(self.deck.cards))
         self.current_player = self.attacker
         self.current_player.attacking = True
