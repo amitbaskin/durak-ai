@@ -10,7 +10,7 @@ class Game:
         self.players_list = players_list
 
 #
-# # p1 = AiPlayerDumb()
+# p1 = AiPlayerDumb()
 # p2 = SimplePlayer()
 p2 = None
 p3 = SmartPlayer2(p2, " one")
@@ -18,9 +18,13 @@ p2 = SmartPlayer2(p3, " two")
 p4 = None
 p5 = SmartPlayer(p4, " one")
 p4 = SmartPlayer(p5, " two")
-# # players_list = [p1, p2]
+# players_list = [p1, p2]
 smart_players_2_list = [p2, p3]
 smart_players_list = [p4, p5]
+p6 = None
+p7 = SmartPlayer(p6, " one")
+p6 = SmartPlayer2(p7, " two")
+mixed_smart_list = [p6, p7]
 
 
 
@@ -30,15 +34,13 @@ def game_instance(list_of_players):
         for player in list_of_players:
             player._refresh()
         deck = Deck([])
-        # print(deck)
         g = GameProcess(list_of_players, deck)
-        # ptr = Pointer(list_of_players)
         if g.play() == list_of_players[1].nickname:
             win_count += 1
-
     print("Player 2 win rate:", win_count / 1000)
 
 
 # # print(game_instance(players_list))
-print(game_instance(smart_players_2_list))
+# print(game_instance(smart_players_2_list))
 # print(game_instance(smart_players_list))
+print(game_instance(mixed_smart_list))

@@ -13,8 +13,15 @@ DEFENCE_MSG = 'defends with'
 ATTACK_MSG = 'attacks with'
 
 
-def diff(l1, l2):
-    return [item for item in l1 if item not in l2]
+def choose_min_card(possible_cards, trump_suit):
+    trump_cards = [card for card in possible_cards if card.suit == trump_suit]
+    non_trump_cards = [card for card in possible_cards if card.suit !=
+                        trump_suit]
+    non_trump_cards.sort(key=lambda x: x.number)
+    if len(non_trump_cards) == 0:
+        trump_cards.sort(key=lambda x: x.number)
+        return trump_cards[0]
+    return non_trump_cards[0]
 
 
 class AiPlayerDumb(Player):
@@ -27,45 +34,20 @@ class AiPlayerDumb(Player):
         if len(possible_cards) == 0:
             return None
         attack_card = random.choice(possible_cards)
-        self.remove_card(attack_card)
-        round.table.add_single_card(attack_card)
-        print('{} attack with {} of {}'.format(self.nickname, attack_card.number, attack_card.suit))
-        return attack_card
+        return self.attack_helper(attack_card, round)
 
     def defend(self, round):
         if self.defending_options(round.table, round.trump_card.suit):
-            defence_card = random.choice(self.defending_options(round.table, round.trump_card.suit))
-            self.remove_card(defence_card)
-            round.table.add_single_card(defence_card)
-            print('{} defended with {}'.format(self.nickname, defence_card))
-            return defence_card
-        print(r"{} can't defend".format(self.nickname))
-        self.grab_table(round.table)
-        return None
+            defence_card = random.choice(self.defending_options(
+                round.table, round.trump_card.suit))
+            return self.defence_helper(defence_card, round)
+        self.no_defence(round)
 
     def adding_card(self, round):
         if self.adding_card_options(round.table):
             card_to_add = random.choice(self.adding_card_options(round.table))
-            self.remove_card(card_to_add)
-            round.table.add_single_card(card_to_add)
-            print('{} adding card {}'.format(self.nickname, card_to_add))
-            return card_to_add
-        print('{} no cards to add'.format(self.nickname))
-        print('table: {}'.format(round.table.get_cards()))
-        return None
-
-
-def choose_min_card(possible_cards, trump_suit):
-    trump_cards = [card for card in possible_cards if card.suit == trump_suit]
-    non_trump_cards = [card for card in possible_cards if card.suit != trump_suit]
-
-    non_trump_cards.sort(key=lambda x: x.number)
-
-    if len(non_trump_cards) == 0:
-        trump_cards.sort(key=lambda x: x.number)
-        return trump_cards[0]
-
-    return non_trump_cards[0]
+            return self.add_card_helper(card_to_add, round)
+        self.no_cards_msg(round)
 
 
 class SimplePlayer(Player):
@@ -78,35 +60,23 @@ class SimplePlayer(Player):
         if len(possible_cards) == 0:
             return None
         attack_card = choose_min_card(possible_cards, round.trump_card.suit)
-        self.remove_card(attack_card)
-        round.table.add_single_card(attack_card)
-        print('{} attack with {} of {}'.format(self.nickname, attack_card.number, attack_card.suit))
-        return attack_card
+        return self.attack_helper(attack_card, round)
 
     def defend(self, round):
-        possible_cards = self.defending_options(round.table, round.trump_card.suit)
+        possible_cards = self.defending_options(round.table,
+                                                 round.trump_card.suit)
         if possible_cards:
-            defence_card = choose_min_card(possible_cards, round.trump_card.suit)
-            self.remove_card(defence_card)
-            round.table.add_single_card(defence_card)
-            print('{} defended with {}'.format(self.nickname, defence_card))
-            return defence_card
-        print(r"{} can't defend".format(self.nickname))
-        print('table:', round.table.get_cards_strs())
-        self.grab_table(round.table)
-        return None
+            defence_card = choose_min_card(possible_cards,
+                                            round.trump_card.suit)
+            return self.defence_helper(defence_card, round)
+        self.no_defence(round)
 
     def adding_card(self, round):
         possible_cards = self.adding_card_options(round.table)
         if possible_cards:
             card_to_add = choose_min_card(possible_cards, round.trump_card.suit)
-            self.remove_card(card_to_add)
-            round.table.add_single_card(card_to_add)
-            print('{} adding card {}'.format(self.nickname, card_to_add))
-            return card_to_add
-        print('{} no cards to add'.format(self.nickname))
-        print('table: {}'.format(round.table.get_cards_strs()))
-        return None
+            return self.add_card_helper(card_to_add, round)
+        self.no_cards_msg(round)
 
 
 class HandicappedSimplePlayer(Player):
@@ -120,67 +90,39 @@ class HandicappedSimplePlayer(Player):
             if len(possible_cards) == 0:
                 return None
             attack_card = random.choice(possible_cards)
-            self.remove_card(attack_card)
-            round.table.add_single_card(attack_card)
-            print('{} attack with {} of {}'.format(self.nickname, attack_card.number, attack_card.suit))
-            return attack_card
-
+            return self.attack_helper(attack_card, round)
         possible_cards = self.attacking_options(round.table)
         if len(possible_cards) == 0:
             return None
         attack_card = choose_min_card(possible_cards, round.trump_card.suit)
-        self.remove_card(attack_card)
-        round.table.add_single_card(attack_card)
-        print('{} attack with {} of {}'.format(self.nickname, attack_card.number, attack_card.suit))
-        return attack_card
+        return self.attack_helper(attack_card, round)
 
     def defend(self, round):
+        possible_cards = self.defending_options(round.table,
+                                                round.trump_card.suit)
         if len(round.deck.playerCards) == 0:
-            if self.defending_options(round.table, round.trump_card.suit):
-                defence_card = random.choice(self.defending_options(round.table, round.trump_card.suit))
-                self.remove_card(defence_card)
-                round.table.add_single_card(defence_card)
-                print('{} defended with {}'.format(self.nickname, defence_card))
-                return defence_card
-            print(r"{} can't defend".format(self.nickname))
-            print('table:', round.table.get_cards_strs())
-            self.grab_table(round.table)
-            return None
-
-        possible_cards = self.defending_options(round.table, round.trump_card.suit)
+            if possible_cards:
+                defence_card = random.choice(self.defending_options(
+                     round.table, round.trump_card.suit))
+                return self.defence_helper(defence_card, round)
+            self.no_defence(round)
         if possible_cards:
-            defence_card = choose_min_card(possible_cards, round.trump_card.suit)
-            self.remove_card(defence_card)
-            round.table.add_single_card(defence_card)
-            print('{} defended with {}'.format(self.nickname, defence_card))
-            return defence_card
-        print(r"{} can't defend".format(self.nickname))
-        print('table:', round.table.get_cards_strs())
-        self.grab_table(round.table)
-        return None
+            defence_card = choose_min_card(possible_cards,
+                                            round.trump_card.suit)
+            return self.defence_helper(defence_card, round)
+        self.no_defence(round)
 
     def adding_card(self, round):
         if len(round.deck.playerCards) == 0:
             if self.adding_card_options(round.table):
                 card_to_add = random.choice(self.adding_card_options(round.table))
-                self.remove_card(card_to_add)
-                round.table.add_single_card(card_to_add)
-                print('{} adding card {}'.format(self.nickname, card_to_add))
-                return card_to_add
-            print('{} no cards to add'.format(self.nickname))
-            print('table: {}'.format(round.table.get_cards_strs()))
-            return None
-
+                return self.add_card_helper(card_to_add, round)
+            self.no_cards_msg(round)
         possible_cards = self.adding_card_options(round.table)
         if possible_cards:
             card_to_add = choose_min_card(possible_cards, round.trump_card.suit)
-            self.remove_card(card_to_add)
-            round.table.add_single_card(card_to_add)
-            print('{} {} {}'.format(self.nickname, ADDING_CARD_MSG, card_to_add))
-            return card_to_add
-        print('{} {}'.format(self.nickname, NO_CARDS_MSG))
-        print('table: {}'.format(round.table.get_cards_strs()))
-        return None
+            return self.add_card_helper(card_to_add, round)
+        self.no_cards_msg(round)
 
 
 class SmartPlayer(Player):
@@ -212,21 +154,13 @@ class SmartPlayer(Player):
             attack_card = self.agent.get_card_to_play(round)
             if attack_card is None:
                 attack_card = choose_min_card(possible_cards, round.trump_card.suit)
-            self.remove_card(attack_card)
-            round.table.add_single_card(attack_card)
-            print('{} attacks with {} of {}'.format(self.nickname,
-                                                    attack_card.number, attack_card.suit))
-            return attack_card
+            return self.attack_helper(attack_card, round)
 
         if len(possible_cards) == 0:
             return None
         attack_card = choose_min_card(possible_cards, round.trump_card.suit)
-        self.remove_card(attack_card)
-        round.table.add_single_card(attack_card)
-        print('{} {} {}'.format(self.nickname, ATTACK_MSG,
-                                attack_card.__repr__()))
-        print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
-        return attack_card
+
+        return self.attack_helper(attack_card, round)
 
     def defend(self, round):
         if len(round.deck.get_cards()) == 0:
@@ -234,30 +168,16 @@ class SmartPlayer(Player):
             if possible_cards:
                 defence_card = self.agent.get_card_to_play(round)
                 if defence_card is not None:
-                    self.remove_card(defence_card)
-                    round.table.add_single_card(defence_card)
-                    print('{} {} {}'.format(self.nickname, DEFENCE_MSG, defence_card))
-                    print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
-                return defence_card
-            print(r"{} {}".format(self.nickname, NO_DEFENCE_MSG))
-            print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
-            self.grab_table(round.table)
-            return None
+                    return self.defence_helper(defence_card, round)
+            return self.no_defence(round)
 
         possible_cards = self.defending_options(round.table,
                                                 round.trump_card.suit)
         if possible_cards:
             defence_card = choose_min_card(possible_cards,
                                            round.trump_card.suit)
-            self.remove_card(defence_card)
-            round.table.add_single_card(defence_card)
-            print('{} {} {}'.format(self.nickname, DEFENCE_MSG, defence_card))
-            print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
-            return defence_card
-        print(r"{} {}".format(self.nickname, NO_DEFENCE_MSG))
-        print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
-        self.grab_table(round.table)
-        return None
+            return self.defence_helper(defence_card, round)
+        self.no_defence(round)
 
     def adding_card(self, round):
         if len(round.deck.get_cards()) == 0:
@@ -265,26 +185,17 @@ class SmartPlayer(Player):
             if possible_cards:
                 card_to_add = self.agent.get_card_to_play(round)
                 if card_to_add is not None:
-                    self.remove_card(card_to_add)
-                    round.table.add_single_card(card_to_add)
-                    print('{} {} {}'.format(self.nickname, ADDING_CARD_MSG, card_to_add))
-                    print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
-                return card_to_add
-            print('{} {}'.format(self.nickname, NO_CARDS_MSG))
-            print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
-            return None
+                    self.add_card_helper(card_to_add, round)
+
+            self.no_cards_msg(round)
 
         possible_cards = self.adding_card_options(round.table)
         if possible_cards:
             card_to_add = choose_min_card(possible_cards, round.trump_card.suit)
-            self.remove_card(card_to_add)
-            round.table.add_single_card(card_to_add)
-            print('{} {} {}'.format(self.nickname, ADDING_CARD_MSG, card_to_add))
-            print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
-            return card_to_add
-        print('{} {}'.format(self.nickname, NO_CARDS_MSG))
-        print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
-        return None
+
+            return self.add_card_helper(card_to_add, round)
+
+        self.no_cards_msg(round)
 
 
 class SmartPlayer2(Player):
@@ -316,90 +227,38 @@ class SmartPlayer2(Player):
             attack_card = self.minMaxAgent.get_card_to_play(round)
             if attack_card is None:
                 attack_card = choose_min_card(possible_cards, round.trump_card.suit)
-            self.remove_card(attack_card)
-            round.table.add_single_card(attack_card)
-            print('{} {} {}'.format(self.nickname, ATTACK_MSG,
-                                    attack_card.__repr__()))
-            return attack_card
+
+            return self.attack_helper(attack_card, round)
 
         if len(possible_cards) == 0:
             return None
         attack_card = self.qAgent.getAction(round.copy())
         if attack_card is None:
             attack_card = choose_min_card(possible_cards, round.trump_card.suit)
-        self.remove_card(attack_card)
-        round.table.add_single_card(attack_card)
-        print('{} {} {}'.format(self.nickname, ATTACK_MSG,
-                                attack_card.__repr__()))
-        print(FEATURING_TABLE_MSG, round.table.get_cards())
-        return attack_card
+
+        return self.attack_helper(attack_card, round)
 
     def defend(self, round):
+        possible_cards = self.defending_options(round.table,
+                                                round.trump_card.suit)
         if len(round.deck.cards) == 0:
-            possible_cards = self.defending_options(round.table, round.trump_card.suit)
             if possible_cards:
                 defence_card = self.minMaxAgent.get_card_to_play(round)
                 if defence_card is None:
                     defence_card = choose_min_card(possible_cards,
                                                    round.trump_card.suit)
                 if defence_card is not None:
-                    self.remove_card(defence_card)
-                    round.table.add_single_card(defence_card)
-                    print('{} {} {}'.format(self.nickname, DEFENCE_MSG,
-                                            defence_card))
-                    print(FEATURING_TABLE_MSG, round.table.get_cards())
-                    return defence_card
-            print(r"{} {}".format(self.nickname, NO_DEFENCE_MSG))
-            print(FEATURING_TABLE_MSG, round.table.get_cards())
-            self.grab_table(round.table)
-            return None
+                    return self.defence_helper(defence_card, round)
+            self.no_defence(round)
 
-        possible_cards = self.defending_options(round.table,
-                                                round.trump_card.suit)
-        if possible_cards:
-            defence_card = self.qAgent.getAction(round.copy())
-            if defence_card is None:
-                defence_card = choose_min_card(possible_cards,
-                                              round.trump_card.suit)
-            self.remove_card(defence_card)
-            round.table.add_single_card(defence_card)
-            print('{} {} {}'.format(self.nickname, DEFENCE_MSG, defence_card))
-            print(FEATURING_TABLE_MSG, round.table.get_cards())
-            return defence_card
-        print(r"{} {}".format(self.nickname, NO_DEFENCE_MSG))
-        print(FEATURING_TABLE_MSG, round.table.get_cards())
-        self.grab_table(round.table)
-        return None
+        return self.q_learning_defence(possible_cards, round)
 
     def adding_card(self, round):
-        if len(round.deck.cards) == 0:
-            possible_cards = self.adding_card_options(round.table)
-            if possible_cards:
-                card_to_add = self.minMaxAgent.get_card_to_play(round)
-                if card_to_add is None:
-                    card_to_add = choose_min_card(possible_cards,
-                                                   round.trump_card.suit)
-                    self.remove_card(card_to_add)
-                    round.table.add_single_card(card_to_add)
-                    print('{} {} {}'.format(self.nickname, ADDING_CARD_MSG,
-                                            card_to_add))
-                    print(FEATURING_TABLE_MSG, round.table.get_cards())
-                    return card_to_add
-            print('{} {}'.format(self.nickname, NO_CARDS_MSG))
-            print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
-            return None
-
         possible_cards = self.adding_card_options(round.table)
-        if possible_cards:
-            card_to_add = self.qAgent.getAction(round.copy())
-            if card_to_add is None:
-                card_to_add = choose_min_card(possible_cards,
-                                              round.trump_card.suit)
-            self.remove_card(card_to_add)
-            round.table.add_single_card(card_to_add)
-            print('{} {} {}'.format(self.nickname, ADDING_CARD_MSG, card_to_add))
-            print(FEATURING_TABLE_MSG, round.table.get_cards())
-            return card_to_add
-        print('{} {}'.format(self.nickname, NO_CARDS_MSG))
-        print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
-        return None
+        if len(round.deck.cards) == 0:
+            if possible_cards:
+                return self.add_card_minimax(possible_cards, round)
+
+            self.no_cards_msg(round)
+
+        return self.add_card_q_learning(possible_cards, round)
