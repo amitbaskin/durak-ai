@@ -227,7 +227,7 @@ class SmartPlayer(Player):
                     print(defence_card)
                     self.remove_card(defence_card)
                     round.table.add_single_card(defence_card)
-                    print('{} defended with {}'.format(self.nickname, defence_card))
+                    print('{} defend with {}'.format(self.nickname, defence_card))
                     print('table:', round.table.get_cards())
                 return defence_card
             print(r"{} can't defend".format(self.nickname))

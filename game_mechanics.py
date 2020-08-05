@@ -252,8 +252,11 @@ class Round:
             print(self.status)
             return self.status
         if self._first_stage():
-            # TODO: i.e. if the defender surrenders? but then a new round begins
+            # If the defender surrenders, we don't go to the
+            # the second stage, but begin a new round
             return "first_stage_finish"
+        # If the defender fought back then we go to the second stage where
+        # the attacker can keep attacking
         self._second_stage()
 
     def check_win(self):
@@ -324,6 +327,7 @@ class Round:
 
     def _first_stage(self):
 
+        print('\n***First Stage Begins***\n')
         print('trump_card: ', self.trump_card)
 
         attacker_cards = self.attacker.sort_cards()
@@ -350,33 +354,36 @@ class Round:
         self.current_player.attacking = True
         self.defender.attacking = False
         self.attacker.attack(self)
-
-        # defender can't defend
         self.current_player = self.defender
         self.current_player.attacking = False
         if self.defender.defend(self) is None:
-            # print('_first_stage no options for defender')
             self.attacker.draw_cards(self.deck)
             return True
         # defender defended successfully
         return False
 
     def _second_stage(self):
+        print('\n***Second Stage Begins***\n')
         cnt = 1
         while True and cnt < 6:
+            # TODO: In each condition we return something so we don't really
+            #  let the loop take place
             self.current_player = self.attacker
             self.current_player.attacking = True
             if self.attacker.adding_card(self) is not None:
                 cnt += 1
-                # TODO: meaning the attacker can continue and add more cards
-                #  to the attack while the defender has already surrendered?
-                #  I thought we said it wasn't an option in our version? or
-                #  at least it wasn't in the gui version?
-                print('_second_stage no options for defender')
-                self.attacker.draw_cards(self.deck)
+                #  TODO: Why can't the defender defend? delete this commented
+                #   printing below?
+                # print('_second_stage no options for defender')
+                if self.defender.defend(self) is None:
+                    self.attacker.draw_cards(self.deck)
+                    # TODO: Delete this! why should attacker keep getting
+                    #  cards while the defender doesn't?
+                    continue
+                # The defender surrendered
                 return False
             else:
-                print('_second_stage no options for attacker')
+                print("{} doesn't add anymore cards".format(self.attacker.nickname))
                 self.attacker.draw_cards(self.deck)
                 self.defender.draw_cards(self.deck)
                 self.pile.update(self.table)
@@ -384,8 +391,11 @@ class Round:
                 self.attacker, self.defender = self.defender, self.attacker
                 self.attacker.attacking, self.defender.attacking = True, False
                 return False
-        # TODO: what does this printing mean?
+        # TODO: what does this printing mean? furthermore, if attacker
+        #  attacked six times then the defender should draw cards
         print('second_stage no cards')
+        self.defender.draw_cards(self.deck)
+
 
     def copy(self):
         return deepcopy(self)
