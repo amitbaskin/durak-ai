@@ -1,0 +1,460 @@
+
+
+round 0
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk 6
+[10 of hearts, 12 of hearts, 13 of hearts, 6 of clubs, 6 of spades, 8 of diamonds]
+def 6
+[11 of clubs, 12 of clubs, 7 of clubs, 7 of diamonds, 7 of spades, 9 of spades]
+table 0
+[]
+deck 24
+[10 of clubs, 10 of diamonds, 10 of spades, 11 of diamonds, 11 of hearts, 11 of spades, 12 of diamonds, 12 of spades, 13 of clubs, 13 of diamonds, 13 of spades, 14 of clubs, 14 of diamonds, 14 of hearts, 14 of spades, 6 of diamonds, 6 of hearts, 7 of hearts, 8 of clubs, 8 of hearts, 8 of spades, 9 of clubs, 9 of diamonds, 9 of hearts]
+pile 0
+[]
+Simple Player attacks with 6 of clubs
+table:  [6 of clubs]
+Smart Player two defends with 9 of spades
+table:  [6 of clubs, 9 of spades]
+
+***Second Stage Begins***
+
+Simple Player adds 6 of spades
+table:  [6 of clubs, 9 of spades, 6 of spades]
+Smart Player two defends with 7 of spades
+table:  [6 of clubs, 6 of spades, 9 of spades, 7 of spades]
+Simple Player has no cards to add
+table:  [6 of clubs, 6 of spades, 9 of spades, 7 of spades]
+Simple Player doesn't add anymore cards 
+moving to the next round!
+
+
+round 1
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk 6
+[11 of clubs, 12 of clubs, 7 of clubs, 7 of diamonds, 8 of spades, 9 of clubs]
+def 6
+[10 of hearts, 12 of hearts, 13 of hearts, 8 of diamonds, 9 of diamonds, 9 of hearts]
+table 0
+[]
+deck 20
+[10 of clubs, 10 of diamonds, 10 of spades, 11 of diamonds, 11 of hearts, 11 of spades, 12 of diamonds, 12 of spades, 13 of clubs, 13 of diamonds, 13 of spades, 14 of clubs, 14 of diamonds, 14 of hearts, 14 of spades, 6 of diamonds, 6 of hearts, 7 of hearts, 8 of clubs, 8 of hearts]
+pile 4
+[6 of clubs, 6 of spades, 7 of spades, 9 of spades]
+Smart Player two attacks with 11 of clubs
+table:  [11 of clubs]
+Simple Player can't defend
+table:  [11 of clubs]
+The defender has surrendered, moving to the next round!
+
+
+round 2
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk 6
+[12 of clubs, 7 of clubs, 7 of diamonds, 8 of hearts, 8 of spades, 9 of clubs]
+def 7
+[10 of hearts, 11 of clubs, 12 of hearts, 13 of hearts, 8 of diamonds, 9 of diamonds, 9 of hearts]
+table 0
+[]
+deck 19
+[10 of clubs, 10 of diamonds, 10 of spades, 11 of diamonds, 11 of hearts, 11 of spades, 12 of diamonds, 12 of spades, 13 of clubs, 13 of diamonds, 13 of spades, 14 of clubs, 14 of diamonds, 14 of hearts, 14 of spades, 6 of diamonds, 6 of hearts, 7 of hearts, 8 of clubs]
+pile 4
+[6 of clubs, 6 of spades, 7 of spades, 9 of spades]
+Smart Player two attacks with 9 of clubs
+table:  [9 of clubs]
+Simple Player defends with 11 of clubs
+table:  [9 of clubs, 11 of clubs]
+
+***Second Stage Begins***
+
+Smart Player two doesn't add anymore cards 
+moving to the next round!
+
+
+round 3
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk 6
+[10 of hearts, 12 of hearts, 13 of hearts, 8 of diamonds, 9 of diamonds, 9 of hearts]
+def 6
+[12 of clubs, 7 of clubs, 7 of diamonds, 8 of clubs, 8 of hearts, 8 of spades]
+table 0
+[]
+deck 18
+[10 of clubs, 10 of diamonds, 10 of spades, 11 of diamonds, 11 of hearts, 11 of spades, 12 of diamonds, 12 of spades, 13 of clubs, 13 of diamonds, 13 of spades, 14 of clubs, 14 of diamonds, 14 of hearts, 14 of spades, 6 of diamonds, 6 of hearts, 7 of hearts]
+pile 6
+[11 of clubs, 6 of clubs, 6 of spades, 7 of spades, 9 of clubs, 9 of spades]
+Simple Player attacks with 8 of diamonds
+table:  [8 of diamonds]
+Smart Player two defends with 8 of spades
+table:  [8 of diamonds, 8 of spades]
+
+***Second Stage Begins***
+
+Simple Player has no cards to add
+table:  [8 of diamonds, 8 of spades]
+Simple Player doesn't add anymore cards 
+moving to the next round!
+
+
+round 4
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk 6
+[12 of clubs, 6 of hearts, 7 of clubs, 7 of diamonds, 8 of clubs, 8 of hearts]
+def 6
+[10 of hearts, 12 of hearts, 13 of hearts, 7 of hearts, 9 of diamonds, 9 of hearts]
+table 0
+[]
+deck 16
+[10 of clubs, 10 of diamonds, 10 of spades, 11 of diamonds, 11 of hearts, 11 of spades, 12 of diamonds, 12 of spades, 13 of clubs, 13 of diamonds, 13 of spades, 14 of clubs, 14 of diamonds, 14 of hearts, 14 of spades, 6 of diamonds]
+pile 8
+[11 of clubs, 6 of clubs, 6 of spades, 7 of spades, 8 of diamonds, 8 of spades, 9 of clubs, 9 of spades]
+Smart Player two attacks with 7 of clubs
+table:  [7 of clubs]
+Simple Player can't defend
+table:  [7 of clubs]
+The defender has surrendered, moving to the next round!
+
+
+round 5
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk 6
+[12 of clubs, 6 of diamonds, 6 of hearts, 7 of diamonds, 8 of clubs, 8 of hearts]
+def 7
+[10 of hearts, 12 of hearts, 13 of hearts, 7 of clubs, 7 of hearts, 9 of diamonds, 9 of hearts]
+table 0
+[]
+deck 15
+[10 of clubs, 10 of diamonds, 10 of spades, 11 of diamonds, 11 of hearts, 11 of spades, 12 of diamonds, 12 of spades, 13 of clubs, 13 of diamonds, 13 of spades, 14 of clubs, 14 of diamonds, 14 of hearts, 14 of spades]
+pile 8
+[11 of clubs, 6 of clubs, 6 of spades, 7 of spades, 8 of diamonds, 8 of spades, 9 of clubs, 9 of spades]
+Smart Player two attacks with 6 of hearts
+table:  [6 of hearts]
+Simple Player defends with 7 of hearts
+table:  [6 of hearts, 7 of hearts]
+
+***Second Stage Begins***
+
+Smart Player two adds 6 of diamonds
+table:  [6 of hearts, 7 of hearts, 6 of diamonds]
+Simple Player defends with 9 of diamonds
+table:  [6 of hearts, 7 of hearts, 6 of diamonds, 9 of diamonds]
+Smart Player two adds 7 of diamonds
+table:  [6 of diamonds, 6 of hearts, 7 of hearts, 9 of diamonds, 7 of diamonds]
+Simple Player can't defend
+table:  [6 of diamonds, 6 of hearts, 7 of hearts, 9 of diamonds, 7 of diamonds]
+The defender has surrendered, moving to the next round!
+
+
+round 6
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk 6
+[12 of clubs, 14 of diamonds, 14 of hearts, 14 of spades, 8 of clubs, 8 of hearts]
+def 10
+[10 of hearts, 12 of hearts, 13 of hearts, 6 of diamonds, 6 of hearts, 7 of clubs, 7 of diamonds, 7 of hearts, 9 of diamonds, 9 of hearts]
+table 0
+[]
+deck 12
+[10 of clubs, 10 of diamonds, 10 of spades, 11 of diamonds, 11 of hearts, 11 of spades, 12 of diamonds, 12 of spades, 13 of clubs, 13 of diamonds, 13 of spades, 14 of clubs]
+pile 8
+[11 of clubs, 6 of clubs, 6 of spades, 7 of spades, 8 of diamonds, 8 of spades, 9 of clubs, 9 of spades]
+Smart Player two attacks with 14 of diamonds
+table:  [14 of diamonds]
+Simple Player can't defend
+table:  [14 of diamonds]
+The defender has surrendered, moving to the next round!
+
+
+round 7
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk 6
+[12 of clubs, 14 of clubs, 14 of hearts, 14 of spades, 8 of clubs, 8 of hearts]
+def 11
+[10 of hearts, 12 of hearts, 13 of hearts, 14 of diamonds, 6 of diamonds, 6 of hearts, 7 of clubs, 7 of diamonds, 7 of hearts, 9 of diamonds, 9 of hearts]
+table 0
+[]
+deck 11
+[10 of clubs, 10 of diamonds, 10 of spades, 11 of diamonds, 11 of hearts, 11 of spades, 12 of diamonds, 12 of spades, 13 of clubs, 13 of diamonds, 13 of spades]
+pile 8
+[11 of clubs, 6 of clubs, 6 of spades, 7 of spades, 8 of diamonds, 8 of spades, 9 of clubs, 9 of spades]
+Smart Player two attacks with 14 of spades
+table:  [14 of spades]
+Simple Player can't defend
+table:  [14 of spades]
+The defender has surrendered, moving to the next round!
+
+
+round 8
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk 6
+[12 of clubs, 13 of spades, 14 of clubs, 14 of hearts, 8 of clubs, 8 of hearts]
+def 12
+[10 of hearts, 12 of hearts, 13 of hearts, 14 of diamonds, 14 of spades, 6 of diamonds, 6 of hearts, 7 of clubs, 7 of diamonds, 7 of hearts, 9 of diamonds, 9 of hearts]
+table 0
+[]
+deck 10
+[10 of clubs, 10 of diamonds, 10 of spades, 11 of diamonds, 11 of hearts, 11 of spades, 12 of diamonds, 12 of spades, 13 of clubs, 13 of diamonds]
+pile 8
+[11 of clubs, 6 of clubs, 6 of spades, 7 of spades, 8 of diamonds, 8 of spades, 9 of clubs, 9 of spades]
+Smart Player two attacks with 8 of clubs
+table:  [8 of clubs]
+Simple Player defends with 14 of spades
+table:  [8 of clubs, 14 of spades]
+
+***Second Stage Begins***
+
+Smart Player two adds 8 of hearts
+table:  [14 of spades, 8 of clubs, 8 of hearts]
+Simple Player defends with 9 of hearts
+table:  [14 of spades, 8 of clubs, 8 of hearts, 9 of hearts]
+Smart Player two adds 14 of hearts
+table:  [14 of spades, 8 of clubs, 8 of hearts, 9 of hearts, 14 of hearts]
+Simple Player can't defend
+table:  [14 of spades, 8 of clubs, 8 of hearts, 9 of hearts, 14 of hearts]
+The defender has surrendered, moving to the next round!
+
+
+round 9
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk 6
+[12 of clubs, 12 of spades, 13 of clubs, 13 of diamonds, 13 of spades, 14 of clubs]
+def 15
+[10 of hearts, 12 of hearts, 13 of hearts, 14 of diamonds, 14 of hearts, 14 of spades, 6 of diamonds, 6 of hearts, 7 of clubs, 7 of diamonds, 7 of hearts, 8 of clubs, 8 of hearts, 9 of diamonds, 9 of hearts]
+table 0
+[]
+deck 7
+[10 of clubs, 10 of diamonds, 10 of spades, 11 of diamonds, 11 of hearts, 11 of spades, 12 of diamonds]
+pile 8
+[11 of clubs, 6 of clubs, 6 of spades, 7 of spades, 8 of diamonds, 8 of spades, 9 of clubs, 9 of spades]
+Smart Player two attacks with 12 of spades
+table:  [12 of spades]
+Simple Player defends with 14 of spades
+table:  [12 of spades, 14 of spades]
+
+***Second Stage Begins***
+
+Smart Player two adds 12 of clubs
+table:  [12 of spades, 14 of spades, 12 of clubs]
+Simple Player can't defend
+table:  [12 of spades, 14 of spades, 12 of clubs]
+The defender has surrendered, moving to the next round!
+
+
+round 10
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk 6
+[11 of spades, 12 of diamonds, 13 of clubs, 13 of diamonds, 13 of spades, 14 of clubs]
+def 17
+[10 of hearts, 12 of clubs, 12 of hearts, 12 of spades, 13 of hearts, 14 of diamonds, 14 of hearts, 14 of spades, 6 of diamonds, 6 of hearts, 7 of clubs, 7 of diamonds, 7 of hearts, 8 of clubs, 8 of hearts, 9 of diamonds, 9 of hearts]
+table 0
+[]
+deck 5
+[10 of clubs, 10 of diamonds, 10 of spades, 11 of diamonds, 11 of hearts]
+pile 8
+[11 of clubs, 6 of clubs, 6 of spades, 7 of spades, 8 of diamonds, 8 of spades, 9 of clubs, 9 of spades]
+Smart Player two attacks with 12 of diamonds
+table:  [12 of diamonds]
+Simple Player defends with 14 of diamonds
+table:  [12 of diamonds, 14 of diamonds]
+
+***Second Stage Begins***
+
+Smart Player two adds 14 of clubs
+table:  [12 of diamonds, 14 of diamonds, 14 of clubs]
+Simple Player defends with 12 of spades
+table:  [12 of diamonds, 14 of diamonds, 14 of clubs, 12 of spades]
+Smart Player two doesn't add anymore cards 
+moving to the next round!
+
+
+round 11
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk 15
+[10 of hearts, 12 of clubs, 12 of hearts, 13 of hearts, 14 of hearts, 14 of spades, 6 of diamonds, 6 of hearts, 7 of clubs, 7 of diamonds, 7 of hearts, 8 of clubs, 8 of hearts, 9 of diamonds, 9 of hearts]
+def 6
+[11 of diamonds, 11 of hearts, 11 of spades, 13 of clubs, 13 of diamonds, 13 of spades]
+table 0
+[]
+deck 3
+[10 of clubs, 10 of diamonds, 10 of spades]
+pile 12
+[11 of clubs, 12 of diamonds, 12 of spades, 14 of clubs, 14 of diamonds, 6 of clubs, 6 of spades, 7 of spades, 8 of diamonds, 8 of spades, 9 of clubs, 9 of spades]
+Simple Player attacks with 6 of diamonds
+table:  [6 of diamonds]
+Smart Player two defends with 13 of spades
+table:  [6 of diamonds, 13 of spades]
+
+***Second Stage Begins***
+
+Simple Player adds 6 of hearts
+table:  [6 of diamonds, 13 of spades, 6 of hearts]
+Smart Player two defends with 11 of spades
+table:  [13 of spades, 6 of diamonds, 6 of hearts, 11 of spades]
+Simple Player adds 13 of hearts
+table:  [13 of spades, 6 of diamonds, 6 of hearts, 11 of spades, 13 of hearts]
+Smart Player two can't defend
+table:  [13 of spades, 6 of diamonds, 6 of hearts, 11 of spades, 13 of hearts]
+The defender has surrendered, moving to the next round!
+
+
+round 12
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk 12
+[10 of hearts, 12 of clubs, 12 of hearts, 14 of hearts, 14 of spades, 7 of clubs, 7 of diamonds, 7 of hearts, 8 of clubs, 8 of hearts, 9 of diamonds, 9 of hearts]
+def 9
+[11 of diamonds, 11 of hearts, 11 of spades, 13 of clubs, 13 of diamonds, 13 of hearts, 13 of spades, 6 of diamonds, 6 of hearts]
+table 0
+[]
+deck 3
+[10 of clubs, 10 of diamonds, 10 of spades]
+pile 12
+[11 of clubs, 12 of diamonds, 12 of spades, 14 of clubs, 14 of diamonds, 6 of clubs, 6 of spades, 7 of spades, 8 of diamonds, 8 of spades, 9 of clubs, 9 of spades]
+Simple Player attacks with 7 of clubs
+table:  [7 of clubs]
+Smart Player two defends with 13 of spades
+table:  [7 of clubs, 13 of spades]
+
+***Second Stage Begins***
+
+Simple Player adds 7 of diamonds
+table:  [7 of clubs, 13 of spades, 7 of diamonds]
+Smart Player two defends with 11 of diamonds
+table:  [13 of spades, 7 of clubs, 7 of diamonds, 11 of diamonds]
+Simple Player adds 7 of hearts
+table:  [13 of spades, 7 of clubs, 7 of diamonds, 11 of diamonds, 7 of hearts]
+Smart Player two defends with 11 of spades
+table:  [11 of diamonds, 13 of spades, 7 of clubs, 7 of diamonds, 7 of hearts, 11 of spades]
+Simple Player has no cards to add
+table:  [11 of diamonds, 13 of spades, 7 of clubs, 7 of diamonds, 7 of hearts, 11 of spades]
+Simple Player doesn't add anymore cards 
+moving to the next round!
+
+
+round 13
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk 6
+[11 of hearts, 13 of clubs, 13 of diamonds, 13 of hearts, 6 of diamonds, 6 of hearts]
+def 9
+[10 of hearts, 12 of clubs, 12 of hearts, 14 of hearts, 14 of spades, 8 of clubs, 8 of hearts, 9 of diamonds, 9 of hearts]
+table 0
+[]
+deck 3
+[10 of clubs, 10 of diamonds, 10 of spades]
+pile 18
+[11 of clubs, 11 of diamonds, 11 of spades, 12 of diamonds, 12 of spades, 13 of spades, 14 of clubs, 14 of diamonds, 6 of clubs, 6 of spades, 7 of clubs, 7 of diamonds, 7 of hearts, 7 of spades, 8 of diamonds, 8 of spades, 9 of clubs, 9 of spades]
+Smart Player two attacks with 11 of hearts
+table:  [11 of hearts]
+Simple Player defends with 12 of hearts
+table:  [11 of hearts, 12 of hearts]
+
+***Second Stage Begins***
+
+Smart Player two doesn't add anymore cards 
+moving to the next round!
+
+
+round 14
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk 8
+[10 of hearts, 12 of clubs, 14 of hearts, 14 of spades, 8 of clubs, 8 of hearts, 9 of diamonds, 9 of hearts]
+def 6
+[10 of spades, 13 of clubs, 13 of diamonds, 13 of hearts, 6 of diamonds, 6 of hearts]
+table 0
+[]
+deck 2
+[10 of clubs, 10 of diamonds]
+pile 20
+[11 of clubs, 11 of diamonds, 11 of hearts, 11 of spades, 12 of diamonds, 12 of hearts, 12 of spades, 13 of spades, 14 of clubs, 14 of diamonds, 6 of clubs, 6 of spades, 7 of clubs, 7 of diamonds, 7 of hearts, 7 of spades, 8 of diamonds, 8 of spades, 9 of clubs, 9 of spades]
+Simple Player attacks with 8 of clubs
+table:  [8 of clubs]
+Smart Player two defends with 13 of clubs
+table:  [8 of clubs, 13 of clubs]
+
+***Second Stage Begins***
+
+Simple Player adds 8 of hearts
+table:  [8 of clubs, 13 of clubs, 8 of hearts]
+Smart Player two defends with 13 of hearts
+table:  [13 of clubs, 8 of clubs, 8 of hearts, 13 of hearts]
+Simple Player has no cards to add
+table:  [13 of clubs, 8 of clubs, 8 of hearts, 13 of hearts]
+Simple Player doesn't add anymore cards 
+moving to the next round!
+
+
+round 15
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk 6
+[10 of clubs, 10 of diamonds, 10 of spades, 13 of diamonds, 6 of diamonds, 6 of hearts]
+def 6
+[10 of hearts, 12 of clubs, 14 of hearts, 14 of spades, 9 of diamonds, 9 of hearts]
+table 0
+[]
+deck 0
+[]
+pile 24
+[11 of clubs, 11 of diamonds, 11 of hearts, 11 of spades, 12 of diamonds, 12 of hearts, 12 of spades, 13 of clubs, 13 of hearts, 13 of spades, 14 of clubs, 14 of diamonds, 6 of clubs, 6 of spades, 7 of clubs, 7 of diamonds, 7 of hearts, 7 of spades, 8 of clubs, 8 of diamonds, 8 of hearts, 8 of spades, 9 of clubs, 9 of spades]
+Smart Player two attacks with 10 of clubs
+table:  [10 of clubs]
+Simple Player defends with 12 of clubs
+table:  [10 of clubs, 12 of clubs]
+
+***Second Stage Begins***
+
+Smart Player two doesn't add anymore cards 
+moving to the next round!
+
+
+round 16
+
+***First Stage Begins***
+
+trump_card:  14 of spades
+atk

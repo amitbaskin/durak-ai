@@ -12,9 +12,6 @@ class DurakSearchProblem(SearchProblem):
         self.player_list = player_list
         self.player_nickname = player_nickname
         self.deck = Deck([])
-        # self.possible_cards = self.deck.get_cards()
-        #  TODO: This row was used to determine the opponent's cards, but we
-        #   can do it directly from the opponent, so this row can be erased
         self.trump_card = None
 
         self.expanded = 0
@@ -42,14 +39,6 @@ class DurakSearchProblem(SearchProblem):
     def get_possible_cards(self, round):
         return round.current_player.options(round.table,
                                             round.trump_card.suit)
-        # TODO: Erase the rows commented below?
-        # if round.current_player.nickname == self.player_nickname:
-        #     return round.current_player.options(round.table,
-        #                                        round.trump_card.suit)
-        # else:
-        #     possible_cards = diff(self.possible_cards, round.pile.pile)
-        #     player = next(p for p in self.player_list if p is not round.current_player)
-        #     return diff(possible_cards, player.cards)
 
     def generate_successor(self, round, card):
         copied_round = round.copy()
@@ -60,12 +49,7 @@ class DurakSearchProblem(SearchProblem):
         if round.current_player.nickname == self.player_nickname:
             possible_cards = set(round.current_player.options(round.table, round.trump_card.suit))
         else:
-            #  TODO: We don't need the rows commented below because we can
-            #   get the opponent's options directly
-            # possible_cards = diff(self.possible_cards,
-            #                       round.current_player.get_cards())
             player = next(p for p in self.player_list if p is not round.current_player)
-            # possible_cards = diff(possible_cards, player.get_cards())
             possible_cards = player.options(round.table, round.trumpcard.suit)
 
         next_possible_rounds = []
@@ -79,28 +63,3 @@ class DurakSearchProblem(SearchProblem):
             next_possible_rounds.append(copied_round.get_next_state_given_card(None))
 
         return next_possible_rounds
-
-# TODO: Erase the rows below?
-# class DurakSearchProblemNonGui(DurakSearchProblem):
-#     def get_start_state(self):
-#         for player in self.player_list:
-#             player._refresh()
-#         deck = Deck()
-#
-#         game_process = GameProcess(self.player_list, deck)
-#         self.trump_card = game_process.trump_card
-#
-#         return game_process.get_initial_round()
-#
-#
-# class DurakSearchProblemGui(DurakSearchProblem):
-#     def get_start_state(self):
-#         for player in self.player_list:
-#             player._refresh()
-#         deck = Deck()
-#         pile = Pile()
-#
-#         round = RoundWithAI(self.player_list, deck, pile)
-#         self.trump_card = round.trump_card
-#
-#         return round

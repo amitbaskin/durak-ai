@@ -5,7 +5,6 @@ import random
 from copy import deepcopy
 import bisect
 
-# TODO:
 '''
 1. Add encoding legend +
 2. Add Human player class +
@@ -33,7 +32,6 @@ class Card:
         return self.__repr__() < other.__repr__()
 
     def __eq__(self, other):
-        # TODO: why do we need to check this?
         if other is None or other == [None]:
             return False
         return self.suit == other.suit and self.number == other.number
@@ -77,7 +75,6 @@ class CardsHolder:
         return self.get_cards()
 
 
-
 class Deck(CardsHolder):
     def __init__(self, cards):
         super().__init__(cards)
@@ -85,8 +82,6 @@ class Deck(CardsHolder):
             for suit in ["spades", "hearts", "diamonds", "clubs"]:
                 self.add_cards([Card(i, suit)])
         random.shuffle(self.cards)
-        # self.cardsObject.cards.insert(0, self.cardsObject.cards[-1]) #
-        # TODO: What is the purpose of this row?
 
     def get_trump(self):
         return self.cards[0]
@@ -101,68 +96,12 @@ class Deck(CardsHolder):
         return cards
 
 
-
-# TODO: Delete This?
-# class Deck:
-#     '''
-#     Class Deck is needed to simulate the card Deck.
-#     It has following methods:
-#     To initialize Deck instance needed to specify size (36 or 52 cards)
-#     '''
-#
-#     def __init__(self, size):
-#         self.size = size
-#         self.cards = self.get_deck()
-#         self.encoded_cards = DeckEncoder(self).encode()
-#         self.encode_legend = DeckEncoder(self).suit_encode()
-#
-#     def get_deck(self):
-#         '''
-#         Generates deck
-#         '''
-#
-#         def card_range():
-#             try:
-#                 if self.size == 52:
-#                     card_numbers = [i for i in range(2, 15)]
-#                 elif self.size == 36:
-#                     card_numbers = [i for i in range(6, 15)]
-#                 return card_numbers
-#             except UnboundLocalError as card_amount_err:
-#                 print("{} Wrong amount of cards".format(card_amount_err))
-#                 sys.exit(1)
-#
-#         def suits():
-#             suits_pack_ = ['Diamonds', 'Hearts', 'Spades', 'Clubs']
-#             return suits_pack_
-#
-#         def random_deck():
-#             cards = []
-#             for number in card_range():
-#                 for suit in suits():
-#                     cards.append(str(number) + '_' + str(suit))
-#                     random.shuffle(cards)
-#             return cards
-#
-#         return random_deck()
-#
-#     def update_deck(self, num_of_cards):
-#         self.encoded_cards = self.encoded_cards[num_of_cards:]
-#
-#     def show_last_card(self):
-#         return self.encoded_cards[-1]
-
-
 class Table(CardsHolder):
     def __init__(self, cards):
         super().__init__(cards)
 
     def add_single_card(self, card):
         self.cards.append(card)
-
-    # TODO: to remove this method?
-    def move_to_pile(self):
-        pass
 
 
 class Pile(CardsHolder):
@@ -214,17 +153,22 @@ class Pointer:
         return (self.attacker_id, self.defender_id)
 
 
-
 class State:
-    def __init__(self, current_player, pile):
-        self.current_player = current_player
-        self.isAttacking = current_player.attacking
-        self.playerCards = current_player.sort_cards()
-        self.pile = pile.sort_cards()
+    def __init__(self, round):
+        self.isAttacking = round.current_player.attacking
+        self.playerCards = set(round.current_player.sort_cards())
+        self.pile = set(round.pile.sort_cards())
+        self.table = set(round.table.sort_cards())
 
-    def __str__(self):
-        return '{}#{}#{}#{}'.format(self.current_player, self.isAttacking,
-                                    self.playerCards, self.pile)
+    def __repr__(self):
+        return '{}#{}#{}#{}'.format(self.isAttacking, self.playerCards, self.pile, self.table)
+
+    def __eq__(self, other):
+        return self.playerCards == other.playerCards and self.table == other.table and self.pile == other.pile and \
+               self.isAttacking == other.isAttacking
+
+    def __hash__(self):
+        return hash(repr(self))
 
 
 class Round:
@@ -242,10 +186,8 @@ class Round:
         self.current_player = self.attacker
         self.count = 0
 
-
     def toState(self):
-        return State(self.current_player, self.pile)
-
+        return State(self)
 
     def round(self):
         if self.check_win():
@@ -256,8 +198,6 @@ class Round:
             # the second stage, but begin a new round
             print("The defender has surrendered, moving to the next round!")
             return None
-            #  TODO: are we sure we don't want to allow the attacker keep
-            #   attacking up to 6 attacks?
         # If the defender fought back then we go to the second stage where
         # the attacker can keep attacking
         self._second_stage()
@@ -362,9 +302,7 @@ class Round:
         self.current_player = self.defender
         self.current_player.attacking = False
         if self.defender.defend(self) is None:
-            # self.attacker.draw_cards(self.deck)
-            # TODO: Delete this! why should attacker keep getting
-            #  cards while the defender doesn't?
+            self.attacker.draw_cards(self.deck)
             return True
         # defender defended successfully
         return False
@@ -373,26 +311,18 @@ class Round:
         print('\n***Second Stage Begins***\n')
         cnt = 1
         while True and cnt < 6:
-            # TODO: In each condition we return something so we don't really
-            #  let the loop take place
             self.current_player = self.attacker
             self.current_player.attacking = True
             if self.attacker.adding_card(self) is not None:
                 cnt += 1
-                #  TODO: Why can't the defender defend? I added his defending
                 self.current_player = self.defender
                 self.current_player.attacking = False
-                if self.defender.defend(self) is not None:
-                    # self.attacker.draw_cards(self.deck)
-                    # TODO: Delete this! why should attacker keep getting
-                    #  cards while the defender doesn't?
-                    continue
-                # The defender surrendered
-                self.attacker.draw_cards(self.deck)
-                self.defender.draw_cards(self.deck)
-                print("The defender has surrendered, moving to the next round!")
-                return False
-            #  TODO: delete the return! it is not being used
+                if self.defender.defend(self) is None:
+                    # The defender surrendered
+                    self.attacker.draw_cards(self.deck)
+                    self.defender.draw_cards(self.deck)
+                    print("The defender has surrendered, moving to the next round!")
+                    return
             else:
                 print("{} doesn't add anymore cards".format(
                     self.attacker.nickname), '\nmoving to the next round!')
@@ -402,10 +332,7 @@ class Round:
                 self.table.clear_cards()
                 self.attacker, self.defender = self.defender, self.attacker
                 self.attacker.attacking, self.defender.attacking = True, False
-                return False
-            #  TODO: delete the return! it is not being used
-        # TODO: If attacker attacked six times then the defender should draw
-        #  cards, I added his draw
+                return
         print("No more attacking allowed, moving to the next round!")
         self.attacker.draw_cards(self.deck)
         self.defender.draw_cards(self.deck)

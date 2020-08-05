@@ -152,11 +152,9 @@ class Player(CardsHolder):
         return potential_cards
 
     def defending_options(self, table, trump_suit):
+        # For the gui
         if len(table.get_cards()) == 0:
             return []
-            # TODO: Should not get here because a player defends only if he
-            #  was attacked, so the table cannot be empty
-
 
         attacking_card = table.get_cards()[-1]
 

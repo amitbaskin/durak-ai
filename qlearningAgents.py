@@ -12,6 +12,7 @@ from learningAgents import ReinforcementAgent
 # from DurakSearchProblem import DurakSearchProblem
 
 import random,util,math
+import pickle
 import numpy as np
 
 class QLearningAgent(ReinforcementAgent):
@@ -46,7 +47,7 @@ class QLearningAgent(ReinforcementAgent):
       Should return 0.0 if we never seen
       a state or (state,action) tuple
     """
-    state = round.toState().__str__()
+    state = round.toState()
     return self.q_values[(state, action)]
 
 
@@ -142,6 +143,10 @@ class DurakQAgent(QLearningAgent):
     args['numTraining'] = numTraining
     self.index = 0  # This is always Pacman
     QLearningAgent.__init__(self, **args)
+
+    with open('trained_weights.pickle', 'rb') as handle:
+        self.q_values = pickle.load(handle)
+
     self.getLegalActions = legalActions_ptr
     # self.searcher = DurakSearchProblem(players_list, "fdb")
 

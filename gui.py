@@ -8,7 +8,7 @@ from imageio import imread
 
 from durak_ai import HandicappedSimplePlayer, SmartPlayer, SmartPlayer2, AiPlayerDumb, SimplePlayer
 from player import HumanPlayer
-from game_mechanics import Pointer, Table, Pile, Deck
+from game_mechanics import Pointer, Table, Pile, Deck, State
 from search import SearchProblem
 
 CARD_WIDTH = 69 + 4
@@ -173,7 +173,7 @@ class Round(SearchProblem):
     def __init__(self, players_list, deck, pile, gui_needed=False):
         self.players_list = players_list
         self.deck = deck
-        self.table = Table()
+        self.table = Table([])
         self.pile = pile
         self.gui_needed = gui_needed
 
@@ -186,8 +186,12 @@ class Round(SearchProblem):
         self.defender.attacking = False
         self.status = None
         self.count = 0
+        self.current_player = self.attacker
 
         self.draw_cards_for_players()
+
+    def toState(self):
+        return State(self)
 
     def get_next_state_given_card(self, card):
         if self.count >= 7:
@@ -195,6 +199,7 @@ class Round(SearchProblem):
             self.table.clear_cards()
             self.current_player = self.defender
             self.attacker, self.defender = self.defender, self.attacker
+            self.attacker.attacking, self.defender.attacking = True, False
             self.attacker.draw_cards(self.deck)
             self.defender.draw_cards(self.deck)
             self.count = 0
@@ -203,21 +208,29 @@ class Round(SearchProblem):
         if card is None:
             if self.defender == self.current_player:
                 self.current_player.grab_table(self.table)
-                self.current_player = self.attacker
+                self.attacker, self.defender = self.defender, self.attacker
+                self.current_player.attacking, self.defender.attacking = \
+                    True, False
             else:
                 self.current_player = self.defender
                 self.attacker, self.defender = self.defender, self.attacker
+                self.attacker.attacking, self.defender.attacking = \
+                    True, False
                 self.pile.update(self.table)
                 self.table.clear_cards()
         else:
             self.table.add_single_card(card)
-            self.current_player.remove_card(card)
+            # self.current_player.remove_card(card)
             self.current_player.draw_cards(self.deck)
 
             if self.defender == self.current_player:
                 self.current_player = self.attacker
+                self.current_player.attacking, self.defender.attacking = \
+                    True, False
             else:
+                self.defender.attacking = True
                 self.current_player = self.defender
+                self.current_player.attacking = False
 
         self.count += 1
         return self
@@ -234,10 +247,10 @@ class Round(SearchProblem):
 
     def check_winner(self):
         winners = []
-        if not self.attacker.playerCards:
+        if not self.attacker.get_cards():
             winners.append(self.attacker.nickname)
-        if not self.defender.playerCards or (len(self.defender.options(self.table, self.trump_card.suit)) == 1 and
-                                             len(self.defender.playerCards) == 1):
+        if not self.defender.get_cards() or (len(self.defender.options(self.table, self.trump_card.suit)) == 1 and
+                                             len(self.defender.get_cards()) == 1):
             winners.append(self.defender.nickname)
         if winners:
             if len(winners) == 2:
@@ -248,7 +261,7 @@ class Round(SearchProblem):
                 return 'WIN'
 
     def check_win(self):
-        if self.deck.playerCards:
+        if self.deck.get_cards():
             return None
         else:
             return self.check_winner()
@@ -287,7 +300,6 @@ class RoundWithHuman(Round):
             self.current_player = self.defender
             if self.defender.defend(self) is None:
                 self.defender.grab_table(self.table)
-            self.draw_cards_for_players()
         else:
             self.current_player = self.defender
             if choice is None:
@@ -299,7 +311,6 @@ class RoundWithHuman(Round):
                 self.defender.remove_card(card)
             self.current_player = self.attacker
             self.attacker.attack(self)
-            self.draw_cards_for_players()
         self.count += 1
 
     def swap_players(self):
@@ -341,7 +352,6 @@ class RoundWithHuman(Round):
             if not self.check_win():
                 self.count = 0
                 self.attacker.attack(self)
-                self.draw_cards_for_players()
             gui.update_gui(self, self.card_pick_callback, self.status)
             return
         else:
@@ -432,9 +442,9 @@ class RoundWithAI(Round):
 
     def _first_stage(self):
         print(self.trump_card)
-        print(self.attacker.nickname, 'num cards', len(self.attacker.playerCards))
-        print(self.defender.nickname, 'defender num cards', len(self.defender.playerCards))
-        print('deck num cards', len(self.deck.playerCards))
+        print(self.attacker.nickname, 'num cards', len(self.attacker.get_cards()))
+        print(self.defender.nickname, 'defender num cards', len(self.defender.get_cards()))
+        print('deck num cards', len(self.deck.get_cards()))
         self.current_player = self.attacker
         if self.attacker.attack(self) is None:
             self.pile.update(self.table)
@@ -465,7 +475,6 @@ class RoundWithAI(Round):
                 self.current_player = self.defender
                 if self.defender.defend(self) is None:
                     print('_second_stage no options for defender')
-                    self.attacker.draw_cards(self.deck)
                     return False
             else:
                 print('_second_stage no options for attacker')
@@ -478,14 +487,16 @@ class RoundWithAI(Round):
                 self.defender.attacking = False
                 gui.update_gui(self, None, self.status, True)
                 return False
-        print('second_stage no cards')
+        print("No more attacking allowed, moving to the next round!")
+        self.attacker.draw_cards(self.deck)
+        self.defender.draw_cards(self.deck)
 
 
 class DurakGame:
     def __init__(self, player_list, gui=None):
-        self.deck = Deck()
+        self.deck = Deck([])
         self.player_list = player_list
-        self.pile = Pile()
+        self.pile = Pile([])
         self.gui = gui
         self.is_human_playing = False
         for player in player_list:
@@ -558,7 +569,7 @@ class Durak_GUI(tk.Tk):
 
     def update_gui(self, game, choose_card_callback, status, show_all=False, is_attacker_first_round=False):
         self.enemy_player_hand.destroy()
-        self.enemy_player_hand = PlayerHand(self.container, self.player_list[0].playerCards, [], choose_card_callback,
+        self.enemy_player_hand = PlayerHand(self.container, self.player_list[0].get_cards(), [], choose_card_callback,
                                             shown=show_all)
         self.enemy_player_hand.grid(row=0, column=1)
 
@@ -569,23 +580,23 @@ class Durak_GUI(tk.Tk):
         self.attacking_label.configure(text=status)
 
         self.table.reset_table()
-        for i in range(0, len(game.table.playerCards), 2):
+        for i in range(0, len(game.table.get_cards()), 2):
             pair = CardPair(self.table)
-            bottom_card = PlayingCardFrame(pair, game.table.playerCards[i])
+            bottom_card = PlayingCardFrame(pair, game.table.get_cards()[i])
             pair.set_bottom_card(bottom_card)
-            if i + 1 < len(game.table.playerCards):
-                top_card = PlayingCardFrame(pair, game.table.playerCards[i + 1])
+            if i + 1 < len(game.table.get_cards()):
+                top_card = PlayingCardFrame(pair, game.table.get_cards()[i + 1])
                 pair.set_top_card(top_card)
             self.table.add_card_pair(pair)
         self.table.update_view()
 
         self.deck.destroy()
-        self.deck = DeckFrame(self.container, len(game.deck.playerCards))
+        self.deck = DeckFrame(self.container, len(game.deck.get_cards()))
         self.deck.grid(row=1, column=2)
 
         playable_cards = self.player_list[1].options(game.table, game.trump_card.suit)
         self.player_hand.destroy()
-        self.player_hand = PlayerHand(self.container, self.player_list[1].playerCards,
+        self.player_hand = PlayerHand(self.container, self.player_list[1].get_cards(),
                                       playable_cards, choose_card_callback, shown=True)
         self.player_hand.grid(row=2, column=1)
 
@@ -604,7 +615,7 @@ class Durak_GUI(tk.Tk):
         self.enemy_label = ttk.Label(self.container, text=self.player_list[0].nickname)
         self.enemy_label.grid(row=0, column=0)
 
-        self.enemy_player_hand = PlayerHand(self.container, self.player_list[0].playerCards, [], choose_card_callback, shown=show_all)
+        self.enemy_player_hand = PlayerHand(self.container, self.player_list[0].get_cards(), [], choose_card_callback, shown=show_all)
         self.enemy_player_hand.grid(row=0, column=1)
 
         progress_text = "Games played so far: " + str(self.amount_of_games)
@@ -617,17 +628,17 @@ class Durak_GUI(tk.Tk):
         self.table = TableFrame(self.container)
         self.table.grid(row=1, column=1)
 
-        for i in range(0, len(game.table.playerCards), 2):
+        for i in range(0, len(game.table.get_cards()), 2):
             pair = CardPair(self.table)
-            bottom_card = PlayingCardFrame(pair, game.table.playerCards[i])
+            bottom_card = PlayingCardFrame(pair, game.table.get_cards()[i])
             pair.set_bottom_card(bottom_card)
-            if i + 1 < len(game.table.playerCards):
-                top_card = PlayingCardFrame(pair, game.table.playerCards[i + 1])
+            if i + 1 < len(game.table.get_cards()):
+                top_card = PlayingCardFrame(pair, game.table.get_cards()[i + 1])
                 pair.set_top_card(top_card)
             self.table.add_card_pair(pair)
         self.table.update_view()
 
-        self.deck = DeckFrame(self.container, len(game.deck.playerCards))
+        self.deck = DeckFrame(self.container, len(game.deck.get_cards()))
         self.deck.grid(row=1, column=2)
 
         self.trump_card = PlayingCardFrame(self.container, game.trump_card)
@@ -637,7 +648,7 @@ class Durak_GUI(tk.Tk):
         self.player_label.grid(row=2, column=0)
 
         playable_cards = self.player_list[1].options(game.table, game.trump_card.suit)
-        self.player_hand = PlayerHand(self.container, self.player_list[1].playerCards,
+        self.player_hand = PlayerHand(self.container, self.player_list[1].get_cards(),
                                       playable_cards, choose_card_callback, shown=True)
         self.player_hand.grid(row=2, column=1)
 
@@ -651,7 +662,8 @@ class Durak_GUI(tk.Tk):
 # player2 = None
 # player2 = HumanPlayer("Eva")
 player1 = SimplePlayer()
-player2 = SmartPlayer2(player1, "2")
+player2 = SimplePlayer()
+# player2 = SmartPlayer2(player1, "2")
 gui = Durak_GUI([player1, player2], None)
 
 if __name__ == "__main__":
