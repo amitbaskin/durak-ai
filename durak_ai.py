@@ -343,7 +343,6 @@ class SmartPlayer2(Player):
                     defence_card = choose_min_card(possible_cards,
                                                    round.trump_card.suit)
                 if defence_card is not None:
-                    print(defence_card)
                     self.remove_card(defence_card)
                     round.table.add_single_card(defence_card)
                     print('{} {} {}'.format(self.nickname, DEFENCE_MSG,
@@ -387,7 +386,7 @@ class SmartPlayer2(Player):
                     print(FEATURING_TABLE_MSG, round.table.get_cards())
                     return card_to_add
             print('{} {}'.format(self.nickname, NO_CARDS_MSG))
-            print('{] {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
+            print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
             return None
 
         possible_cards = self.adding_card_options(round.table)
