@@ -2,7 +2,8 @@ import random
 from player import Player
 from Agents import MiniMaxAgent
 import numpy as np
-from qlearningAgents import DurakQAgent
+from qlearningAgents import DurakQAgent, ApproximateQAgent
+from DurakSearchProblem import DurakSearchProblem
 
 
 NO_CARDS_MSG = 'has no cards to add'
@@ -204,7 +205,7 @@ class SmartPlayer2(Player):
         super().__init__(self.nickname, [])
         self.minMaxAgent = MiniMaxAgent(self.round_evaluation, [self, opponent],
                                         self.nickname)
-        self.qAgent = DurakQAgent([self, opponent], self.minMaxAgent.searcher.get_possible_cards, numTraining=50)
+        self.qAgent = DurakQAgent(self.minMaxAgent.searcher.get_possible_cards, numTraining=50)
 
     def get_opponent(self, round):
         if self.nickname == round.attacker.nickname:
@@ -260,5 +261,48 @@ class SmartPlayer2(Player):
                 return self.add_card_minimax(possible_cards, round)
 
             self.no_cards_msg(round)
+
+        return self.add_card_q_learning(possible_cards, round)
+
+
+class PureQAgent(Player):
+    def __init__(self, opponent, name):
+        self.nickname = "Smart Player" + name
+        super().__init__(self.nickname, [])
+        self.searcher = DurakSearchProblem([self, opponent], self.nickname)
+        self.qAgent = ApproximateQAgent(self.searcher.get_possible_cards, numTraining=50)
+
+    def get_opponent(self, round):
+        if self.nickname == round.attacker.nickname:
+            return round.defender
+        return round.attacker
+
+    def round_evaluation(self, round):
+        my_cards_amount = len(self.get_cards())
+        opponent_cards = self.get_opponent(round).get_cards()
+        opponent_cards_amount = len(opponent_cards)
+        if my_cards_amount == 0 and opponent_cards_amount > 0:
+            return np.inf
+        return len(opponent_cards) - len(self.get_cards())
+
+    def attack(self, round):
+        possible_cards = self.attacking_options(round.table)
+
+        if len(possible_cards) == 0:
+            return None
+        attack_card = self.qAgent.getAction(round.copy())
+        if attack_card is None:
+            attack_card = choose_min_card(possible_cards, round.trump_card.suit)
+
+        return self.attack_helper(attack_card, round)
+
+    def defend(self, round):
+        possible_cards = self.defending_options(round.table,
+                                                round.trump_card.suit)
+
+        return self.q_learning_defence(possible_cards, round)
+
+    def adding_card(self, round):
+        possible_cards = self.adding_card_options(round.table)
 
         return self.add_card_q_learning(possible_cards, round)

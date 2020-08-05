@@ -15,3 +15,4 @@ build/
 game.log
 
 .idea
+qAgent_learn_stats.txt

@@ -41,18 +41,28 @@ class Player(CardsHolder):
             return self.defend(round)
 
     def attack_helper(self, attack_card, round):
+        prev_round = round.copy()
         self.remove_card(attack_card)
         round.table.add_single_card(attack_card)
         print('{} {} {}'.format(self.nickname, ATTACK_MSG,
                                 attack_card.__repr__()))
         print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
+        if self.qAgent is not None:
+            # TODO:: Make round evaluation better?
+            delta_reward = self.round_evaluation(round) - self.round_evaluation(prev_round)
+            self.qAgent.observeTransition(prev_round, attack_card, round, delta_reward)
         return attack_card
 
     def add_card_helper(self, card_to_add, round):
+        prev_round = round.copy()
         self.remove_card(card_to_add)
         round.table.add_single_card(card_to_add)
         print('{} {} {}'.format(self.nickname, ADDING_CARD_MSG, card_to_add))
         print(FEATURING_TABLE_MSG, round.table.get_cards())
+        if self.qAgent is not None:
+            # TODO:: Make round evaluation better?
+            delta_reward = self.round_evaluation(round) - self.round_evaluation(prev_round)
+            self.qAgent.observeTransition(prev_round, card_to_add, round, delta_reward)
         return card_to_add
 
     def no_cards_msg(self, round):
@@ -60,10 +70,15 @@ class Player(CardsHolder):
         print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
 
     def defence_helper(self, defence_card, round):
+        prev_round = round.copy()
         self.remove_card(defence_card)
         round.table.add_single_card(defence_card)
         print('{} {} {}'.format(self.nickname, DEFENCE_MSG, defence_card))
         print(FEATURING_TABLE_MSG, round.table.get_cards())
+        if self.qAgent is not None:
+            # TODO:: Make round evaluation better?
+            delta_reward = self.round_evaluation(round) - self.round_evaluation(prev_round)
+            self.qAgent.observeTransition(prev_round, defence_card, round, delta_reward)
         return defence_card
 
     def no_defence(self, round):
