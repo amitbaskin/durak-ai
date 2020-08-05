@@ -29,7 +29,7 @@ def game_instance(list_of_players):
     for _ in range(1000):
         for player in list_of_players:
             player._refresh()
-        deck = Deck()
+        deck = Deck([])
         # print(deck)
         g = GameProcess(list_of_players, deck)
         # ptr = Pointer(list_of_players)

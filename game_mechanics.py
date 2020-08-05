@@ -46,17 +46,39 @@ class Card:
     def __hash__(self):
         return self.number + self.suit_num_delta()
 
-class Deck:
-    def __init__(self):
-        self.cards = []
+
+class CardsObject:
+    def __init__(self, cards):
+        self.cards = cards
+
+    def show(self):
+        cards = []
+        for card in self.cards:
+            curr_card = card.__repr__()
+            cards.append(curr_card)
+        cards.sort()
+        return cards
+
+
+class CardsHolder:
+    def __init__(self, cards):
+        self.cardsObject = CardsObject(cards)
+
+    def show(self):
+        return self.cardsObject.show()
+
+
+class Deck(CardsHolder):
+    def __init__(self, cards):
+        super().__init__(cards)
         for i in range(6, 15):
             for suit in ["spades", "hearts", "diamonds", "clubs"]:
-                self.cards.append(Card(i, suit))
-        random.shuffle(self.cards)
-        self.cards.insert(0, self.cards[-1])
+                self.cardsObject.cards.append(Card(i, suit))
+        random.shuffle(self.cardsObject.cards)
+        self.cardsObject.cards.insert(0, self.cardsObject.cards[-1])
 
     def draw_card(self):
-        return self.cards.pop()
+        return self.cardsObject.cards.pop()
 
     def draw_cards(self, number):
         cards = []
@@ -64,6 +86,8 @@ class Deck:
             cards.append(self.draw_card())
         return cards
 
+
+# TODO: Delete This?
 # class Deck:
 #     '''
 #     Class Deck is needed to simulate the card Deck.
@@ -114,87 +138,30 @@ class Deck:
 #         return self.encoded_cards[-1]
 
 
-class DeckEncoder:
-    '''
-    Encoding all str to numerical
-    deck_instance == instance of the class Deck
-    '''
-
-    def __init__(self, deck_instance):
-        self.deck_instance = deck_instance
-        self.encode_legend = self.suit_encode()
-
-    def suit_encode(self):
-        suits = [(i.split('_')[1]) for i in self.deck_instance.playerCards]
-        trump = suits[-1]
-        suits_except_trump = list(set(suits))
-        suits_except_trump.remove(trump)
-        encode_dict = {trump: 0}
-        encode_dict.update(dict([(val, num + 1) for num, val in enumerate(suits_except_trump)]))
-        # self.deck_instance.encode_legend = encode_dict
-        return encode_dict
-
-    def encode(self):
-        splitted_deck = [(i.split('_')) for i in self.deck_instance.playerCards]
-        for num, card in enumerate(splitted_deck):
-            splitted_deck[num][0] = int(splitted_deck[num][0])
-            splitted_deck[num][1] = self.encode_legend[card[1]]
-        # self.deck_instance.encoded_cards = splitted_deck
-        return splitted_deck
-
-
-class DeckDecoder:
-    '''
-    Encoding all numerical back to str
-    '''
-
-    def __init__(self, deck_instance):
-        self.deck_instance = deck_instance
-
-    def decode(self):
-        encode_legend_rev = dict([[v, k] for k, v in self.deck_instance.encode_legend.items()])
-        decoded_deck = [str(i[0]) + '_' + str(encode_legend_rev[i[1]]) \
-                        for i in self.deck_instance.encoded_cards]
-        self.deck_instance.playerCards = decoded_deck
-
-    def example(self):
-        return ('input:\n{}\noutput:\n{}'.format(self.deck_instance.encoded_cards, self.deck_instance.playerCards))
-
-
-class Table:
-    def __init__(self):
-        self.cards = []
+class Table(CardsHolder):
+    def __init__(self, cards):
+        super().__init__(cards)
 
     def update_table(self, card):
-        self.cards += [card]
+        self.cardsObject.cards += [card]
 
     def move_to_pile(self):
         pass
 
-    def show(self):
-        return self.cards
-
     def clear(self):
-        self.cards = []
+        self.cardsObject.cards = []
 
 
-class Pile:
+class Pile(CardsHolder):
 
-    def __init__(self):
-        self.pile = []
+    def __init__(self, cards):
+        super().__init__(cards)
 
     def update(self, table_instance):
-        self.pile += table_instance.cards
+        self.cardsObject.cards += table_instance.cards
 
     def clear_pile(self):
-        self.pile = []
-
-    def show(self):
-        return self.pile
-
-    def sorted(self):
-        return [card.__repr__() for card in self.pile].sort()
-
+        self.cardsObject.cards = []
 
 
 class Pointer:
@@ -241,7 +208,7 @@ class State:
     def __init__(self, current_player, pile):
         self.current_player = current_player
         self.isAttacking = current_player.attacking
-        self.playerCards = current_player.showCards
+        self.playerCards = current_player.show
         self.pile = pile.sorted()
 
     def __str__(self):
@@ -258,7 +225,7 @@ class Round:
         self.attacker = players_list[pointer.attacker_id]
         self.attacker.attacking = True
         self.defender = players_list[pointer.defender_id]
-        self.table = Table() if table is None else table
+        self.table = Table([]) if table is None else table
         self.pile = pile
         self.status = None if status is None else status
         self.current_player = self.attacker
@@ -278,7 +245,7 @@ class Round:
         self._second_stage()
 
     def check_win(self):
-        if self.deck.cards:
+        if self.deck.cardsObject.cards:
             pass
         else:
             return self.check_winner()
@@ -344,12 +311,15 @@ class Round:
         return self
 
     def _first_stage(self):
-        print('atk', len(self.attacker.cards))
-        attackerCards = self.attacker.showCards()
+        print('atk', len(self.attacker.cardsObject.cards))
+        attackerCards = self.attacker.cardsObject.show()
         print(attackerCards)
-        print('def', len(self.defender.cards))
-        print(self.defender.showCards())
-        print('deck', len(self.deck.cards))
+        print('def', len(self.defender.cardsObject.cards))
+        print(self.defender.cardsObject.show())
+        print('deck', len(self.deck.cardsObject.cards))
+        print(self.deck.show())
+        print('pile', len(self.pile.cardsObject.cards))
+        print(self.pile.show())
         self.current_player = self.attacker
         self.current_player.attacking = True
         self.defender.attacking = False
@@ -397,8 +367,8 @@ class GameProcess:
         self.draw_card_for_trump()
         self.get_cards()
         self.pointer = Pointer(players_list, self.trump_card.suit)
-        self.table = Table()
-        self.pile = Pile()
+        self.table = Table([])
+        self.pile = Pile([])
 
     def draw_card_for_trump(self):
         self.trump_card = self.deck.draw_card()
@@ -423,3 +393,50 @@ class GameProcess:
             r.round()
             i += 1
         return r.status
+
+
+class DeckEncoder:
+    '''
+    Encoding all str to numerical
+    deck_instance == instance of the class Deck
+    '''
+
+    def __init__(self, deck_instance):
+        self.deck_instance = deck_instance
+        self.encode_legend = self.suit_encode()
+
+    def suit_encode(self):
+        suits = [(i.split('_')[1]) for i in self.deck_instance.playerCards]
+        trump = suits[-1]
+        suits_except_trump = list(set(suits))
+        suits_except_trump.remove(trump)
+        encode_dict = {trump: 0}
+        encode_dict.update(dict([(val, num + 1) for num, val in enumerate(suits_except_trump)]))
+        # self.deck_instance.encode_legend = encode_dict
+        return encode_dict
+
+    def encode(self):
+        splitted_deck = [(i.split('_')) for i in self.deck_instance.playerCards]
+        for num, card in enumerate(splitted_deck):
+            splitted_deck[num][0] = int(splitted_deck[num][0])
+            splitted_deck[num][1] = self.encode_legend[card[1]]
+        # self.deck_instance.encoded_cards = splitted_deck
+        return splitted_deck
+
+
+class DeckDecoder:
+    '''
+    Encoding all numerical back to str
+    '''
+
+    def __init__(self, deck_instance):
+        self.deck_instance = deck_instance
+
+    def decode(self):
+        encode_legend_rev = dict([[v, k] for k, v in self.deck_instance.encode_legend.items()])
+        decoded_deck = [str(i[0]) + '_' + str(encode_legend_rev[i[1]]) \
+                        for i in self.deck_instance.encoded_cards]
+        self.deck_instance.playerCards = decoded_deck
+
+    def example(self):
+        return ('input:\n{}\noutput:\n{}'.format(self.deck_instance.encoded_cards, self.deck_instance.playerCards))

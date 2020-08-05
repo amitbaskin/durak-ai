@@ -1,17 +1,12 @@
-class Player:
-    def __init__(self, nickname):
+from game_mechanics import CardsObject, CardsHolder
+
+
+class Player(CardsHolder):
+    def __init__(self, nickname, cards):
+        super().__init__(cards)
         self.nickname = nickname
-        self.cards = []
         self.human = False
         self.attacking = False
-
-    def showCards(self):
-        cards = []
-        for card in self.cards:
-            curr_card = card.__repr__()
-            cards.append(curr_card)
-        cards.sort()
-        return cards
 
     def play_move(self, round):
         if self.attacking:
@@ -40,11 +35,11 @@ class Player:
         n_cards_to_draw = 6 - len(self.cards)
         if n_cards_to_draw < 0:
             n_cards_to_draw = 0
-        n_of_cards_left = len(deck_instance.cards)
+        n_of_cards_left = len(deck_instance.cardsObject.cards)
         if n_of_cards_left > n_cards_to_draw:
-            self.cards += deck_instance.draw_cards(n_cards_to_draw)
+            self.cardsObject.cards += deck_instance.draw_cards(n_cards_to_draw)
         elif n_of_cards_left <= n_cards_to_draw:
-            self.cards += deck_instance.draw_cards(n_of_cards_left)
+            self.cardsObject.cards += deck_instance.draw_cards(n_of_cards_left)
         else:
             print('no cards to draw')
 
@@ -52,11 +47,11 @@ class Player:
         print('to remove:', card)
         if card is None:
             return
-        self.cards.remove(card)
+        self.cardsObject.cards.remove(card)
 
     def attacking_options(self, table):
-        if len(table.cards) == 0:
-            return self.cards
+        if len(table.cardsObject.cards) == 0:
+            return self.cardsObject.cards
 
         return self.adding_card_options(table)
 
@@ -66,13 +61,13 @@ class Player:
         return potential_cards
 
     def defending_options(self, table, trump_suit):
-        if len(table.cards) == 0:
+        if len(table.cardsObject.cards) == 0:
             return []
             # TODO: Should not get here because a player defends only if he
             #  was attacked, so the table cannot be empty
 
 
-        attacking_card = table.cards[-1]
+        attacking_card = table.cardsObject.cards[-1]
 
         # Checking if attacking_card (last card on a table) is trump.
         if attacking_card.suit == trump_suit:
@@ -85,7 +80,7 @@ class Player:
         return non_trump_options + trump_cards
 
     def grab_table(self, table):
-        self.cards += table.cards
+        self.cardsObject.cards += table.cardsObject.cards
         table.clear()
 
     def _refresh(self):
@@ -94,7 +89,7 @@ class Player:
 
 class HumanPlayer(Player):
     def __init__(self, nickname):
-        super().__init__(nickname)
+        super().__init__(nickname, [])
         self.human = True
 
     def attack(self, round):

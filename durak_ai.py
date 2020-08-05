@@ -183,7 +183,7 @@ class HandicappedSimplePlayer(Player):
 class SmartPlayer(Player):
     def __init__(self, opponent, name):
         self.nickname = "Smart Player" + name
-        super().__init__(self.nickname)
+        super().__init__(self.nickname, [])
         self.agent = MiniMaxAgent(self.round_evaluation, [self, opponent],
                                   self.nickname)
 
@@ -203,7 +203,7 @@ class SmartPlayer(Player):
 
     def attack(self, round):
         possible_cards = self.attacking_options(round.table)
-        if len(round.deck.cards) == 0:
+        if len(round.deck.cardsObject.cards) == 0:
             if len(possible_cards) == 0:
                 return None
             attack_card = self.agent.get_card_to_play(round)
@@ -225,7 +225,7 @@ class SmartPlayer(Player):
         return attack_card
 
     def defend(self, round):
-        if len(round.deck.cards) == 0:
+        if len(round.deck.cardsObject.cards) == 0:
             possible_cards = self.defending_options(round.table, round.trump_card.suit)
             if possible_cards:
                 defence_card = self.agent.get_card_to_play(round)
@@ -285,7 +285,7 @@ class SmartPlayer(Player):
 class SmartPlayer2(Player):
     def __init__(self, opponent, name):
         self.nickname = "Smart Player" + name
-        super().__init__(self.nickname)
+        super().__init__(self.nickname, [])
         self.minMaxAgent = MiniMaxAgent(self.round_evaluation, [self, opponent],
                                         self.nickname)
         self.qAgent = DurakQAgent([self, opponent], self.minMaxAgent.searcher.get_possible_cards, numTraining=50)

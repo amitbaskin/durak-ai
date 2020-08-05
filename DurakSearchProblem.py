@@ -11,8 +11,8 @@ class DurakSearchProblem(SearchProblem):
     def __init__(self, player_list, player_nickname):
         self.player_list = player_list
         self.player_nickname = player_nickname
-        deck = Deck()
-        self.possible_cards = deck.cards
+        deck = Deck([])
+        self.possible_cards = deck.cardsObject.cards
         self.trump_card = None
 
         self.expanded = 0
@@ -20,7 +20,7 @@ class DurakSearchProblem(SearchProblem):
     def get_start_state(self):
         for player in self.player_list:
             player._refresh()
-        deck = Deck()
+        deck = Deck([])
 
         game_process = GameProcess(self.player_list, deck)
         self.trump_card = game_process.trump_card
@@ -57,7 +57,7 @@ class DurakSearchProblem(SearchProblem):
         if round.current_player.nickname == self.player_nickname:
             possible_cards = set(round.current_player.options(round.table, round.trump_card.suit))
         else:
-            possible_cards = diff(self.possible_cards, round.pile.playerCards)
+            possible_cards = diff(self.possible_cards, round.cards.playerCards)
             player = next(p for p in self.player_list if p is not round.current_player)
             possible_cards = diff(possible_cards, player.playerCards)
 
