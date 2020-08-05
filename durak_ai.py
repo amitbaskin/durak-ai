@@ -345,7 +345,7 @@ class SmartPlayer2(Player):
                     print('{} defended with {}'.format(self.nickname, defence_card))
                     return defence_card
             print(r"{} can't defend".format(self.nickname))
-            print('table:', round.table.get_cards_strs())
+            print('table:', round.table.get_cards())
             self.grab_table(round.table)
             return None
 
@@ -361,7 +361,7 @@ class SmartPlayer2(Player):
             print('{} defended with {}'.format(self.nickname, defence_card))
             return defence_card
         print(r"{} can't defend".format(self.nickname))
-        print('table:', round.table.get_cards_strs())
+        print('table:', round.table.get_cards())
         self.grab_table(round.table)
         return None
 
@@ -379,7 +379,7 @@ class SmartPlayer2(Player):
                 #print('T add: {}'.format(table.show()))
                     return card_to_add
             print('{} no cards to add'.format(self.nickname))
-            print('table: {}'.format(round.table.get_cards_strs()))
+            print('table: {}'.format(round.table.get_cards()))
             return None
 
         possible_cards = self.adding_card_options(round.table)
@@ -394,5 +394,5 @@ class SmartPlayer2(Player):
             #print('T add: {}'.format(table.show()))
             return card_to_add
         print('{} no cards to add'.format(self.nickname))
-        print('table: {}'.format(round.table.get_cards_strs()))
+        print('table: {}'.format(round.table.get_cards()))
         return None

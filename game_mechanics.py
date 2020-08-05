@@ -219,8 +219,8 @@ class State:
     def __init__(self, current_player, pile):
         self.current_player = current_player
         self.isAttacking = current_player.attacking
-        self.playerCards = current_player.get_cards()
-        self.pile = pile.cards.sort()
+        self.playerCards = current_player.sort_cards()
+        self.pile = pile.sort_cards()
 
     def __str__(self):
         return '{}#{}#{}#{}'.format(self.current_player, self.isAttacking,
@@ -322,6 +322,8 @@ class Round:
         return self
 
     def _first_stage(self):
+
+        print('trump_card: ', self.trump_card)
 
         attacker_cards = self.attacker.sort_cards()
         print('atk', len(attacker_cards))
