@@ -5,6 +5,14 @@ import numpy as np
 from qlearningAgents import DurakQAgent
 
 
+NO_CARDS_MSG = 'has no cards to add'
+FEATURING_TABLE_MSG = 'table: '
+ADDING_CARD_MSG = 'adds'
+NO_DEFENCE_MSG = "can't defend"
+DEFENCE_MSG = 'defends with'
+ATTACK_MSG = 'attacks with'
+
+
 def diff(l1, l2):
     return [item for item in l1 if item not in l2]
 
@@ -168,9 +176,9 @@ class HandicappedSimplePlayer(Player):
             card_to_add = choose_min_card(possible_cards, round.trump_card.suit)
             self.remove_card(card_to_add)
             round.table.add_single_card(card_to_add)
-            print('{} adding card {}'.format(self.nickname, card_to_add))
+            print('{} {} {}'.format(self.nickname, ADDING_CARD_MSG, card_to_add))
             return card_to_add
-        print('{} no cards to add'.format(self.nickname))
+        print('{} {}'.format(self.nickname, NO_CARDS_MSG))
         print('table: {}'.format(round.table.get_cards_strs()))
         return None
 
@@ -206,7 +214,8 @@ class SmartPlayer(Player):
                 attack_card = choose_min_card(possible_cards, round.trump_card.suit)
             self.remove_card(attack_card)
             round.table.add_single_card(attack_card)
-            print('{} attack with {} of {}'.format(self.nickname, attack_card.number, attack_card.suit))
+            print('{} attacks with {} of {}'.format(self.nickname,
+                                                    attack_card.number, attack_card.suit))
             return attack_card
 
         if len(possible_cards) == 0:
@@ -214,8 +223,9 @@ class SmartPlayer(Player):
         attack_card = choose_min_card(possible_cards, round.trump_card.suit)
         self.remove_card(attack_card)
         round.table.add_single_card(attack_card)
-        print('{} attack with {} of {}'.format(self.nickname, attack_card.number, attack_card.suit))
-        print('table:', round.table.get_cards())
+        print('{} {} {}'.format(self.nickname, ATTACK_MSG,
+                                attack_card.__repr__()))
+        print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
         return attack_card
 
     def defend(self, round):
@@ -224,14 +234,13 @@ class SmartPlayer(Player):
             if possible_cards:
                 defence_card = self.agent.get_card_to_play(round)
                 if defence_card is not None:
-                    print(defence_card)
                     self.remove_card(defence_card)
                     round.table.add_single_card(defence_card)
-                    print('{} defend with {}'.format(self.nickname, defence_card))
-                    print('table:', round.table.get_cards())
+                    print('{} {} {}'.format(self.nickname, DEFENCE_MSG, defence_card))
+                    print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
                 return defence_card
-            print(r"{} can't defend".format(self.nickname))
-            print('table:', round.table.get_cards())
+            print(r"{} {}".format(self.nickname, NO_DEFENCE_MSG))
+            print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
             self.grab_table(round.table)
             return None
 
@@ -242,11 +251,11 @@ class SmartPlayer(Player):
                                            round.trump_card.suit)
             self.remove_card(defence_card)
             round.table.add_single_card(defence_card)
-            print('{} defended with {}'.format(self.nickname, defence_card))
-            print('table:', round.table.get_cards())
+            print('{} {} {}'.format(self.nickname, DEFENCE_MSG, defence_card))
+            print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
             return defence_card
-        print(r"{} can't defend".format(self.nickname))
-        print('table:', round.table.get_cards())
+        print(r"{} {}".format(self.nickname, NO_DEFENCE_MSG))
+        print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
         self.grab_table(round.table)
         return None
 
@@ -258,11 +267,11 @@ class SmartPlayer(Player):
                 if card_to_add is not None:
                     self.remove_card(card_to_add)
                     round.table.add_single_card(card_to_add)
-                    print('{} adding card {}'.format(self.nickname, card_to_add))
-                    print('table:', round.table.get_cards())
+                    print('{} {} {}'.format(self.nickname, ADDING_CARD_MSG, card_to_add))
+                    print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
                 return card_to_add
-            print('{} no cards to add'.format(self.nickname))
-            print('table: {}'.format(round.table.get_cards()))
+            print('{} {}'.format(self.nickname, NO_CARDS_MSG))
+            print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
             return None
 
         possible_cards = self.adding_card_options(round.table)
@@ -270,11 +279,11 @@ class SmartPlayer(Player):
             card_to_add = choose_min_card(possible_cards, round.trump_card.suit)
             self.remove_card(card_to_add)
             round.table.add_single_card(card_to_add)
-            print('{} adding card {}'.format(self.nickname, card_to_add))
-            print('table:', round.table.get_cards())
+            print('{} {} {}'.format(self.nickname, ADDING_CARD_MSG, card_to_add))
+            print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
             return card_to_add
-        print('{} no cards to add'.format(self.nickname))
-        print('table: {}'.format(round.table.get_cards()))
+        print('{} {}'.format(self.nickname, NO_CARDS_MSG))
+        print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
         return None
 
 
@@ -309,7 +318,8 @@ class SmartPlayer2(Player):
                 attack_card = choose_min_card(possible_cards, round.trump_card.suit)
             self.remove_card(attack_card)
             round.table.add_single_card(attack_card)
-            print('{} attack with {} of {}'.format(self.nickname, attack_card.number, attack_card.suit))
+            print('{} {} {}'.format(self.nickname, ATTACK_MSG,
+                                    attack_card.__repr__()))
             return attack_card
 
         if len(possible_cards) == 0:
@@ -319,8 +329,9 @@ class SmartPlayer2(Player):
             attack_card = choose_min_card(possible_cards, round.trump_card.suit)
         self.remove_card(attack_card)
         round.table.add_single_card(attack_card)
-        print('{} attack with {} of {}'.format(self.nickname, attack_card.number, attack_card.suit))
-        print('table:', round.table.get_cards())
+        print('{} {} {}'.format(self.nickname, ATTACK_MSG,
+                                attack_card.__repr__()))
+        print(FEATURING_TABLE_MSG, round.table.get_cards())
         return attack_card
 
     def defend(self, round):
@@ -335,11 +346,12 @@ class SmartPlayer2(Player):
                     print(defence_card)
                     self.remove_card(defence_card)
                     round.table.add_single_card(defence_card)
-                    print('{} defended with {}'.format(self.nickname, defence_card))
-                    print('table:', round.table.get_cards())
+                    print('{} {} {}'.format(self.nickname, DEFENCE_MSG,
+                                            defence_card))
+                    print(FEATURING_TABLE_MSG, round.table.get_cards())
                     return defence_card
-            print(r"{} can't defend".format(self.nickname))
-            print('table:', round.table.get_cards())
+            print(r"{} {}".format(self.nickname, NO_DEFENCE_MSG))
+            print(FEATURING_TABLE_MSG, round.table.get_cards())
             self.grab_table(round.table)
             return None
 
@@ -352,11 +364,11 @@ class SmartPlayer2(Player):
                                               round.trump_card.suit)
             self.remove_card(defence_card)
             round.table.add_single_card(defence_card)
-            print('{} defended with {}'.format(self.nickname, defence_card))
-            print('table:', round.table.get_cards())
+            print('{} {} {}'.format(self.nickname, DEFENCE_MSG, defence_card))
+            print(FEATURING_TABLE_MSG, round.table.get_cards())
             return defence_card
-        print(r"{} can't defend".format(self.nickname))
-        print('table:', round.table.get_cards())
+        print(r"{} {}".format(self.nickname, NO_DEFENCE_MSG))
+        print(FEATURING_TABLE_MSG, round.table.get_cards())
         self.grab_table(round.table)
         return None
 
@@ -370,11 +382,12 @@ class SmartPlayer2(Player):
                                                    round.trump_card.suit)
                     self.remove_card(card_to_add)
                     round.table.add_single_card(card_to_add)
-                    print('{} adding card {}'.format(self.nickname, card_to_add))
-                    print('table:', round.table.get_cards())
+                    print('{} {} {}'.format(self.nickname, ADDING_CARD_MSG,
+                                            card_to_add))
+                    print(FEATURING_TABLE_MSG, round.table.get_cards())
                     return card_to_add
-            print('{} no cards to add'.format(self.nickname))
-            print('table: {}'.format(round.table.get_cards()))
+            print('{} {}'.format(self.nickname, NO_CARDS_MSG))
+            print('{] {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
             return None
 
         possible_cards = self.adding_card_options(round.table)
@@ -385,9 +398,9 @@ class SmartPlayer2(Player):
                                               round.trump_card.suit)
             self.remove_card(card_to_add)
             round.table.add_single_card(card_to_add)
-            print('{} adding card {}'.format(self.nickname, card_to_add))
-            print('table:', round.table.get_cards())
+            print('{} {} {}'.format(self.nickname, ADDING_CARD_MSG, card_to_add))
+            print(FEATURING_TABLE_MSG, round.table.get_cards())
             return card_to_add
-        print('{} no cards to add'.format(self.nickname))
-        print('table: {}'.format(round.table.get_cards()))
+        print('{} {}'.format(self.nickname, NO_CARDS_MSG))
+        print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
         return None

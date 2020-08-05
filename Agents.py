@@ -40,18 +40,6 @@ class MiniMaxAgent(MultiAgentSearchAgent):
                 return self.evaluation_function(curr_round), card_to_play
 
             if max_turn:
-                # if len(curr_round.current_player.playerCards) == 0:
-                #     if curr_round.current_player == curr_round.attacker:
-                #         if len(curr_round.defender.playerCards) > 0:
-                #             return np.inf, card_to_play
-                #         else:
-                #             return 0, card_to_play
-                #     else:
-                #         if len(curr_round.attacker.playerCards) > 0:
-                #             return np.inf, card_to_play
-                #         else:
-                #             return 0, card_to_play
-
                 possible_rounds = []
                 options = self.searcher.get_possible_cards(curr_round)
                 for possible_card in options:
@@ -70,17 +58,6 @@ class MiniMaxAgent(MultiAgentSearchAgent):
                 return max(possible_rounds, key=lambda x: x[0])
 
             else:
-                # if len(curr_round.current_player.playerCards) == 0:
-                #     if curr_round.current_player == curr_round.attacker:
-                #         if len(curr_round.defender.playerCards) > 0:
-                #             return np.inf, card_to_play
-                #         else:
-                #             return 0, card_to_play
-                #     else:
-                #         if len(curr_round.attacker.playerCards) > 0:
-                #             return np.inf, card_to_play
-                #         else:
-                #             return 0, card_to_play
                 possible_rounds = []
                 for possible_card in self.searcher.get_possible_cards(curr_round):
                     round = self.searcher.generate_successor(curr_round,
@@ -110,17 +87,6 @@ class MiniMaxAgent(MultiAgentSearchAgent):
                 return self.evaluation_function(curr_round), card_to_play
 
             if max_turn:
-                # if len(curr_round.current_player.cards) == 0:
-                #     if curr_round.current_player == curr_round.attacker:
-                #         if len(curr_round.defender.cards) > 0:
-                #             return np.inf, card_to_play
-                #         else:
-                #             return 0, card_to_play
-                #     else:
-                #         if len(curr_round.attacker.cards) > 0:
-                #             return np.inf, card_to_play
-                #         else:
-                #             return 0, card_to_play
                 possible_states = []
                 max_eval = -np.inf, None
                 for possible_card in self.searcher.get_possible_cards(curr_round) + [None]:
@@ -144,17 +110,6 @@ class MiniMaxAgent(MultiAgentSearchAgent):
                 return max(possible_states, key=lambda x: x[0])
 
             else:
-                # if len(curr_round.current_player.cards) == 0:
-                #     if curr_round.current_player == curr_round.attacker:
-                #         if len(curr_round.defender.cards) > 0:
-                #             return np.inf, card_to_play
-                #         else:
-                #             return 0, card_to_play
-                #     else:
-                #         if len(curr_round.attacker.cards) > 0:
-                #             return np.inf, card_to_play
-                #         else:
-                #             return 0, card_to_play
                 possible_states = []
                 min_eval = np.inf, None
                 for possible_card in self.searcher.get_possible_cards(curr_round) + [None]:

@@ -254,7 +254,10 @@ class Round:
         if self._first_stage():
             # If the defender surrenders, we don't go to the
             # the second stage, but begin a new round
-            return "first_stage_finish"
+            print("The defender has surrendered, moving to the next round!")
+            return None
+            #  TODO: are we sure we don't want to allow the attacker keep
+            #   attacking up to 6 attacks?
         # If the defender fought back then we go to the second stage where
         # the attacker can keep attacking
         self._second_stage()
@@ -353,11 +356,15 @@ class Round:
         self.current_player = self.attacker
         self.current_player.attacking = True
         self.defender.attacking = False
+
         self.attacker.attack(self)
+
         self.current_player = self.defender
         self.current_player.attacking = False
         if self.defender.defend(self) is None:
-            self.attacker.draw_cards(self.deck)
+            # self.attacker.draw_cards(self.deck)
+            # TODO: Delete this! why should attacker keep getting
+            #  cards while the defender doesn't?
             return True
         # defender defended successfully
         return False
@@ -372,18 +379,23 @@ class Round:
             self.current_player.attacking = True
             if self.attacker.adding_card(self) is not None:
                 cnt += 1
-                #  TODO: Why can't the defender defend? delete this commented
-                #   printing below?
-                # print('_second_stage no options for defender')
-                if self.defender.defend(self) is None:
-                    self.attacker.draw_cards(self.deck)
+                #  TODO: Why can't the defender defend? I added his defending
+                self.current_player = self.defender
+                self.current_player.attacking = False
+                if self.defender.defend(self) is not None:
+                    # self.attacker.draw_cards(self.deck)
                     # TODO: Delete this! why should attacker keep getting
                     #  cards while the defender doesn't?
                     continue
                 # The defender surrendered
+                self.attacker.draw_cards(self.deck)
+                self.defender.draw_cards(self.deck)
+                print("The defender has surrendered, moving to the next round!")
                 return False
+            #  TODO: delete the return! it is not being used
             else:
-                print("{} doesn't add anymore cards".format(self.attacker.nickname))
+                print("{} doesn't add anymore cards".format(
+                    self.attacker.nickname), '\nmoving to the next round!')
                 self.attacker.draw_cards(self.deck)
                 self.defender.draw_cards(self.deck)
                 self.pile.update(self.table)
@@ -391,9 +403,11 @@ class Round:
                 self.attacker, self.defender = self.defender, self.attacker
                 self.attacker.attacking, self.defender.attacking = True, False
                 return False
-        # TODO: what does this printing mean? furthermore, if attacker
-        #  attacked six times then the defender should draw cards
-        print('second_stage no cards')
+            #  TODO: delete the return! it is not being used
+        # TODO: If attacker attacked six times then the defender should draw
+        #  cards, I added his draw
+        print("No more attacking allowed, moving to the next round!")
+        self.attacker.draw_cards(self.deck)
         self.defender.draw_cards(self.deck)
 
 
