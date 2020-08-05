@@ -192,7 +192,7 @@ class Round(SearchProblem):
     def get_next_state_given_card(self, card):
         if self.count >= 7:
             self.pile.update(self.table)
-            self.table.clear()
+            self.table.clear_cards()
             self.current_player = self.defender
             self.attacker, self.defender = self.defender, self.attacker
             self.attacker.draw_cards(self.deck)
@@ -208,9 +208,9 @@ class Round(SearchProblem):
                 self.current_player = self.defender
                 self.attacker, self.defender = self.defender, self.attacker
                 self.pile.update(self.table)
-                self.table.clear()
+                self.table.clear_cards()
         else:
-            self.table.update_table(card)
+            self.table.add_single_card(card)
             self.current_player.remove_card(card)
             self.current_player.draw_cards(self.deck)
 
@@ -226,7 +226,7 @@ class Round(SearchProblem):
         pass
 
     def draw_card_for_trump(self):
-        self.trump_card = self.deck.draw_card()
+        self.trump_card = self.deck.get_trump()
 
     def draw_cards_for_players(self):
         self.attacker.draw_cards(self.deck)
@@ -282,7 +282,7 @@ class RoundWithHuman(Round):
     def _first_stage(self, choice, card):
         if self.attacking:
             self.current_player = self.attacker
-            self.table.update_table(card)
+            self.table.add_single_card(card)
             self.attacker.remove_card(card)
             self.current_player = self.defender
             if self.defender.defend(self) is None:
@@ -295,7 +295,7 @@ class RoundWithHuman(Round):
                 self.defender.grab_table(self.table)
                 self.round_over = True
             else:
-                self.table.update_table(card)
+                self.table.add_single_card(card)
                 self.defender.remove_card(card)
             self.current_player = self.attacker
             self.attacker.attack(self)
@@ -314,7 +314,7 @@ class RoundWithHuman(Round):
         print('_second_stage no options for attacker')
         self.draw_cards_for_players()
         self.pile.update(self.table)
-        self.table.clear()
+        self.table.clear_cards()
 
         self.swap_players()
 
@@ -324,7 +324,7 @@ class RoundWithHuman(Round):
             self.second_stage_reset_round()
             self.attacker.attack(self)
         else:
-            self.table.update_table(card)
+            self.table.add_single_card(card)
             self.attacker.remove_card(card)
             self.count += 1
             if self.defender.defend(self) is None:
@@ -346,7 +346,7 @@ class RoundWithHuman(Round):
             return
         else:
             self.defender.remove_card(card)
-            self.table.update_table(card)
+            self.table.add_single_card(card)
 
         self.current_player = self.attacker
         if self.attacker.adding_card(self) is not None:
@@ -372,7 +372,7 @@ class RoundWithHuman(Round):
             self.pile.update(self.table)
 
         self.draw_cards_for_players()
-        self.table.clear()
+        self.table.clear_cards()
 
         self.swap_players()
 
@@ -438,7 +438,7 @@ class RoundWithAI(Round):
         self.current_player = self.attacker
         if self.attacker.attack(self) is None:
             self.pile.update(self.table)
-            self.table.clear()
+            self.table.clear_cards()
 
             self.draw_cards_for_players()
             self.attacker, self.defender = self.defender, self.attacker
@@ -472,7 +472,7 @@ class RoundWithAI(Round):
                 self.attacker.draw_cards(self.deck)
                 self.defender.draw_cards(self.deck)
                 self.pile.update(self.table)
-                self.table.clear()
+                self.table.clear_cards()
                 self.attacker, self.defender = self.defender, self.attacker
                 self.attacker.attacking = True
                 self.defender.attacking = False

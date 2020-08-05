@@ -1,4 +1,4 @@
-from game_mechanics import CardsObject, CardsHolder
+from game_mechanics import CardsHolder
 
 
 class Player(CardsHolder):
@@ -35,18 +35,18 @@ class Player(CardsHolder):
         n_cards_to_draw = 6 - len(self.get_cards())
         if n_cards_to_draw < 0:
             n_cards_to_draw = 0
-        n_of_cards_left = len(deck_instance.cardsObject.cards)
+        n_of_cards_left = len(deck_instance.get_cards())
         if n_of_cards_left > n_cards_to_draw:
-            self.cardsObject.cards += deck_instance.draw_cards(n_cards_to_draw)
+            self.add_cards(deck_instance.draw_cards(n_cards_to_draw))
         elif n_of_cards_left <= n_cards_to_draw:
-            self.cardsObject.cards += deck_instance.draw_cards(n_of_cards_left)
+            self.add_cards(deck_instance.draw_cards(n_of_cards_left))
         else:
             print('no cards to draw')
 
 
     def attacking_options(self, table):
-        if len(table.cardsObject.cards) == 0:
-            return self.cardsObject.cards
+        if len(table.get_cards()) == 0:
+            return self.get_cards()
 
         return self.adding_card_options(table)
 
@@ -57,13 +57,13 @@ class Player(CardsHolder):
         return potential_cards
 
     def defending_options(self, table, trump_suit):
-        if len(table.cardsObject.cards) == 0:
+        if len(table.get_cards()) == 0:
             return []
             # TODO: Should not get here because a player defends only if he
             #  was attacked, so the table cannot be empty
 
 
-        attacking_card = table.cardsObject.cards[-1]
+        attacking_card = table.get_cards()[-1]
 
         # Checking if attacking_card (last card on a table) is trump.
         if attacking_card.suit == trump_suit:
@@ -77,11 +77,11 @@ class Player(CardsHolder):
         return non_trump_options + trump_cards
 
     def grab_table(self, table):
-        self.cardsObject.cards += table.cardsObject.cards
-        table.clear()
+        self.add_cards(table.get_cards())
+        table.clear_cards()
 
     def _refresh(self):
-        self.cardsObject.set_cards([])
+        self.clear_cards()
 
 
 class HumanPlayer(Player):
@@ -98,11 +98,11 @@ class HumanPlayer(Player):
         attack_card = self.attacking_options()[int(attack_card_num)]
         print('card {} added'.format(attack_card))
         self.remove_card(attack_card)
-        round.table.update_table(attack_card)
+        round.table.add_single_card(attack_card)
         return attack_card
 
     def defend(self, round):
-        print('T: {}'.format(round.table.show()))
+        print('T: {}'.format(round.table.get_cards_strs()))
         #print('n', print(len(self.cards)))
         #print(table.cards)
         print(self.cards)
@@ -121,7 +121,7 @@ class HumanPlayer(Player):
             defend_card = self.defending_options(round.table, round.trump_card)[int(def_card_num)]
             print('card {} added'.format(defend_card))
             self.remove_card(defend_card)
-            round.table.update_table(defend_card)
+            round.table.add_single_card(defend_card)
             return defend_card
         print(r"you can't defend, {}".format(self.nickname))
         self.grab_table(round.table)
@@ -140,7 +140,7 @@ class HumanPlayer(Player):
             card_to_add = self.adding_card_options(round.table)[int(adding_card_num)]
             print('card {} added'.format(card_to_add))
             self.remove_card(card_to_add)
-            round.table.update_table(card_to_add)
-            print('T: {}'.format(round.table.show()))
+            round.table.add_single_card(card_to_add)
+            print('T: {}'.format(round.table.get_cards_strs()))
             return card_to_add
         return None

@@ -29,7 +29,11 @@ class Card:
     def __repr__(self):
         return str(self.number) + " of " + self.suit
 
+    def __lt__(self, other):
+        return self.__repr__() < other.__repr__()
+
     def __eq__(self, other):
+        # TODO: why do we need to check this?
         if other is None or other == [None]:
             return False
         return self.suit == other.suit and self.number == other.number
@@ -48,57 +52,30 @@ class Card:
         return self.number + self.suit_num_delta()
 
 
-class CardsObject:
+class CardsHolder:
     def __init__(self, cards):
         self.cards = cards
-        self.cards_strs = self.get_cards_strs(self.cards)
-
-    def add_cards(self, cards):
-        for card in cards:
-            self.cards.append(card)
-            bisect.insort(self.cards_strs, card.__repr__())
-
-    def get_cards_strs(self, cards):
-        to_return = []
-        for card in cards:
-            curr_card = card.__repr__()
-            to_return.append(curr_card)
-        to_return.sort()
-        return to_return
-
-    def show(self):
-        return self.cards_strs
 
     def get_cards(self):
         return self.cards
 
-    def remove_card(self, card):
-        self.cards.remove(card)
-        self.cards_strs.remove(card.__repr__())
-
     def set_cards(self, cards):
         self.cards = cards
-        self.cards_strs = self.get_cards_strs(cards)
-
-
-class CardsHolder:
-    def __init__(self, cards):
-        self.cardsObject = CardsObject(cards)
-
-    def show(self):
-        return self.cardsObject.show()
-
-    def get_cards(self):
-        return self.cardsObject.cards
-
-    def set_cards(self, cards):
-        self.cardsObject = CardsObject(cards)
 
     def add_cards(self, cards):
-        self.cardsObject.add_cards(cards)
+        for card in cards:
+            self.cards.append(card)
 
     def remove_card(self, card):
-        self.cardsObject.remove_card(card)
+        self.cards.remove(card)
+
+    def clear_cards(self):
+        self.cards = []
+
+    def sort_cards(self):
+        self.cards.sort()
+        return self.get_cards()
+
 
 
 class Deck(CardsHolder):
@@ -106,18 +83,23 @@ class Deck(CardsHolder):
         super().__init__(cards)
         for i in range(6, 15):
             for suit in ["spades", "hearts", "diamonds", "clubs"]:
-                self.cardsObject.cards.append(Card(i, suit))
-        random.shuffle(self.cardsObject.cards)
-        self.cardsObject.cards.insert(0, self.cardsObject.cards[-1])
+                self.add_cards([Card(i, suit)])
+        random.shuffle(self.cards)
+        # self.cardsObject.cards.insert(0, self.cardsObject.cards[-1]) #
+        # TODO: What is the purpose of this row?
 
-    def draw_card(self):
-        return self.cardsObject.cards.pop()
+    def get_trump(self):
+        return self.cards[0]
+
+    def draw_single_card(self):
+        return self.cards.pop()
 
     def draw_cards(self, number):
         cards = []
         for _ in range(number):
-            cards.append(self.draw_card())
+            cards.append(self.draw_single_card())
         return cards
+
 
 
 # TODO: Delete This?
@@ -175,14 +157,12 @@ class Table(CardsHolder):
     def __init__(self, cards):
         super().__init__(cards)
 
-    def update_table(self, card):
-        self.cardsObject.cards += [card]
+    def add_single_card(self, card):
+        self.cards.append(card)
 
+    # TODO: to remove this method?
     def move_to_pile(self):
         pass
-
-    def clear(self):
-        self.cardsObject.cards = []
 
 
 class Pile(CardsHolder):
@@ -192,9 +172,6 @@ class Pile(CardsHolder):
 
     def update(self, table_instance):
         self.add_cards(table_instance.get_cards())
-
-    def clear_pile(self):
-        self.cardsObject.cards = []
 
 
 class Pointer:
@@ -242,8 +219,8 @@ class State:
     def __init__(self, current_player, pile):
         self.current_player = current_player
         self.isAttacking = current_player.attacking
-        self.playerCards = current_player.show
-        self.pile = pile.sorted()
+        self.playerCards = current_player.get_cards()
+        self.pile = pile.cards.sort()
 
     def __str__(self):
         return '{}#{}#{}#{}'.format(self.current_player, self.isAttacking,
@@ -279,7 +256,7 @@ class Round:
         self._second_stage()
 
     def check_win(self):
-        if self.deck.cardsObject.cards:
+        if self.deck.get_cards():
             pass
         else:
             return self.check_winner()
@@ -288,9 +265,9 @@ class Round:
 
     def check_winner(self):
         winners = []
-        if not self.attacker.cards:
+        if not self.attacker.get_cards():
             winners.append(self.attacker.nickname)
-        if not self.defender.cards:
+        if not self.defender.get_cards():
             winners.append(self.defender.nickname)
         if winners:
             if len(winners) == 2:
@@ -305,7 +282,7 @@ class Round:
     def get_next_state_given_card(self, card):
         if self.count >= 7:
             self.pile.update(self.table)
-            self.table.clear()
+            self.table.clear_cards()
             self.current_player = self.defender
             self.attacker, self.defender = self.defender, self.attacker
             self.attacker.attacking, self.defender.attacking = True, False
@@ -326,9 +303,9 @@ class Round:
                 self.attacker.attacking, self.defender.attacking = \
                     True, False
                 self.pile.update(self.table)
-                self.table.clear()
+                self.table.clear_cards()
         else:
-            self.table.update_table(card)
+            self.table.add_single_card(card)
             # self.current_player.remove_card(card)
             self.current_player.draw_cards(self.deck)
 
@@ -345,14 +322,28 @@ class Round:
         return self
 
     def _first_stage(self):
-        print('atk', len(self.attacker.cardsObject.cards))
-        print(self.attacker.show())
-        print('def', len(self.defender.cardsObject.cards))
-        print(self.defender.show())
-        print('deck', len(self.deck.cardsObject.cards))
-        print(self.deck.show())
-        print('pile', len(self.pile.cardsObject.cards))
-        print(self.pile.show())
+
+        attacker_cards = self.attacker.sort_cards()
+        print('atk', len(attacker_cards))
+        print(attacker_cards)
+
+
+        defender_cards = self.defender.sort_cards()
+        print('def', len(defender_cards))
+        print(defender_cards)
+
+        table_cards = self.table.sort_cards()
+        print('table', len(table_cards))
+        print(table_cards)
+
+        deck_cards = self.deck.sort_cards()
+        print('deck', len(deck_cards))
+        print(deck_cards)
+
+        pile_cards = self.pile.sort_cards()
+        print('pile', len(pile_cards))
+        print(pile_cards)
+
         self.current_player = self.attacker
         self.current_player.attacking = True
         self.defender.attacking = False
@@ -383,7 +374,7 @@ class Round:
                 self.attacker.draw_cards(self.deck)
                 self.defender.draw_cards(self.deck)
                 self.pile.update(self.table)
-                self.table.clear()
+                self.table.clear_cards()
                 self.attacker, self.defender = self.defender, self.attacker
                 self.attacker.attacking, self.defender.attacking = True, False
                 return False
@@ -397,14 +388,14 @@ class GameProcess:
     def __init__(self, players_list, deck):
         self.players_list = players_list
         self.deck = deck
-        self.draw_card_for_trump()
+        self.trump_card = self.draw_card_for_trump()
         self.get_cards()
         self.pointer = Pointer(players_list, self.trump_card.suit)
         self.table = Table([])
         self.pile = Pile([])
 
     def draw_card_for_trump(self):
-        self.trump_card = self.deck.draw_card()
+         return self.deck.get_trump()
 
     def _refresh_game(self):
         for p in self.players_list:
