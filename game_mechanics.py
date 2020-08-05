@@ -3,6 +3,7 @@ import random
 # import time
 # from enum import Enum
 from copy import deepcopy
+import bisect
 
 # TODO:
 '''
@@ -50,14 +51,34 @@ class Card:
 class CardsObject:
     def __init__(self, cards):
         self.cards = cards
+        self.cards_strs = self.get_cards_strs(self.cards)
+
+    def add_cards(self, cards):
+        for card in cards:
+            self.cards.append(card)
+            bisect.insort(self.cards_strs, card.__repr__())
+
+    def get_cards_strs(self, cards):
+        to_return = []
+        for card in cards:
+            curr_card = card.__repr__()
+            to_return.append(curr_card)
+        to_return.sort()
+        return to_return
 
     def show(self):
-        cards = []
-        for card in self.cards:
-            curr_card = card.__repr__()
-            cards.append(curr_card)
-        cards.sort()
-        return cards
+        return self.cards_strs
+
+    def get_cards(self):
+        return self.cards
+
+    def remove_card(self, card):
+        self.cards.remove(card)
+        self.cards_strs.remove(card.__repr__())
+
+    def set_cards(self, cards):
+        self.cards = cards
+        self.cards_strs = self.get_cards_strs(cards)
 
 
 class CardsHolder:
@@ -66,6 +87,18 @@ class CardsHolder:
 
     def show(self):
         return self.cardsObject.show()
+
+    def get_cards(self):
+        return self.cardsObject.cards
+
+    def set_cards(self, cards):
+        self.cardsObject = CardsObject(cards)
+
+    def add_cards(self, cards):
+        self.cardsObject.add_cards(cards)
+
+    def remove_card(self, card):
+        self.cardsObject.remove_card(card)
 
 
 class Deck(CardsHolder):
@@ -158,7 +191,7 @@ class Pile(CardsHolder):
         super().__init__(cards)
 
     def update(self, table_instance):
-        self.cardsObject.cards += table_instance.cards
+        self.add_cards(table_instance.get_cards())
 
     def clear_pile(self):
         self.cardsObject.cards = []
@@ -179,7 +212,8 @@ class Pointer:
         for the_player in self.list_of_player_instances:
             try:
                 start_dict[the_player] = min([i.number for i in
-                                              the_player.cards if i.suit == self.trump_suit])
+                                              the_player.get_cards() if i.suit
+                                              == self.trump_suit])
             except ValueError:
                 print(ValueError)
         try:
@@ -312,10 +346,9 @@ class Round:
 
     def _first_stage(self):
         print('atk', len(self.attacker.cardsObject.cards))
-        attackerCards = self.attacker.cardsObject.show()
-        print(attackerCards)
+        print(self.attacker.show())
         print('def', len(self.defender.cardsObject.cards))
-        print(self.defender.cardsObject.show())
+        print(self.defender.show())
         print('deck', len(self.deck.cardsObject.cards))
         print(self.deck.show())
         print('pile', len(self.pile.cardsObject.cards))

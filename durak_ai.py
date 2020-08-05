@@ -255,7 +255,7 @@ class SmartPlayer(Player):
         return None
 
     def adding_card(self, round):
-        if len(round.deck.cards) == 0:
+        if len(round.deck.get_cards()) == 0:
             possible_cards = self.adding_card_options(round.table)
             if possible_cards:
                 card_to_add = self.agent.get_card_to_play(round)
