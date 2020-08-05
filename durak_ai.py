@@ -50,9 +50,6 @@ class AiPlayerDumb(Player):
 
 
 def choose_min_card(possible_cards, trump_suit):
-    if len(possible_cards) == 1:
-        return possible_cards[0]
-
     trump_cards = [card for card in possible_cards if card.suit == trump_suit]
     non_trump_cards = [card for card in possible_cards if card.suit != trump_suit]
 
