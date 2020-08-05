@@ -251,7 +251,8 @@ class Round:
         if self.check_win():
             print(self.status)
             return self.status
-        if self._first_stage() == True:
+        if self._first_stage():
+            # TODO: i.e. if the defender surrenders? but then a new round begins
             return "first_stage_finish"
         self._second_stage()
 
@@ -329,7 +330,6 @@ class Round:
         print('atk', len(attacker_cards))
         print(attacker_cards)
 
-
         defender_cards = self.defender.sort_cards()
         print('def', len(defender_cards))
         print(defender_cards)
@@ -355,7 +355,7 @@ class Round:
         self.current_player = self.defender
         self.current_player.attacking = False
         if self.defender.defend(self) is None:
-            print('_first_stage no options for defender')
+            # print('_first_stage no options for defender')
             self.attacker.draw_cards(self.deck)
             return True
         # defender defended successfully
@@ -368,6 +368,10 @@ class Round:
             self.current_player.attacking = True
             if self.attacker.adding_card(self) is not None:
                 cnt += 1
+                # TODO: meaning the attacker can continue and add more cards
+                #  to the attack while the defender has already surrendered?
+                #  I thought we said it wasn't an option in our version? or
+                #  at least it wasn't in the gui version?
                 print('_second_stage no options for defender')
                 self.attacker.draw_cards(self.deck)
                 return False
@@ -380,6 +384,7 @@ class Round:
                 self.attacker, self.defender = self.defender, self.attacker
                 self.attacker.attacking, self.defender.attacking = True, False
                 return False
+        # TODO: what does this printing mean?
         print('second_stage no cards')
 
     def copy(self):

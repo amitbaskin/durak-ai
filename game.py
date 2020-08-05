@@ -40,5 +40,5 @@ def game_instance(list_of_players):
 
 
 # # print(game_instance(players_list))
-print(game_instance(smart_players_2_list))
-# print(game_instance(smart_players_list))
+# print(game_instance(smart_players_2_list))
+print(game_instance(smart_players_list))

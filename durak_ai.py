@@ -32,7 +32,6 @@ class AiPlayerDumb(Player):
             print('{} defended with {}'.format(self.nickname, defence_card))
             return defence_card
         print(r"{} can't defend".format(self.nickname))
-        print('table:', round.table.get_cards_strs())
         self.grab_table(round.table)
         return None
 
@@ -42,10 +41,9 @@ class AiPlayerDumb(Player):
             self.remove_card(card_to_add)
             round.table.add_single_card(card_to_add)
             print('{} adding card {}'.format(self.nickname, card_to_add))
-            #print('T add: {}'.format(table.show()))
             return card_to_add
         print('{} no cards to add'.format(self.nickname))
-        print('table: {}'.format(round.table.get_cards_strs()))
+        print('table: {}'.format(round.table.get_cards()))
         return None
 
 
@@ -97,7 +95,6 @@ class SimplePlayer(Player):
             self.remove_card(card_to_add)
             round.table.add_single_card(card_to_add)
             print('{} adding card {}'.format(self.nickname, card_to_add))
-            #print('T add: {}'.format(table.show()))
             return card_to_add
         print('{} no cards to add'.format(self.nickname))
         print('table: {}'.format(round.table.get_cards_strs()))
@@ -161,7 +158,6 @@ class HandicappedSimplePlayer(Player):
                 self.remove_card(card_to_add)
                 round.table.add_single_card(card_to_add)
                 print('{} adding card {}'.format(self.nickname, card_to_add))
-                #print('T add: {}'.format(table.show()))
                 return card_to_add
             print('{} no cards to add'.format(self.nickname))
             print('table: {}'.format(round.table.get_cards_strs()))
@@ -173,7 +169,6 @@ class HandicappedSimplePlayer(Player):
             self.remove_card(card_to_add)
             round.table.add_single_card(card_to_add)
             print('{} adding card {}'.format(self.nickname, card_to_add))
-            #print('T add: {}'.format(table.show()))
             return card_to_add
         print('{} no cards to add'.format(self.nickname))
         print('table: {}'.format(round.table.get_cards_strs()))
@@ -199,8 +194,7 @@ class SmartPlayer(Player):
         opponent_cards_amount = len(opponent_cards)
         if my_cards_amount == 0 and opponent_cards_amount > 0:
             return np.inf
-        return len(opponent_cards) - len(self.get_cards()) #diff(opponent_cards,
-        # self.cards))
+        return len(opponent_cards) - len(self.get_cards())
 
     def attack(self, round):
         possible_cards = self.attacking_options(round.table)
@@ -220,9 +214,8 @@ class SmartPlayer(Player):
         attack_card = choose_min_card(possible_cards, round.trump_card.suit)
         self.remove_card(attack_card)
         round.table.add_single_card(attack_card)
-        print(
-            '{} attack with {} of {}'.format(self.nickname, attack_card.number,
-                                             attack_card.suit))
+        print('{} attack with {} of {}'.format(self.nickname, attack_card.number, attack_card.suit))
+        print('table:', round.table.get_cards())
         return attack_card
 
     def defend(self, round):
@@ -235,6 +228,7 @@ class SmartPlayer(Player):
                     self.remove_card(defence_card)
                     round.table.add_single_card(defence_card)
                     print('{} defended with {}'.format(self.nickname, defence_card))
+                    print('table:', round.table.get_cards())
                 return defence_card
             print(r"{} can't defend".format(self.nickname))
             print('table:', round.table.get_cards())
@@ -249,6 +243,7 @@ class SmartPlayer(Player):
             self.remove_card(defence_card)
             round.table.add_single_card(defence_card)
             print('{} defended with {}'.format(self.nickname, defence_card))
+            print('table:', round.table.get_cards())
             return defence_card
         print(r"{} can't defend".format(self.nickname))
         print('table:', round.table.get_cards())
@@ -264,7 +259,7 @@ class SmartPlayer(Player):
                     self.remove_card(card_to_add)
                     round.table.add_single_card(card_to_add)
                     print('{} adding card {}'.format(self.nickname, card_to_add))
-                #print('T add: {}'.format(table.show()))
+                    print('table:', round.table.get_cards())
                 return card_to_add
             print('{} no cards to add'.format(self.nickname))
             print('table: {}'.format(round.table.get_cards()))
@@ -276,7 +271,7 @@ class SmartPlayer(Player):
             self.remove_card(card_to_add)
             round.table.add_single_card(card_to_add)
             print('{} adding card {}'.format(self.nickname, card_to_add))
-            #print('T add: {}'.format(table.show()))
+            print('table:', round.table.get_cards())
             return card_to_add
         print('{} no cards to add'.format(self.nickname))
         print('table: {}'.format(round.table.get_cards()))
@@ -302,8 +297,7 @@ class SmartPlayer2(Player):
         opponent_cards_amount = len(opponent_cards)
         if my_cards_amount == 0 and opponent_cards_amount > 0:
             return np.inf
-        return len(opponent_cards) - len(self.get_cards()) #diff(opponent_cards,
-        # self.cards))
+        return len(opponent_cards) - len(self.get_cards())
 
     def attack(self, round):
         possible_cards = self.attacking_options(round.table)
@@ -325,9 +319,8 @@ class SmartPlayer2(Player):
             attack_card = choose_min_card(possible_cards, round.trump_card.suit)
         self.remove_card(attack_card)
         round.table.add_single_card(attack_card)
-        print(
-            '{} attack with {} of {}'.format(self.nickname, attack_card.number,
-                                             attack_card.suit))
+        print('{} attack with {} of {}'.format(self.nickname, attack_card.number, attack_card.suit))
+        print('table:', round.table.get_cards())
         return attack_card
 
     def defend(self, round):
@@ -343,6 +336,7 @@ class SmartPlayer2(Player):
                     self.remove_card(defence_card)
                     round.table.add_single_card(defence_card)
                     print('{} defended with {}'.format(self.nickname, defence_card))
+                    print('table:', round.table.get_cards())
                     return defence_card
             print(r"{} can't defend".format(self.nickname))
             print('table:', round.table.get_cards())
@@ -359,6 +353,7 @@ class SmartPlayer2(Player):
             self.remove_card(defence_card)
             round.table.add_single_card(defence_card)
             print('{} defended with {}'.format(self.nickname, defence_card))
+            print('table:', round.table.get_cards())
             return defence_card
         print(r"{} can't defend".format(self.nickname))
         print('table:', round.table.get_cards())
@@ -376,7 +371,7 @@ class SmartPlayer2(Player):
                     self.remove_card(card_to_add)
                     round.table.add_single_card(card_to_add)
                     print('{} adding card {}'.format(self.nickname, card_to_add))
-                #print('T add: {}'.format(table.show()))
+                    print('table:', round.table.get_cards())
                     return card_to_add
             print('{} no cards to add'.format(self.nickname))
             print('table: {}'.format(round.table.get_cards()))
@@ -391,7 +386,7 @@ class SmartPlayer2(Player):
             self.remove_card(card_to_add)
             round.table.add_single_card(card_to_add)
             print('{} adding card {}'.format(self.nickname, card_to_add))
-            #print('T add: {}'.format(table.show()))
+            print('table:', round.table.get_cards())
             return card_to_add
         print('{} no cards to add'.format(self.nickname))
         print('table: {}'.format(round.table.get_cards()))
