@@ -55,13 +55,12 @@ class MiniMaxAgent(MultiAgentSearchAgent):
                 possible_rounds = []
                 options = self.searcher.get_possible_cards(curr_round)
                 for possible_card in options:
-                    if None in options:
-                        possible_card = None
                     round = self.searcher.generate_successor(curr_round, possible_card)
-                    if card_to_play is None:
+                    if depth == 0 and card_to_play is None:
                         curr_card_to_play = possible_card
                     else:
                         curr_card_to_play = card_to_play
+
                     possible_rounds.append(
                         minimax_algorithm(depth + 1, round, False,
                                           target_depth,
@@ -84,15 +83,16 @@ class MiniMaxAgent(MultiAgentSearchAgent):
                 #             return 0, card_to_play
                 possible_rounds = []
                 for possible_card in self.searcher.get_possible_cards(curr_round):
-                    round = self.searcher.generate_successor(curr_round, possible_card)
-                    if card_to_play is None:
-                        curr_card_to_play = possible_card
+                    round = self.searcher.generate_successor(curr_round,
+                                                             possible_card)
+                    if depth == 0 and card_to_play is None:
+                        curr_action = possible_card
                     else:
-                        curr_card_to_play = card_to_play
+                        curr_action = card_to_play
                     possible_rounds.append(
                         minimax_algorithm(depth + 1, round, True,
                                           target_depth,
-                                          curr_card_to_play))
+                                          curr_action))
                 if len(possible_rounds) == 0:
                     return self.evaluation_function(curr_round), card_to_play
                 return min(possible_rounds, key=lambda x: x[0])
