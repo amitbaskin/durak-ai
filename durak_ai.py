@@ -266,11 +266,12 @@ class SmartPlayer2(Player):
 
 
 class PureQAgent(Player):
-    def __init__(self, opponent, name):
+    def __init__(self, opponent, name, approx=True):
         self.nickname = "Smart Player" + name
         super().__init__(self.nickname, [])
         self.searcher = DurakSearchProblem([self, opponent], self.nickname)
-        self.qAgent = ApproximateQAgent(self.searcher.get_possible_cards, numTraining=50)
+        self.qAgent = ApproximateQAgent(self.searcher.get_possible_cards) if approx else \
+            DurakQAgent(self.searcher.get_possible_cards)
 
     def get_opponent(self, round):
         if self.nickname == round.attacker.nickname:

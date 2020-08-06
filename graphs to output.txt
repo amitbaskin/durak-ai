@@ -1,0 +1,4 @@
+1. 50 games of increasing epochs against reflex (both approx and q) (show no learning is occuring)
+2. table of reflex against all incl. self
+3. table of min-max against all incl.self
+

@@ -31,7 +31,7 @@ class Player(CardsHolder):
         self.minMaxAgent = None
         self.qAgent = None
 
-    def round_evaluation(self, round, get_opponnent_ptr):
+    def generic_round_evaluation(self, round, get_opponnent_ptr):
         me = round.attacker if self.attacking else round.defender
 
         my_cards_amount = len(me.get_cards())
@@ -44,8 +44,8 @@ class Player(CardsHolder):
         return ret
 
     def round_evaluation_delta(self, first_round, second_round, get_opponnent_ptr):
-        first_score = self.round_evaluation(first_round, get_opponnent_ptr)
-        second_score = self.round_evaluation(second_round, get_opponnent_ptr)
+        first_score = self.generic_round_evaluation(first_round, get_opponnent_ptr)
+        second_score = self.generic_round_evaluation(second_round, get_opponnent_ptr)
 
         if first_score == 100 and first_score == second_score:
             return first_score

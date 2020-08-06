@@ -659,10 +659,10 @@ class Durak_GUI(tk.Tk):
             self.admit_defeat.grid_forget()
         tk.Tk.update(self)
 
-# player2 = None
-player2 = HumanPlayer("Eva")
-player1 = AiPlayerDumb()
-# player2 = SimplePlayer()
+player2 = None
+# player2 = HumanPlayer("Eva")
+player1 = PureQAgent(player2, "s")
+player2 = SimplePlayer()
 # player2 = PureQAgent(player1, "2")
 gui = Durak_GUI([player1, player2], None)
 
