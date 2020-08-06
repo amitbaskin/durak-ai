@@ -277,13 +277,6 @@ class PureQAgent(Player):
             return round.defender
         return round.attacker
 
-    def round_evaluation(self, round):
-        my_cards_amount = len(self.get_cards())
-        opponent_cards = self.get_opponent(round).get_cards()
-        opponent_cards_amount = len(opponent_cards)
-        if my_cards_amount == 0 and opponent_cards_amount > 0:
-            return np.inf
-        return len(opponent_cards) - len(self.get_cards())
 
     def attack(self, round):
         possible_cards = self.attacking_options(round.table)

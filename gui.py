@@ -6,7 +6,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 from imageio import imread
 
-from durak_ai import HandicappedSimplePlayer, SmartPlayer, SmartPlayer2, AiPlayerDumb, SimplePlayer
+from durak_ai import HandicappedSimplePlayer, SmartPlayer, SmartPlayer2, AiPlayerDumb, SimplePlayer, PureQAgent
 from player import HumanPlayer
 from game_mechanics import Pointer, Table, Pile, Deck, State
 from search import SearchProblem
@@ -108,7 +108,7 @@ class TableFrame(ttk.Frame):
         self.card_pairs.append(card_pair)
 
     def update_view(self):
-        assert len(self.card_pairs) <= 6
+        # assert len(self.card_pairs) <= 6
         for i, card_pair in enumerate(self.card_pairs):
             card_pair.place(x=self.padding * i + (CARD_WIDTH + 15) * i, y=0, anchor="nw")
 
@@ -660,10 +660,10 @@ class Durak_GUI(tk.Tk):
         tk.Tk.update(self)
 
 # player2 = None
-# player2 = HumanPlayer("Eva")
-player1 = SimplePlayer()
-player2 = SimplePlayer()
-# player2 = SmartPlayer2(player1, "2")
+player2 = HumanPlayer("Eva")
+player1 = AiPlayerDumb()
+# player2 = SimplePlayer()
+# player2 = PureQAgent(player1, "2")
 gui = Durak_GUI([player1, player2], None)
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 from game_mechanics import CardsHolder
-
+import numpy as np
 
 NO_CARDS_MSG = 'has no cards to add'
 FEATURING_TABLE_MSG = 'table: '
@@ -31,6 +31,27 @@ class Player(CardsHolder):
         self.minMaxAgent = None
         self.qAgent = None
 
+    def round_evaluation(self, round, get_opponnent_ptr):
+        me = round.attacker if self.attacking else round.defender
+
+        my_cards_amount = len(me.get_cards())
+        opponent_cards = get_opponnent_ptr(round).get_cards()
+        opponent_cards_amount = len(opponent_cards)
+        if my_cards_amount == 0 and opponent_cards_amount > 0 and len(round.deck.get_cards()) == 0:
+            ret = 100  # Big enough than 36 possible diff
+        else:
+            ret = len(opponent_cards) - len(self.get_cards())
+        return ret
+
+    def round_evaluation_delta(self, first_round, second_round, get_opponnent_ptr):
+        first_score = self.round_evaluation(first_round, get_opponnent_ptr)
+        second_score = self.round_evaluation(second_round, get_opponnent_ptr)
+
+        if first_score == 100 and first_score == second_score:
+            return first_score
+
+        return second_score - first_score
+
     def play_move(self, round):
         if self.attacking:
             if len(round.table.playerCards) == 0:
@@ -49,7 +70,7 @@ class Player(CardsHolder):
         print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
         if self.qAgent is not None:
             # TODO:: Make round evaluation better?
-            delta_reward = self.round_evaluation(round) - self.round_evaluation(prev_round)
+            delta_reward = self.round_evaluation_delta(prev_round, round, self.get_opponent)
             self.qAgent.observeTransition(prev_round, attack_card, round, delta_reward)
         return attack_card
 
@@ -61,7 +82,7 @@ class Player(CardsHolder):
         print(FEATURING_TABLE_MSG, round.table.get_cards())
         if self.qAgent is not None:
             # TODO:: Make round evaluation better?
-            delta_reward = self.round_evaluation(round) - self.round_evaluation(prev_round)
+            delta_reward = self.round_evaluation_delta(prev_round, round, self.get_opponent)
             self.qAgent.observeTransition(prev_round, card_to_add, round, delta_reward)
         return card_to_add
 
@@ -77,7 +98,7 @@ class Player(CardsHolder):
         print(FEATURING_TABLE_MSG, round.table.get_cards())
         if self.qAgent is not None:
             # TODO:: Make round evaluation better?
-            delta_reward = self.round_evaluation(round) - self.round_evaluation(prev_round)
+            delta_reward = self.round_evaluation_delta(prev_round, round, self.get_opponent)
             self.qAgent.observeTransition(prev_round, defence_card, round, delta_reward)
         return defence_card
 

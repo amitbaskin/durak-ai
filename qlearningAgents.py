@@ -52,7 +52,9 @@ class QLearningAgent(ReinforcementAgent):
           a state or (state,action) tuple
         """
         state = round.toState()
-        return self.q_values[(state, action)]
+        ret = self.q_values[(state, action)]
+        remove_zero_items(self.q_values)
+        return ret
 
     def getValue(self, round):
         """
@@ -124,7 +126,9 @@ class QLearningAgent(ReinforcementAgent):
         max_value = max(values) if len(values) != 0 else 0
         state = round.toState()
         coefficient = reward + self.discount * max_value - self.q_values[(state, action)]
-        self.q_values[(state, action)] += self.alpha * coefficient
+        add = self.alpha * coefficient
+        if add != 0:
+            self.q_values[(state, action)] += add
 
 
 class DurakQAgent(QLearningAgent):
@@ -149,11 +153,15 @@ class DurakQAgent(QLearningAgent):
         QLearningAgent.__init__(self, **args)
         self.weights = None
 
-        if os.path.isfile("trained_q_values.pickle"):
-            with open('trained_q_values.pickle', 'rb') as handle:
-                self.q_values = pickle.load(handle)
+        if os.path.isfile(os.path.join("pickle", "trained_q_values_latest.pickle")):
+            with open(os.path.join("pickle", "trained_q_values_latest.pickle"), 'rb') as handle:
+                self.q_values = util.Counter(pickle.load(handle))
 
         self.getLegalActions = legalActions_ptr
+
+
+def remove_zero_items(weights):
+    return util.Counter(dict(filter(lambda x: x[1] != 0, weights.items())))
 
 
 class ApproximateQAgent(DurakQAgent):
@@ -173,10 +181,9 @@ class ApproximateQAgent(DurakQAgent):
         # You might want to initialize weights here.
         self.weights = util.Counter()
 
-
-        if os.path.isfile("trained_weights.pickle"):
-            with open('trained_weights.pickle', 'rb') as handle:
-                self.weights = pickle.load(handle)
+        if os.path.isfile(os.path.join("pickle", "trained_weights_latest.pickle")):
+            with open(os.path.join("pickle", "trained_weights_latest.pickle"), 'rb') as handle:
+                self.weights = util.Counter(pickle.load(handle))
 
     def getQValue(self, state, action):
         """
@@ -184,7 +191,9 @@ class ApproximateQAgent(DurakQAgent):
           where * is the dotProduct operator
         """
         features = self.featExtractor.getFeatures(state, action)
-        return self.weights * features
+        ret = self.weights * features
+        self.weights = remove_zero_items(self.weights)
+        return ret
 
     def update(self, round, action, nextRound, reward):
         """
@@ -197,4 +206,6 @@ class ApproximateQAgent(DurakQAgent):
         correction = reward + self.discount * max_value - self.getQValue(round, action)
         features = self.featExtractor.getFeatures(round, action)
         for feature, value in features.items():
-            self.weights[feature] += self.alpha * correction * value
+            w = self.alpha * correction * value
+            final = self.weights[feature] + w
+            self.weights[feature] += w

@@ -4,6 +4,7 @@ from game_mechanics import *
 from durak_ai import SmartPlayer, SmartPlayer2, SimplePlayer, PureQAgent
 import pickle
 import sys
+import os
 # from player import HumanPlayer
 
 
@@ -29,37 +30,51 @@ p6 = PureQAgent(p7, " two")
 mixed_smart_list = [p6, p7]
 
 
+def remove_zero_items(weights):
+    return dict(filter(lambda x: x[1] != 0, weights.items()))
+
+
 def game_instance(list_of_players):
     win_count = 0
-    for _ in range(10):
-        for player in list_of_players:
-            player._refresh()
-        deck = Deck([])
-        g = GameProcess(list_of_players, deck)
-        if g.play() == list_of_players[1].nickname:
-            win_count += 1
-    print("Player 2 win rate:", win_count / 10)
-    trained_q_values = p6.qAgent.q_values
-    with open('trained_q_values.pickle', 'wb') as handle:
-        pickle.dump(trained_q_values, handle)
+    for i in range(1, 101):
+        for _ in range(100):
+            for player in list_of_players:
+                player._refresh()
+            deck = Deck([])
+            g = GameProcess(list_of_players, deck)
+            if g.play() == list_of_players[1].nickname:
+                win_count += 1
+        print("Player 2 win rate:", win_count / 100)
 
-    if p6.qAgent.weights is not None:
-        trained_weights = p6.qAgent.weights
-        with open('trained_weights.pickle', 'wb') as handle:
-            pickle.dump(trained_weights, handle)
+        if p6.qAgent.weights is not None:
+            trained_weights = remove_zero_items(p6.qAgent.weights)
+            path = os.path.join("pickle", 'trained_weights_{}_epoch.pickle'.format(i))
+            with open(path, 'wb') as handle:
+                pickle.dump(trained_weights, handle)
+            path = os.path.join("pickle", 'trained_weights_latest.pickle'.format(i))
+            with open(path, 'wb') as handle:
+                pickle.dump(trained_weights, handle)
 
-        num_non_zero = sum([1 for w in trained_weights.values() if w != 0])
-        with open('approxQAgent_learn_stats.txt', 'a') as handle:
-            handle.writelines([str(num_non_zero)])
+            num_non_zero = sum([1 for w in trained_weights.values() if w != 0])
+            with open('approxQAgent_learn_stats.txt', 'a') as handle:
+                handle.write("{}\n".format(num_non_zero))
+        else:
+            trained_q_values = remove_zero_items(p6.qAgent.q_values)
+            path = os.path.join("pickle", 'trained_q_values_{}_epoch.pickle'.format(i))
+            with open(path, 'wb') as handle:
+                pickle.dump(trained_q_values, handle)
+            path = os.path.join("pickle", 'trained_q_values_latest.pickle'.format(i))
+            with open(path, 'wb') as handle:
+                pickle.dump(trained_q_values, handle)
 
-    num_non_zero = sum([1 for w in trained_q_values.values() if w != 0])
-    with open('qAgent_learn_stats.txt', 'a') as handle:
-        handle.writelines([str(num_non_zero)])
+            num_non_zero = sum([1 for w in trained_q_values.values() if w != 0])
+            with open('qAgent_learn_stats.txt', 'a') as handle:
+                handle.write("{}\n".format(num_non_zero))
 
 
 # # print(game_instance(players_list))
 # print(game_instance(smart_players_2_list))
 # print(game_instance(smart_players_list))
-# sys.stdout = open('log.txt', 'w')
-# sys.stderr = open('log_err.txt', 'w')
+sys.stdout = open('log.txt', 'w')
+sys.stderr = open('log_err.txt', 'w')
 print(game_instance(mixed_smart_list))
