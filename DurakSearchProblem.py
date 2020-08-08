@@ -8,7 +8,6 @@ class DurakSearchProblem(SearchProblem):
         self.player_nickname = player_nickname
         self.deck = Deck([])
         self.trump_card = None
-
         self.expanded = 0
 
     def get_start_state(self):

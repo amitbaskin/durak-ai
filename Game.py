@@ -29,9 +29,10 @@ players_list = [p1, p2]
 smart_players_2_list = [p2, p3]
 smart_players_list = [p4, p5]
 p6 = None
-p7 = SimpleMinmaxPlayer(p6, "SimpleMinmaxPlayer")
-p6 = PureQlearningPlayer(p7, " PureQlearningPlayer")
+p7 = SimpleMinmaxPlayer(p6, " SimpleMinmax")
+p6 = PureQlearningPlayer(p7, " PureQlearning")
 simple_minmax_and_pure_qlearning = [p6, p7]
+simple_minmax_players = [p4, p5]
 
 
 def remove_zero_items(weights):
@@ -122,5 +123,6 @@ def game_instance(list_of_players):
     g.play()
 
 
-print(game_instance(simple_minmax_and_pure_qlearning))
+# print(game_instance(simple_minmax_and_pure_qlearning))
+print(game_instance(simple_minmax_players))
 # train_approx_q_agent(SimplePlayer())

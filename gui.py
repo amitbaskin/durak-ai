@@ -223,7 +223,7 @@ class GuiStateWithHuman(GuiState):
         self.count += 1
 
     def gui_update_players(self):
-        self.update_players()
+        self.swap_players()
         self.status = "Attacking" if self.attacking else "Defending"
 
     def second_stage_reset_state(self):
@@ -346,7 +346,7 @@ class guiStateWithAI(GuiState):
             self.pile.update(self.table)
             self.table.clear_cards()
             self.draw_cards()
-            self.update_players()
+            self.swap_players()
             self.gui_first_stage()
             return
         # defender can't defend
@@ -375,7 +375,7 @@ class guiStateWithAI(GuiState):
                 self.defender.draw_cards(self.deck)
                 self.pile.update(self.table)
                 self.table.clear_cards()
-                self.update_players()
+                self.swap_players()
                 gui.update_gui(self, None, self.status, True)
                 return False
         print("No more attacking allowed, moving to the next state!")

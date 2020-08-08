@@ -164,10 +164,10 @@ class State:
         self.trump_card = trump_card
         self.attacker = players_list[pointer.attacker_id]
         self.attacker.attacking = True
+        self.current_player = self.attacker
         self.defender = players_list[pointer.defender_id]
         self.table = table if table is not None else Table([])
         self.pile = pile if pile is not None else Pile([])
-        self.current_player = self.attacker
         self.count = 0
         self.status = None if status is None else status
 
@@ -197,15 +197,24 @@ class State:
         self.attacker.draw_cards(self.deck)
         self.defender.draw_cards(self.deck)
 
-    def update_players(self):
+    def next_current_player(self):
+        if self.current_player == self.attacker:
+            self.current_player = self.defender
+        else:
+            self.current_player = self.attacker
+
+    def swap_players(self):
+        self.draw_cards()
+        self.next_current_player()
         self.attacker, self.defender = self.defender, self.attacker
         self.attacker.attacking, self.defender.attacking = True, False
+
 
     def prepare_next_state(self):
         self.draw_cards()
         self.pile.update(self.table)
         self.table.clear_cards()
-        self.update_players()
+        self.swap_players()
         self.count = 0
 
     def get_compressed(self):
@@ -246,21 +255,21 @@ class State:
 
     def get_next_state_given_card(self, card):
         if self.count > 6:
-            self.current_player = self.defender
+            self.current_player.remove_card(card)
             self.prepare_next_state()
             self.count = 0
             return self
         if card is None:
             if self.defender == self.current_player:
                 self.current_player.grab_table(self.table)
-                self.update_players()
+                self.next_current_player()
             else:
                 self.prepare_next_state()
         else:
             self.table.add_single_card(card)
             self.current_player.remove_card(card)
-            self.update_players()
-        self.count += 1
+            self.next_current_player()
+            self.count += 1
         return self
 
     def print_first_stage_log(self):
