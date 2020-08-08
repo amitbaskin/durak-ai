@@ -157,7 +157,7 @@ class CompressedState:
 
 class State:
     def __init__(self, players_list, pointer, deck, trump_card,
-                 table=None, pile=None, status=None):
+                 pile=None, table=None, status=None):
         self.players_list = players_list
         self.pointer = pointer
         self.deck = deck
@@ -246,6 +246,7 @@ class State:
 
     def get_next_state_given_card(self, card):
         if self.count > 6:
+            self.current_player = self.defender
             self.prepare_next_state()
             self.count = 0
             return self
@@ -341,8 +342,10 @@ class GameProcess:
             player.draw_cards(self.deck)
 
     def get_initial_state(self):
-        return State(self.players_list, self.pointer, self.deck, self.pile,
-                     self.trump_card, self.table)
+        return State(self.players_list, self.pointer, self.deck,
+                     self.trump_card, self.pile, self.table)
+    # (self, players_list, pointer, deck, trump_card,
+    #                  pile=None, table=None, status=None):
 
     def play(self):
         current_state = self.get_initial_state()
