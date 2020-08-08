@@ -224,9 +224,6 @@ class GuiState(State):
         self.count += 1
         return self
 
-    def gui_helper(self):
-        pass
-
     def draw_card_for_trump(self):
         self.trump_card = self.deck.get_trump()
 
@@ -262,20 +259,17 @@ class GuiState(State):
         return deepcopy(self)
 
 
-class RoundWithHuman(GuiState):
+class GuiStateWithHuman(GuiState):
     def __init__(self, players_list, deck, pile, gui_needed=False):
-        GuiState.__init__(self, players_list, deck, pile, gui_needed)
-
+        super().__init__(players_list, deck, pile, gui_needed)
         self.human_player = self.attacker if self.attacker.human else self.defender
         self.attacking = self.attacker.human
         self.count = 0
         self.round_over = False
-
         self.status = "Attacking" if self.attacking else "Defending"
+        self.gui_helper()
 
-        self.round()
-
-    def round(self):
+    def gui_helper(self):
         if self.check_win():
             print(self.status)
             gui.winner_decided(self.status)
@@ -407,19 +401,17 @@ class RoundWithHuman(GuiState):
         gui.update_gui(self, self.card_pick_callback, self.status)
 
 
-class RoundWithAI(GuiState):
+class StateWithAI(GuiState):
     def __init__(self, players_list, deck, pile, gui_needed=False):
-        GuiState.__init__(self, players_list, deck, pile, gui_needed)
-
+        super().__init__(players_list, deck, pile, gui_needed)
         self.status = ""
         self.player_won = False
         self.current_player = self.attacker
-
         if gui_needed:
             gui.build_gui(self, None, self.status, True)
-            self.round()
+            self.gui_helper()
 
-    def round(self):
+    def gui_helper(self):
         gui.update_gui(self, None, self.status, True)
         if self.check_win():
             print(self.status)
@@ -427,12 +419,11 @@ class RoundWithAI(GuiState):
             return self.status
         if self._first_stage() == True:
             gui.update_gui(self, None, self.status, True)
-            self.round()
+            self.gui_helper()
             return "first_stage_finish"
         gui.update_gui(self, None, self.status, True)
         self._second_stage()
-
-        self.round()
+        self.gui_helper()
 
     def _first_stage(self):
         print(self.trump_card)
@@ -505,10 +496,10 @@ class DurakGame:
 
     def round(self):
         if self.is_human_playing:
-            self.curr_round = RoundWithHuman(self.player_list, self.deck,
-                                             self.pile, gui_needed=True)
+            self.curr_round = GuiStateWithHuman(self.player_list, self.deck,
+                                                self.pile, gui_needed=True)
         else:
-            self.curr_round = RoundWithAI(self.player_list, self.deck,
+            self.curr_round = StateWithAI(self.player_list, self.deck,
                                           self.pile, gui_needed=True)
 
 
@@ -688,8 +679,8 @@ p2 = PureQlearningPlayer(p1, " PureQlearning")
 p1 = SimpleMinmaxPlayer(p2, " SimpleMinmax")
 p3 = SimplePlayer()
 
-# gui = Durak_GUI([p1, p2], None)
-gui = Durak_GUI([p3, human], None)
+gui = Durak_GUI([p1, p2], None)
+# gui = Durak_GUI([p3, human], None)
 
 if __name__ == "__main__":
     gui.mainloop()
