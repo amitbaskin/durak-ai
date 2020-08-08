@@ -172,8 +172,9 @@ class State:
         self.current_player = self.attacker
         self.current_player.attacking = True
         self.defender.attacking = False
-        self.attacker.attack()
         self.count += 1
+        self.attacker.attack()
+
 
     def get_second_stage_attack(self):
         self.current_player = self.attacker

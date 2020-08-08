@@ -201,7 +201,7 @@ class GuiStateWithHuman(GuiState):
         gui.build_gui(self, self.card_pick_callback, self.status,
                       is_attacker_first_state=self.attacking)
 
-    def _first_stage(self, choice, card):
+    def gui_first_stage(self, choice, card):
         if self.attacking:
             self.current_player = self.attacker
             self.table.add_single_card(card)
@@ -232,7 +232,6 @@ class GuiStateWithHuman(GuiState):
         self.draw_cards()
         self.pile.update(self.table)
         self.table.clear_cards()
-
         self.gui_update_players()
 
     def second_stage_attacking(self, choice, card):
@@ -252,7 +251,6 @@ class GuiStateWithHuman(GuiState):
         self.current_player = self.defender
         if choice is None:
             self.defender.grab_table(self.table)
-
             self.draw_cards()
             gui.update_gui(self, self.card_pick_callback, self.status)
             if not self.check_win():
@@ -263,18 +261,15 @@ class GuiStateWithHuman(GuiState):
         else:
             self.defender.remove_card(card)
             self.table.add_single_card(card)
-
         self.current_player = self.attacker
         if self.attacker.add_card(self) is not None:
             self.count += 1
-
             gui.update_gui(self, self.card_pick_callback, self.status)
             if self.check_win():
                 gui.winner_decided(self.status)
             return
         else:
             self.second_stage_reset_state()
-
             gui.update_gui(self, self.card_pick_callback, self.status,
                            is_attacker_first_state=True)
             if self.check_win():
@@ -287,25 +282,20 @@ class GuiStateWithHuman(GuiState):
             self.defender.grab_table(self.table)
         else:
             self.pile.update(self.table)
-
         self.draw_cards()
         self.table.clear_cards()
-
         self.gui_update_players()
-
         self.count = 0
 
     def card_pick_callback(self, choice, card):
         if self.check_win():
             gui.winner_decided(self.status)
             return
-
         if self.state_over:
             self.count = 0
             self.state_over = False
-
         if self.count == 0:
-            self._first_stage(choice, card)
+            self.gui_first_stage(choice, card)
         elif 1 <= self.count < 6:  # Second stage.
             if self.attacking:
                 self.second_stage_attacking(choice, card)
@@ -313,7 +303,6 @@ class GuiStateWithHuman(GuiState):
                 return self.second_stage_defending(choice, card)
         else:
             self.second_stage_state_over(choice)
-
         if self.check_win():
             gui.winner_decided(self.status)
             return
@@ -323,31 +312,28 @@ class GuiStateWithHuman(GuiState):
 class guiStateWithAI(GuiState):
     def __init__(self, players_list, deck, pile, gui_needed=False):
         GuiState.__init__(self, players_list, deck, pile, gui_needed)
-
         self.status = ""
         self.player_won = False
         self.current_player = self.attacker
-
         if gui_needed:
             gui.build_gui(self, None, self.status, True)
-            self.state()
+            self.gui_helper()
 
-    def state(self):
+    def gui_helper(self):
         gui.update_gui(self, None, self.status, True)
         if self.check_win():
             print(self.status)
             gui.winner_decided(self.status)
             return self.status
-        if self._first_stage() == True:
+        if self.gui_first_stage() == True:
             gui.update_gui(self, None, self.status, True)
-            self.state()
+            self.gui_helper()
             return "first_stage_finish"
         gui.update_gui(self, None, self.status, True)
-        self._second_stage()
+        self.gui_second_stage()
+        self.gui_helper()
 
-        self.state()
-
-    def _first_stage(self):
+    def gui_first_stage(self):
         print(self.trump_card)
         print(self.attacker.nickname, 'num cards',
               len(self.attacker.get_cards()))
@@ -358,12 +344,9 @@ class guiStateWithAI(GuiState):
         if self.attacker.attack(self) is None:
             self.pile.update(self.table)
             self.table.clear_cards()
-
             self.draw_cards()
-            self.attacker, self.defender = self.defender, self.attacker
-            self.attacker.attacking = True
-            self.defender.attacking = False
-            self._first_stage()
+            self.update_players()
+            self.gui_first_stage()
             return
         # defender can't defend
         self.current_player = self.defender
@@ -374,7 +357,7 @@ class guiStateWithAI(GuiState):
         # defender defended successfully
         return False
 
-    def _second_stage(self):
+    def gui_second_stage(self):
         cnt = 1
         while True and cnt < 6:
             gui.update_gui(self, None, self.status, True)
@@ -391,9 +374,7 @@ class guiStateWithAI(GuiState):
                 self.defender.draw_cards(self.deck)
                 self.pile.update(self.table)
                 self.table.clear_cards()
-                self.attacker, self.defender = self.defender, self.attacker
-                self.attacker.attacking = True
-                self.defender.attacking = False
+                self.update_players()
                 gui.update_gui(self, None, self.status, True)
                 return False
         print("No more attacking allowed, moving to the next state!")
@@ -402,21 +383,20 @@ class guiStateWithAI(GuiState):
 
 
 class DurakGame:
-    def __init__(self, player_list, gui=None):
+    def __init__(self, players_list, gui=None):
         self.deck = Deck([])
-        self.player_list = player_list
+        self.player_list = players_list
         self.pile = Pile([])
         self.gui = gui
         self.is_human_playing = False
-        for player in player_list:
+        for player in players_list:
             if player.human:
                 self.is_human_playing = True
-
         self.curr_state = None
         if self.gui is not None:
-            self.state()
+            self.gui_helper()
 
-    def state(self):
+    def gui_helper(self):
         if self.is_human_playing:
             self.curr_state = GuiStateWithHuman(
                 self.player_list, self.deck, self.pile, gui_needed=True)
@@ -593,7 +573,6 @@ class Durak_GUI(tk.Tk):
         if is_attacker_first_state:
             self.admit_defeat.grid_forget()
         tk.Tk.update(self)
-
 
 
 # player2 = HumanPlayer("Eva")
