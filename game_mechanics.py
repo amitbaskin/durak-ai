@@ -155,8 +155,7 @@ class CompressedState:
 
 
 class State:
-    def __init__(self, players_list, pointer, deck, pile, trump_card,
-                 table=None, status=None):
+    def __init__(self, players_list, pointer, deck, pile, trump_card, table):
         self.players_list = players_list
         self.pointer = pointer
         self.deck = deck
@@ -164,9 +163,8 @@ class State:
         self.attacker = players_list[pointer.attacker_id]
         self.attacker.attacking = True
         self.defender = players_list[pointer.defender_id]
-        self.table = Table([]) if table is None else table
+        self.table = table
         self.pile = pile
-        self.status = None if status is None else status
         self.current_player = self.attacker
         self.count = 0
 
@@ -175,6 +173,7 @@ class State:
         self.current_player.attacking = True
         self.defender.attacking = False
         self.attacker.attack()
+        self.count += 1
 
     def get_second_stage_attack(self):
         self.current_player = self.attacker
@@ -184,6 +183,7 @@ class State:
     def get_defence(self):
         self.current_player = self.defender
         self.current_player.attacking = False
+        self.count += 1
         return self.defender.defend(self)
 
     def draw_cards(self):
@@ -199,6 +199,7 @@ class State:
         self.pile.update(self.table)
         self.table.clear_cards()
         self.update_players()
+        self.count = 0
 
     def get_compressed(self):
         return CompressedState(self)
@@ -237,7 +238,7 @@ class State:
                 return self.status
 
     def get_next_state_given_card(self, card):
-        if self.count >= 7:
+        if self.count > 6:
             self.prepare_next_state()
             self.count = 0
             return self
@@ -250,16 +251,7 @@ class State:
         else:
             self.table.add_single_card(card)
             self.current_player.remove_card(card)
-            #  TODO: Why draw cards here?
-            # self.current_player.draw_cards(self.deck)
             self.update_players()
-            #  TODO: Commented lines below make no sense
-            # if self.defender == self.current_player:
-            #     self.update_players()
-            # else:
-                # self.defender.attacking = True
-                # self.current_player = self.defender
-                # self.current_player.attacking = False
         self.count += 1
         return self
 
@@ -298,7 +290,7 @@ class State:
         # defender defended successfully
         return False
 
-    def second_stage(self):
+    def second_stage(self, is_gui=False):
         print('\n***Second Stage Begins***\n')
         cnt = 1
         while True and cnt < 6:
@@ -309,9 +301,7 @@ class State:
                 if defence_card is None:
                     # The defender surrendered
                     self.draw_cards()
-                    print(
-                        "The defender has surrendered, "
-                        "moving to the next state!")
+                    print("The defender has surrendered")
                     return
             else:
                 print("{} doesn't add anymore cards".format(
@@ -345,7 +335,7 @@ class GameProcess:
 
     def get_initial_state(self):
         return State(self.players_list, self.pointer, self.deck, self.pile,
-                     self.trump_card)
+                     self.trump_card, self.table)
 
     def play(self):
         current_state = self.get_initial_state()
@@ -356,55 +346,3 @@ class GameProcess:
             current_state.play_helper()
             i += 1
         return current_state.status
-
-
-#  TODO: No usage of the classes below
-class DeckEncoder:
-    '''
-    Encoding all str to numerical
-    deck_instance == instance of the class Deck
-    '''
-
-    def __init__(self, deck_instance):
-        self.deck_instance = deck_instance
-        self.encode_legend = self.suit_encode()
-
-    def suit_encode(self):
-        suits = [(i.split('_')[1]) for i in self.deck_instance.playerCards]
-        trump = suits[-1]
-        suits_except_trump = list(set(suits))
-        suits_except_trump.remove(trump)
-        encode_dict = {trump: 0}
-        encode_dict.update(dict(
-            [(val, num + 1) for num, val in enumerate(suits_except_trump)]))
-        # self.deck_instance.encode_legend = encode_dict
-        return encode_dict
-
-    def encode(self):
-        splitted_deck = [(i.split('_')) for i in self.deck_instance.playerCards]
-        for num, card in enumerate(splitted_deck):
-            splitted_deck[num][0] = int(splitted_deck[num][0])
-            splitted_deck[num][1] = self.encode_legend[card[1]]
-        # self.deck_instance.encoded_cards = splitted_deck
-        return splitted_deck
-
-
-class DeckDecoder:
-    '''
-    Encoding all numerical back to str
-    '''
-
-    def __init__(self, deck_instance):
-        self.deck_instance = deck_instance
-
-    def decode(self):
-        encode_legend_rev = dict(
-            [[v, k] for k, v in self.deck_instance.encode_legend.items()])
-        decoded_deck = [str(i[0]) + '_' + str(encode_legend_rev[i[1]]) \
-                        for i in self.deck_instance.encoded_cards]
-        self.deck_instance.playerCards = decoded_deck
-
-    def example(self):
-        return (
-            'input:\n{}\noutput:\n{}'.format(self.deck_instance.encoded_cards,
-                                             self.deck_instance.playerCards))

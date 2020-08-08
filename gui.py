@@ -171,11 +171,11 @@ class PlayerHand(ttk.Frame):
 
 
 class GuiState(State):
-    def __init__(self, players_list, deck, pile, gui_needed=False):
+    def __init__(self, players_list, deck, pile, table, gui_needed=False):
         self.pointer = Pointer(self.players_list, self.trump_card.suit)
         self.trump_card = self.deck.get_trump()
         super().__init__(players_list, self.pointer, deck, pile,
-                         self.trump_card)
+                         table, self.trump_card)
         self.gui_needed = gui_needed
         self.draw_cards()
 
@@ -183,20 +183,15 @@ class GuiState(State):
 class GuiStateWithHuman(GuiState):
     def __init__(self, players_list, deck, pile, gui_needed=False):
         GuiState.__init__(self, players_list, deck, pile, gui_needed)
-
         self.human_player = \
             self.attacker if self.attacker.human else self.defender
         self.attacking = self.attacker.human
         self.count = 0
         self.state_over = False
+        self.gui_helper()
 
-        self.status = "Attacking" if self.attacking else "Defending"
-
-        self.state()
-
-    def state(self):
+    def gui_helper(self):
         if self.check_win():
-            print(self.status)
             gui.winner_decided(self.status)
             return self.status
         if not self.attacker.human:
@@ -204,61 +199,10 @@ class GuiStateWithHuman(GuiState):
         gui.build_gui(self, self.card_pick_callback, self.status,
                       is_attacker_first_state=self.attacking)
 
-    def _first_stage(self, choice, card):
-        if self.attacking:
-            self.current_player = self.attacker
-            self.table.add_single_card(card)
-            self.attacker.remove_card(card)
-            self.current_player = self.defender
-            if self.defender.defend(self) is None:
-                self.defender.grab_table(self.table)
-        else:
-            self.current_player = self.defender
-            if choice is None:
-                self.attacker.draw_cards(self.deck)
-                self.defender.grab_table(self.table)
-                self.state_over = True
-            else:
-                self.table.add_single_card(card)
-                self.defender.remove_card(card)
-            self.current_player = self.attacker
-            self.attacker.attack(self)
-        self.count += 1
-
-    def swap_players(self):
-        self.attacker, self.defender = self.defender, self.attacker
-        self.defender.attacking = False
-        self.attacker.attacking = True
-        self.attacking = not self.attacking
-        self.status = "Attacking" if self.attacking else "Defending"
-
-    def second_stage_reset_state(self):
-        self.state_over = True
-        print('_second_stage no options for attacker')
-        self.draw_cards()
-        self.pile.update(self.table)
-        self.table.clear_cards()
-
-        self.swap_players()
-
-    def second_stage_attacking(self, choice, card):
-        self.current_player = self.attacker
-        if choice is None:
-            self.second_stage_reset_state()
-            self.attacker.attack(self)
-        else:
-            self.table.add_single_card(card)
-            self.attacker.remove_card(card)
-            self.count += 1
-            if self.defender.defend(self) is None:
-                self.attacker.draw_cards(self.deck)
-                self.state_over = True
-
     def second_stage_defending(self, choice, card):
         self.current_player = self.defender
         if choice is None:
             self.defender.grab_table(self.table)
-
             self.draw_cards()
             gui.update_gui(self, self.card_pick_callback, self.status)
             if not self.check_win():
@@ -269,7 +213,6 @@ class GuiStateWithHuman(GuiState):
         else:
             self.defender.remove_card(card)
             self.table.add_single_card(card)
-
         self.current_player = self.attacker
         if self.attacker.add_card(self) is not None:
             self.count += 1
@@ -279,7 +222,7 @@ class GuiStateWithHuman(GuiState):
                 gui.winner_decided(self.status)
             return
         else:
-            self.second_stage_reset_state()
+            self.prepare_next_state()
 
             gui.update_gui(self, self.card_pick_callback, self.status,
                            is_attacker_first_state=True)
@@ -297,7 +240,7 @@ class GuiStateWithHuman(GuiState):
         self.draw_cards()
         self.table.clear_cards()
 
-        self.swap_players()
+        self.update_players()
 
         self.count = 0
 
@@ -311,7 +254,7 @@ class GuiStateWithHuman(GuiState):
             self.state_over = False
 
         if self.count == 0:
-            self._first_stage(choice, card)
+            self.first_stage()
         elif 1 <= self.count < 6:  # Second stage.
             if self.attacking:
                 self.second_stage_attacking(choice, card)
@@ -336,9 +279,9 @@ class guiStateWithAI(GuiState):
 
         if gui_needed:
             gui.build_gui(self, None, self.status, True)
-            self.state()
+            self.gui_helper()
 
-    def state(self):
+    def gui_helper(self):
         gui.update_gui(self, None, self.status, True)
         if self.check_win():
             print(self.status)
@@ -346,12 +289,12 @@ class guiStateWithAI(GuiState):
             return self.status
         if self._first_stage() == True:
             gui.update_gui(self, None, self.status, True)
-            self.state()
+            self.gui_helper()
             return "first_stage_finish"
         gui.update_gui(self, None, self.status, True)
         self._second_stage()
 
-        self.state()
+        self.gui_helper()
 
     def _first_stage(self):
         print(self.trump_card)
@@ -420,9 +363,9 @@ class DurakGame:
 
         self.curr_state = None
         if self.gui is not None:
-            self.state()
+            self.gui_helper()
 
-    def state(self):
+    def gui_helper(self):
         if self.is_human_playing:
             self.curr_state = GuiStateWithHuman(
                 self.player_list, self.deck, self.pile, gui_needed=True)

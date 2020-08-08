@@ -117,13 +117,13 @@ def graph_search_pattern(fringe, problem, insertion_func, getter_func,
         if check_func(node, visited_list):
             continue
         else:
-            visited_list.add(node.state)
-        if problem.is_goal_state(node.state):
+            visited_list.add(node.gui_helper)
+        if problem.is_goal_state(node.gui_helper):
             return node.get_moves(problem)
-        elif problem.is_game_over(node.state):
+        elif problem.is_game_over(node.gui_helper):
             continue
         else:
-            cur_successors = problem.get_successors(node.state)
+            cur_successors = problem.get_successors(node.gui_helper)
             insertion_func(cur_successors, fringe, node)
 
     print('no solution')
@@ -153,7 +153,7 @@ def depth_first_search(problem):
         return curr_fringe.pop()
 
     def dfs_check_func(node, visited_list):
-        return node.state in visited_list.keys()
+        return node.gui_helper in visited_list.keys()
 
     def dfs_cost_func(node):
         return node.cost
@@ -177,7 +177,7 @@ def breadth_first_search(problem):
         return curr_fringe.pop()
 
     def bfs_check_func(node, visited_list):
-        return node.state in visited_list.keys()
+        return node.gui_helper in visited_list.keys()
 
     def bfs_cost_func(node):
         return node.cost
@@ -200,8 +200,8 @@ def uniform_cost_search(problem):
         return curr_fringe.pop()
 
     def ucs_check_func(node, visited_list):
-        return node.state in visited_list.keys() and \
-               visited_list[node.state] <= node.cost_so_far
+        return node.gui_helper in visited_list.keys() and \
+               visited_list[node.gui_helper] <= node.cost_so_far
 
     def ucs_cost_func(node):
         return node.cost_so_far
@@ -231,7 +231,7 @@ def a_star_search(problem, heuristic=null_heuristic):
             exit()
 
     def astar_check_func(node, visited_list):
-        return node.state in visited_list
+        return node.gui_helper in visited_list
         #and visited_list[node.state] <= node.astar_cost
 
     def astar_cost_func(node):
