@@ -2,26 +2,8 @@ import numpy as np
 from DurakSearchProblem import DurakSearchProblem
 
 
-def print_state(state, possible_action):
-    print("\n\n\ntrump card: ", state.trump_card)
-    print("count: ", state.count)
-    print("possible_action: ", possible_action)
-    print("current_player:", state.current_player.nickname)
-    print("is current_player attacking:",
-          state.current_player.attacking)
-    print("attacker:", state.attacker.nickname)
-    print("is attacker attacking:",
-          state.attacker.attacking)
-    print("attacker cards: ", state.attacker.get_cards())
-    print("defender:", state.defender.nickname)
-    print("is defender attacking:",
-          state.defender.attacking)
-    print("defender cards: ", state.defender.get_cards())
-    print("table: ", state.table.get_cards(), "\n\n\n")
-
-
 class MiniMaxAgent:
-    def __init__(self, evaluation_function, players_list, nickname, depth=5):
+    def __init__(self, evaluation_function, players_list, nickname, depth=3):
         self.evaluation_function = evaluation_function
         self.depth = depth
         self.searcher = DurakSearchProblem(players_list, nickname)

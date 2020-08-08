@@ -300,7 +300,7 @@ class State:
         defence_card = self.get_defence()
 
         if defence_card is None:
-            self.attacker.draw_cards(self.deck)
+            self.attacker.draw_cards()
             return True
         # defender defended successfully
         return False
@@ -346,7 +346,7 @@ class GameProcess:
 
     def get_cards(self):
         for player in self.players_list:
-            player.draw_cards(self.deck)
+            player.draw_cards()
 
     def get_initial_state(self):
         return State(self.players_list, self.pointer, self.deck,

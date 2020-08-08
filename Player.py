@@ -70,16 +70,6 @@ class Player(CardsHolder):
             return first_score
 
         return second_score - first_score
-    
-    # TODO: Delete this?
-    def play_move(self, state):
-        if self.attacking:
-            if len(state.table.playerCards) == 0:
-                return self.attack(state)
-            else:
-                return self.add_card(state)
-        else:
-            return self.defend(state)
 
     def attack_helper(self, attack_card, state):
         prev_state = state.copy()
