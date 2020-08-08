@@ -240,7 +240,10 @@ class State:
         winners = []
         if not self.attacker.get_cards():
             winners.append(self.attacker.nickname)
-        if not self.defender.get_cards():
+        if not self.defender.get_cards() or \
+                (len(self.defender.options(
+                    self.table, self.trump_card.suit)) == 1
+                 and len(self.defender.get_cards()) == 1):
             winners.append(self.defender.nickname)
         if winners:
             if len(winners) == 2:
@@ -248,9 +251,9 @@ class State:
                 return 'DRAW'
             else:
                 self.status = winners[0]
-                return self.status
+                return 'WIN'
 
-    def get_next_state_given_card(self, card):
+    def get_next_state(self, card):
         if self.count > 12:
             self.current_player = self.defender
             self.prepare_next_state()

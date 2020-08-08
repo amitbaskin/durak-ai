@@ -32,4 +32,4 @@ class DurakSearchProblem(SearchProblem):
 
     def generate_successor(self, state, card):
         copied_state = state.copy()
-        return copied_state.get_next_state_given_card(card)
+        return copied_state.get_next_state(card)
