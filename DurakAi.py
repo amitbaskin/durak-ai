@@ -61,7 +61,7 @@ class SimplePlayer(Player):
         self.no_cards_msg(state)
 
 
-class HandicappedSimplePlayer(Player):
+class HandicapSimplePlayer(Player):
     def __init__(self):
         self.nickname = "Handicapped Simple Player"
         super().__init__(self.nickname, [])
@@ -208,7 +208,7 @@ class QlearningMinmaxPlayer(Player):
 
         if len(possible_cards) == 0:
             return None
-        attack_card = self.q_agent.getAction(state.deepcopy())
+        attack_card = self.q_agent.getAction(state.copy())
         if attack_card is None:
             attack_card = choose_min_card(possible_cards, state.trump_card.suit)
 
@@ -245,7 +245,7 @@ class PureQlearningPlayer(Player):
         self.nickname = "Smart Player" + name
         super().__init__(self.nickname, [])
         self.searcher = DurakSearchProblem([self, opponent], self.nickname)
-        self.qAgent = ApproximateQAgent(
+        self.q_agent = ApproximateQAgent(
             self.searcher.get_possible_cards) if approx else \
             QlearningAgent(self.searcher.get_possible_cards)
 
@@ -260,7 +260,7 @@ class PureQlearningPlayer(Player):
 
         if len(possible_cards) == 0:
             return None
-        attack_card = self.qAgent.getAction(state.deepcopy())
+        attack_card = self.q_agent.getAction(state.copy())
         if attack_card is None:
             attack_card = choose_min_card(possible_cards, state.trump_card.suit)
 

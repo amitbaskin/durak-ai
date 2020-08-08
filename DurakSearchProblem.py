@@ -36,7 +36,7 @@ class DurakSearchProblem(SearchProblem):
                                             state.trump_card.suit)
 
     def generate_successor(self, state, card):
-        copied_state = state.deepcopy()
+        copied_state = state.copy()
         return copied_state.get_next_state_given_card(card)
 
     def get_successors(self, state):

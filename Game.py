@@ -31,7 +31,7 @@ smart_players_list = [p4, p5]
 p6 = None
 p7 = SimpleMinmaxPlayer(p6, "SimpleMinmaxPlayer")
 p6 = PureQlearningPlayer(p7, " PureQlearningPlayer")
-mixed_smart_list = [p6, p7]
+simple_minmax_and_pure_qlearning = [p6, p7]
 
 
 def remove_zero_items(weights):
@@ -64,7 +64,7 @@ def train_approx_q_agent(versus_player):
             if g.play() == agent.nickname:
                 num_won += 1
 
-        trained_weights = remove_zero_items(agent.qAgent.weights)
+        trained_weights = remove_zero_items(agent.q_agent.weights)
         path = os.path.join("pickle",
                             'trained_weights_{}_epoch.pickle'.format(i))
         with open(path, 'wb') as handle:
@@ -97,7 +97,7 @@ def train_q_agent(versus_player):
             if g.play() == agent.nickname:
                 num_won += 1
 
-        trained_q_values = remove_zero_items(agent.qAgent.q_values)
+        trained_q_values = remove_zero_items(agent.q_agent.q_values)
         path = os.path.join("pickle",
                             'trained_q_values_{}_epoch.pickle'.format(i))
         with open(path, 'wb') as handle:
@@ -122,9 +122,5 @@ def game_instance(list_of_players):
     g.play()
 
 
-# # print(game_instance(players_list))
-# print(game_instance(smart_players_2_list))
-# print(game_instance(smart_players_list))
-# print(game_instance(mixed_smart_list))
-
-train_approx_q_agent(SimplePlayer())
+print(game_instance(simple_minmax_and_pure_qlearning))
+# train_approx_q_agent(SimplePlayer())

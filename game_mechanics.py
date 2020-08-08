@@ -1,4 +1,5 @@
 import random
+from copy import deepcopy
 
 
 class Card:
@@ -155,7 +156,8 @@ class CompressedState:
 
 
 class State:
-    def __init__(self, players_list, pointer, deck, pile, trump_card, table):
+    def __init__(self, players_list, pointer, deck, trump_card,
+                 table=None, pile=None, status=None):
         self.players_list = players_list
         self.pointer = pointer
         self.deck = deck
@@ -163,23 +165,27 @@ class State:
         self.attacker = players_list[pointer.attacker_id]
         self.attacker.attacking = True
         self.defender = players_list[pointer.defender_id]
-        self.table = table
-        self.pile = pile
+        self.table = table if table is not None else Table([])
+        self.pile = pile if pile is not None else Pile([])
         self.current_player = self.attacker
         self.count = 0
+        self.status = None if status is None else status
+
+    def copy(self):
+        return deepcopy(self)
 
     def get_first_stage_attack(self):
         self.current_player = self.attacker
         self.current_player.attacking = True
         self.defender.attacking = False
         self.count += 1
-        self.attacker.attack()
+        self.attacker.attack(self)
 
 
     def get_second_stage_attack(self):
         self.current_player = self.attacker
         self.current_player.attacking = True
-        return self.attacker.add_card()
+        return self.attacker.add_card(self)
 
     def get_defence(self):
         self.current_player = self.defender

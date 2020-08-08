@@ -28,7 +28,7 @@ class CardFrame(ttk.Frame):
         self.canvas = tk.Canvas(self, width=CARD_WIDTH, height=CARD_HEIGHT)
         self.canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=False)
         if highlighted:
-            self.canvas.config(backgstate="blue")
+            self.canvas.config()#backgstate="blue")
         self.original_img = card_image
         self.PIL_image = Image.fromarray(self.original_img)
         self.img = ImageTk.PhotoImage(image=self.PIL_image)
@@ -171,18 +171,21 @@ class PlayerHand(ttk.Frame):
 
 
 class GuiState(State):
-    def __init__(self, players_list, deck, pile, gui_needed=False):
-        self.pointer = Pointer(self.players_list, self.trump_card.suit)
-        self.trump_card = self.deck.get_trump()
-        super().__init__(players_list, self.pointer, deck, pile,
-                         self.trump_card, self.table)
+    def __init__(self, players_list, deck, table=None,
+                 pile=None, status=None, gui_needed=False):
+        self.trump_card = deck.get_trump()
+        self.pointer = Pointer(players_list, self.trump_card.suit)
+        super().__init__(players_list, self.pointer, deck, self.trump_card,
+                         table, pile, status)
+
         self.gui_needed = gui_needed
         self.draw_cards()
 
 
 class GuiStateWithHuman(GuiState):
-    def __init__(self, players_list, deck, pile, gui_needed=False):
-        GuiState.__init__(self, players_list, deck, pile, gui_needed)
+    def __init__(self, players_list, deck, table=None,
+                 pile=None, status=None, gui_needed=False):
+        super().__init__(players_list, deck, table, pile, status, gui_needed)
         self.human_player = \
             self.attacker if self.attacker.human else self.defender
         self.attacking = self.attacker.human
@@ -310,8 +313,9 @@ class GuiStateWithHuman(GuiState):
 
 
 class guiStateWithAI(GuiState):
-    def __init__(self, players_list, deck, pile, gui_needed=False):
-        GuiState.__init__(self, players_list, deck, pile, gui_needed)
+    def __init__(self, players_list, deck, table=None,
+                 pile=None, status=None, gui_needed=False):
+        super().__init__(players_list, deck, table, pile, status, gui_needed)
         self.status = ""
         self.player_won = False
         self.current_player = self.attacker
@@ -575,12 +579,15 @@ class Durak_GUI(tk.Tk):
         tk.Tk.update(self)
 
 
-# player2 = HumanPlayer("Eva")
-player2 = None
-player1 = PureQlearningPlayer(player2, "s")
-player2 = SimplePlayer()
-# player2 = PureQlearningPlayer(player1, "2")
-gui = Durak_GUI([player1, player2], None)
+human = HumanPlayer("Eva")
+p1 = None
+p2 = PureQlearningPlayer(p1, "PureQlearningPlayer")
+p1 = SimpleMinmaxPlayer(p2, "SimpleMinmaxPlayer")
+p3 = SimplePlayer()
+
+gui = Durak_GUI([p1, p2], None)
+# gui = Durak_GUI([human, p3], None)
+
 
 if __name__ == "__main__":
     gui.mainloop()

@@ -82,7 +82,7 @@ class Player(CardsHolder):
             return self.defend(state)
 
     def attack_helper(self, attack_card, state):
-        prev_state = state.deepcopy()
+        prev_state = state.copy()
         self.remove_card(attack_card)
         state.table.add_single_card(attack_card)
         print('{} {} {}'.format(self.nickname, ATTACK_MSG,
@@ -96,7 +96,7 @@ class Player(CardsHolder):
         return attack_card
 
     def add_card_helper(self, card_to_add, state):
-        prev_state = state.deepcopy()
+        prev_state = state.copy()
         self.remove_card(card_to_add)
         state.table.add_single_card(card_to_add)
         print('{} {} {}'.format(self.nickname, ADDING_CARD_MSG, card_to_add))
@@ -114,7 +114,7 @@ class Player(CardsHolder):
         print('{} {}'.format(FEATURING_TABLE_MSG, state.table.get_cards()))
 
     def defence_helper(self, defence_card, state):
-        prev_state = state.deepcopy()
+        prev_state = state.copy()
         self.remove_card(defence_card)
         state.table.add_single_card(defence_card)
         print('{} {} {}'.format(self.nickname, DEFENCE_MSG, defence_card))

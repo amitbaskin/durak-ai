@@ -12,7 +12,7 @@ import random, util
 import pickle
 import numpy as np
 import os
-from featureExtractors import DurakFeatueExtractor
+from featureExtractors import DurakFeatureExtractor
 
 
 class QLearningAgent(ReinforcementAgent):
@@ -176,7 +176,7 @@ class ApproximateQAgent(QlearningAgent):
 
     def __init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8, alpha=0.2,
                  numTraining=0, **args):
-        self.featExtractor = DurakFeatueExtractor()
+        self.featExtractor = DurakFeatureExtractor()
         QlearningAgent.__init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8,
                                 alpha=0.2, numTraining=0, **args)
 
