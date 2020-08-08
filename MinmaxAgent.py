@@ -3,7 +3,7 @@ from DurakSearchProblem import DurakSearchProblem
 
 
 class MiniMaxAgent:
-    def __init__(self, evaluation_function, players_list, nickname, depth=6):
+    def __init__(self, evaluation_function, players_list, nickname, depth=3):
         self.evaluation_function = evaluation_function
         self.depth = depth
         self.searcher = DurakSearchProblem(players_list, nickname)

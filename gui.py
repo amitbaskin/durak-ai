@@ -576,7 +576,7 @@ class Durak_GUI(tk.Tk):
                                       shown=True)
         self.player_hand.grid(row=2, column=1)
 
-        self.admit_defeat = ttk.Button(self.container, text="Forfeit round",
+        self.admit_defeat = ttk.Button(self.container, text="next round",
                                        command=lambda: choose_card_callback(
                                            None, None))
         self.admit_defeat.grid(row=2, column=2)
@@ -591,8 +591,8 @@ p2 = PureQlearningPlayer(p1, " PureQlearning")
 p1 = SimpleMinmaxPlayer(p2, " SimpleMinmax")
 p3 = SimplePlayer()
 
-gui = Durak_GUI([p1, p2], None)
-# gui = Durak_GUI([p3, human], None)
+# gui = Durak_GUI([p1, p2], None)
+gui = Durak_GUI([p3, human], None)
 
 if __name__ == "__main__":
     gui.mainloop()
