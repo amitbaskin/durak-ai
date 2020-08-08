@@ -13,52 +13,52 @@ class DurakSearchProblem(SearchProblem):
 
     def get_start_state(self):
         for player in self.player_list:
-            player._refresh()
+            player.clear_cards()
         deck = Deck([])
 
         game_process = GameProcess(self.player_list, deck)
         self.trump_card = game_process.trump_card
 
-        return game_process.get_initial_round()
+        return game_process.get_initial_state()
 
-    def is_goal_state(self, round):
-        return round.check_cards() == self.player_nickname
+    def is_goal_state(self, state):
+        return state.check_cards() == self.player_nickname
 
-    def is_game_over(self, round):
-        return round.check_win() is not None
+    def is_game_over(self, state):
+        return state.check_win() is not None
 
     def get_cost_of_actions(self, cards_played):
         # Maybe add price if card played was trump card
         return sum([card.number for card in cards_played])
 
-    def get_possible_cards(self, round):
-        return round.current_player.options(round.table,
-                                            round.trump_card.suit)
+    def get_possible_cards(self, state):
+        return state.current_player.options(state.table,
+                                            state.trump_card.suit)
 
-    def generate_successor(self, round, card):
-        copied_round = round.deepcopy()
-        return copied_round.get_next_state_given_card(card)
+    def generate_successor(self, state, card):
+        copied_state = state.deepcopy()
+        return copied_state.get_next_state_given_card(card)
 
-    def get_successors(self, round):
+    def get_successors(self, state):
         self.expanded += 1
-        if round.current_player.nickname == self.player_nickname:
-            possible_cards = set(round.current_player.options(
-                round.table, round.trump_card.suit))
+        if state.current_player.nickname == self.player_nickname:
+            possible_cards = set(state.current_player.options(
+                state.table, state.trump_card.suit))
         else:
             player = next(
-                p for p in self.player_list if p is not round.current_player)
-            possible_cards = player.options(round.table, round.trumpcard.suit)
+                p for p in self.player_list if p is not state.current_player)
+            possible_cards = player.options(state.table, state.trumpcard.suit)
 
-        next_possible_rounds = []
+        next_possible_states = []
 
         for card in possible_cards:
-            copied_round = round.deepcopy()
-            next_possible_rounds.append(
-                copied_round.get_next_state_given_card(card))
+            copied_state = state.deepcopy()
+            next_possible_states.append(
+                copied_state.get_next_state_given_card(card))
 
-        if len(round.table.playerCards) != 0:
-            copied_round = round.deepcopy()
-            next_possible_rounds.append(
-                copied_round.get_next_state_given_card(None))
+        if len(state.table.playerCards) != 0:
+            copied_state = state.deepcopy()
+            next_possible_states.append(
+                copied_state.get_next_state_given_card(None))
 
-        return next_possible_rounds
+        return next_possible_states

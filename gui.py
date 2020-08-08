@@ -8,7 +8,7 @@ from imageio import imread
 
 from durak_ai import HandicappedSimplePlayer, SmartPlayer, SmartPlayer2, AiPlayerDumb, SimplePlayer, PureQAgent
 from player import HumanPlayer
-from game_mechanics import Pointer, Table, Pile, Deck, State
+from game_mechanics import Pointer, Table, Pile, Deck, MiniState
 from search import SearchProblem
 
 CARD_WIDTH = 69 + 4
@@ -191,7 +191,7 @@ class Round(SearchProblem):
         self.draw_cards_for_players()
 
     def toState(self):
-        return State(self)
+        return MiniState(self)
 
     def get_next_state_given_card(self, card):
         if self.count >= 7:
@@ -359,7 +359,7 @@ class RoundWithHuman(Round):
             self.table.add_single_card(card)
 
         self.current_player = self.attacker
-        if self.attacker.adding_card(self) is not None:
+        if self.attacker.add_card(self) is not None:
             self.count += 1
 
             gui.update_gui(self, self.card_pick_callback, self.status)
@@ -470,7 +470,7 @@ class RoundWithAI(Round):
         while True and cnt < 6:
             gui.update_gui(self, None, self.status, True)
             self.current_player = self.attacker
-            if self.attacker.adding_card(self) is not None:
+            if self.attacker.add_card(self) is not None:
                 cnt += 1
                 self.current_player = self.defender
                 if self.defender.defend(self) is None:
@@ -535,7 +535,7 @@ class Durak_GUI(tk.Tk):
 
     def start_game(self):
         for player in self.player_list:
-            player._refresh()
+            player.clear_cards()
         self.game = DurakGame(self.player_list, self)
 
     def winner_decided(self, nickname):

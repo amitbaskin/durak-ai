@@ -59,7 +59,7 @@ def train_approx_q_agent(versus_player):
         num_won = 0
         for _ in range(100):
             for player in list_of_players:
-                player._refresh()
+                player.clear_cards()
             deck = Deck([])
             g = GameProcess(list_of_players, deck)
             if g.play() == agent.nickname:
@@ -89,7 +89,7 @@ def train_q_agent(versus_player):
         num_won = 0
         for _ in range(100):
             for player in list_of_players:
-                player._refresh()
+                player.clear_cards()
             deck = Deck([])
             g = GameProcess(list_of_players, deck)
             if g.play() == agent.nickname:
@@ -110,7 +110,7 @@ def train_q_agent(versus_player):
 
 def game_instance(list_of_players):
     for player in list_of_players:
-        player._refresh()
+        player.clear_cards()
     deck = Deck([])
     g = GameProcess(list_of_players, deck)
     g.play()

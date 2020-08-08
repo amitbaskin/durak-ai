@@ -134,12 +134,12 @@ class Pointer:
         return (self.attacker_id, self.defender_id)
 
 
-class State:
-    def __init__(self, round):
-        self.isAttacking = round.current_player.attacking
-        self.playerCards = set(round.current_player.sort_cards())
-        self.pile = set(round.pile.sort_cards())
-        self.table = set(round.table.sort_cards())
+class CompressedState:
+    def __init__(self, state):
+        self.isAttacking = state.current_player.attacking
+        self.playerCards = set(state.current_player.sort_cards())
+        self.pile = set(state.pile.sort_cards())
+        self.table = set(state.table.sort_cards())
 
     def __repr__(self):
         return '{}#{}#{}#{}'.format(self.isAttacking, self.playerCards,
@@ -154,7 +154,7 @@ class State:
         return hash(repr(self))
 
 
-class Round:
+class State:
     def __init__(self, players_list, pointer, deck, pile, trump_card,
                  table=None, status=None):
         self.players_list = players_list
@@ -179,7 +179,7 @@ class Round:
     def get_second_stage_attack(self):
         self.current_player = self.attacker
         self.current_player.attacking = True
-        return self.attacker.adding_card()
+        return self.attacker.add_card()
 
     def get_defence(self):
         self.current_player = self.defender
@@ -194,23 +194,23 @@ class Round:
         self.attacker, self.defender = self.defender, self.attacker
         self.attacker.attacking, self.defender.attacking = True, False
 
-    def prepare_next_round(self):
+    def prepare_next_state(self):
         self.draw_cards()
         self.pile.update(self.table)
         self.table.clear_cards()
         self.update_players()
 
-    def get_state(self):
-        return State(self)
+    def get_compressed(self):
+        return CompressedState(self)
 
-    def round(self):
+    def state(self):
         if self.check_win():
             print(self.status)
             return self.status
         if self._first_stage():
             # If the defender surrenders, we don't go to the
-            # the second stage, but begin a new round
-            print("The defender has surrendered, moving to the next round!")
+            # the second stage, but begin a new state
+            print("The defender has surrendered, moving to the next state!")
             return
         # If the defender fought back then we go to the second stage where
         # the attacker can keep attacking
@@ -242,7 +242,7 @@ class Round:
 
     def get_next_state_given_card(self, card):
         if self.count >= 7:
-            self.prepare_next_round()
+            self.prepare_next_state()
             self.count = 0
             return self
         if card is None:
@@ -250,7 +250,7 @@ class Round:
                 self.current_player.grab_table(self.table)
                 self.update_players()
             else:
-                self.prepare_next_round()
+                self.prepare_next_state()
         else:
             self.table.add_single_card(card)
             #  TODO: Why draw cards here?
@@ -314,15 +314,15 @@ class Round:
                     self.draw_cards()
                     print(
                         "The defender has surrendered, "
-                        "moving to the next round!")
+                        "moving to the next state!")
                     return
             else:
                 print("{} doesn't add anymore cards".format(
-                    self.attacker.nickname), '\nmoving to the next round!')
-                self.prepare_next_round()
+                    self.attacker.nickname), '\nmoving to the next state!')
+                self.prepare_next_state()
                 return
-        print("No more attacking allowed, moving to the next round!")
-        self.prepare_next_round()
+        print("No more attacking allowed, moving to the next state!")
+        self.prepare_next_state()
 
 
 class GameProcess:
@@ -340,23 +340,23 @@ class GameProcess:
 
     def refresh_game(self):
         for p in self.players_list:
-            p._refresh()
+            p.clear_cards()
 
     def get_cards(self):
         for player in self.players_list:
             player.draw_cards(self.deck)
 
-    def get_initial_round(self):
-        return Round(self.players_list, self.pointer, self.deck, self.pile,
+    def get_initial_state(self):
+        return State(self.players_list, self.pointer, self.deck, self.pile,
                      self.trump_card)
 
     def play(self):
-        r = self.get_initial_round()
+        r = self.get_initial_state()
         i = 0
         while r.status is None:
             print('\n')
-            print("round {}".format(i))
-            r.round()
+            print("state {}".format(i))
+            r.state()
             i += 1
         return r.status
 

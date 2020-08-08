@@ -6,12 +6,9 @@
 # John DeNero (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # For more info, see http://inst.eecs.berkeley.edu/~cs188/sp09/pacman.html
 
-# from game import *
-from learningAgents import ReinforcementAgent
-# from featureExtractors import *
-# from DurakSearchProblem import DurakSearchProblem
 
-import random, util, math
+from learningAgents import ReinforcementAgent
+import random, util
 import pickle
 import numpy as np
 import os
@@ -45,41 +42,41 @@ class QLearningAgent(ReinforcementAgent):
         ReinforcementAgent.__init__(self, **args)
         self.q_values = util.Counter()
 
-    def getQValue(self, round, action):
+    def getQValue(self, compressed_state, action):
         """
           Returns Q(state,action)
           Should return 0.0 if we never seen
           a state or (state,action) tuple
         """
-        state = round.get_state()
-        ret = self.q_values[(state, action)]
+        compressed_state = compressed_state.get_compressed()
+        ret = self.q_values[(compressed_state, action)]
         remove_zero_items(self.q_values)
         return ret
 
-    def getValue(self, round):
+    def getValue(self, state):
         """
           Returns max_action Q(state,action)
           where the max is over legal actions.  Note that if
           there are no legal actions, which is the case at the
           terminal state, you should return a value of 0.0.
         """
-        possible_actions = self.getLegalActions(round)
+        possible_actions = self.getLegalActions(state)
         values = dict()
         for action in possible_actions:
-            values[action] = self.getQValue(round, action)
+            values[action] = self.getQValue(state, action)
 
         return max(values.values()) if len(values) != 0 else 0.0
 
-    def getPolicy(self, round):
+    def getPolicy(self, state):
         """
           Compute the best action to take in a state.  Note that if there
           are no legal actions, which is the case at the terminal state,
           you should return None.
         """
-        possible_actions = self.getLegalActions(round)
+        possible_actions = self.getLegalActions(state)
         values = dict()
         for action in possible_actions:
-            values[action] = self.getQValue(round, action)
+            values[action] = self.getQValue(state, action)
 
         max_actions = []
         max_value = -np.inf
@@ -91,7 +88,7 @@ class QLearningAgent(ReinforcementAgent):
                 max_value = value
         return random.choice(max_actions) if len(max_actions) != 0 else None
 
-    def getAction(self, round):
+    def getAction(self, state):
         """
           Compute the action to take in the current state.  With
           probability self.epsilon, we should take a random action and
@@ -102,15 +99,15 @@ class QLearningAgent(ReinforcementAgent):
           HINT: You might want to use util.flipCoin(prob)
           HINT: To pick randomly from a list, use random.choice(list)
         """
-        legalActions = self.getLegalActions(round)
+        legalActions = self.getLegalActions(state)
         if len(legalActions) == 0:
             return None
         if util.flipCoin(self.epsilon):
             return random.choice(legalActions)
         else:
-            return self.getPolicy(round)
+            return self.getPolicy(state)
 
-    def update(self, round, action, nextRound, reward):
+    def update(self, compressed_state, action, nextstate, reward):
         """
           The parent class calls this to observe a
           state = action => nextState and reward transition.
@@ -120,19 +117,21 @@ class QLearningAgent(ReinforcementAgent):
           it will be called on your behalf
         """
         values = []
-        for next_action in self.getLegalActions(nextRound):
-            nextState = nextRound.get_state()
-            values.append(self.q_values[(nextState, next_action)])
+        for next_action in self.getLegalActions(nextstate):
+            next_state_compressed = nextstate.get_compressed()
+            values.append(self.q_values[(next_state_compressed, next_action)])
         max_value = max(values) if len(values) != 0 else 0
-        state = round.get_state()
-        coefficient = reward + self.discount * max_value - self.q_values[(state, action)]
+        compressed_state = compressed_state.get_compressed()
+        coefficient = reward + self.discount * max_value - \
+                      self.q_values[(compressed_state, action)]
         add = self.alpha * coefficient
         if add != 0:
-            self.q_values[(state, action)] += add
+            self.q_values[(compressed_state, action)] += add
 
 
 class DurakQAgent(QLearningAgent):
-    def __init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0,):
+    def __init__(self, legalActions_ptr, 
+                 epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0,):
         """
         These default parameters can be changed from the pacman.py command line.
         For example, to change the exploration rate, try:
@@ -153,8 +152,10 @@ class DurakQAgent(QLearningAgent):
         QLearningAgent.__init__(self, **args)
         self.weights = None
 
-        if os.path.isfile(os.path.join("pickle", "trained_q_values_latest.pickle")):
-            with open(os.path.join("pickle", "trained_q_values_latest.pickle"), 'rb') as handle:
+        if os.path.isfile(os.path.join("pickle", 
+                                       "trained_q_values_latest.pickle")):
+            with open(os.path.join("pickle", "trained_q_values_latest.pickle"), 
+                      'rb') as handle:
                 self.q_values = util.Counter(pickle.load(handle))
 
         self.getLegalActions = legalActions_ptr
@@ -176,35 +177,39 @@ class ApproximateQAgent(DurakQAgent):
     def __init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8, alpha=0.2,
                  numTraining=0, **args):
         self.featExtractor = DurakFeatueExtractor()
-        DurakQAgent.__init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0, **args)
+        DurakQAgent.__init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8, 
+                             alpha=0.2, numTraining=0, **args)
 
         # You might want to initialize weights here.
         self.weights = util.Counter()
 
-        if os.path.isfile(os.path.join("pickle", "trained_weights_latest.pickle")):
-            with open(os.path.join("pickle", "trained_weights_latest.pickle"), 'rb') as handle:
+        if os.path.isfile(os.path.join("pickle", 
+                                       "trained_weights_latest.pickle")):
+            with open(os.path.join("pickle", "trained_weights_latest.pickle"), 
+                      'rb') as handle:
                 self.weights = util.Counter(pickle.load(handle))
 
-    def getQValue(self, state, action):
+    def getQValue(self, compressed_state, action):
         """
           Should return Q(state,action) = w * featureVector
           where * is the dotProduct operator
         """
-        features = self.featExtractor.getFeatures(state, action)
+        features = self.featExtractor.getFeatures(compressed_state, action)
         ret = self.weights * features
         self.weights = remove_zero_items(self.weights)
         return ret
 
-    def update(self, round, action, nextRound, reward):
+    def update(self, compressed_state, action, nextstate, reward):
         """
            Should update your weights based on transition
         """
         values = []
-        for next_action in self.getLegalActions(nextRound):
-            values.append(self.getQValue(nextRound, next_action))
+        for next_action in self.getLegalActions(nextstate):
+            values.append(self.getQValue(nextstate, next_action))
         max_value = max(values) if len(values) != 0 else 0
-        correction = reward + self.discount * max_value - self.getQValue(round, action)
-        features = self.featExtractor.getFeatures(round, action)
+        correction = reward + self.discount * max_value - \
+                     self.getQValue(compressed_state, action)
+        features = self.featExtractor.getFeatures(compressed_state, action)
         for feature, value in features.items():
             w = self.alpha * correction * value
             final = self.weights[feature] + w
