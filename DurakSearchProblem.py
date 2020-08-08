@@ -1,8 +1,7 @@
-from search import *
 from game_mechanics import Deck, GameProcess
 
 
-class DurakSearchProblem(SearchProblem):
+class DurakSearchProblem:
     def __init__(self, player_list, player_nickname):
         self.player_list = player_list
         self.player_nickname = player_nickname

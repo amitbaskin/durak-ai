@@ -7,12 +7,14 @@
 # For more info, see http://inst.eecs.berkeley.edu/~cs188/sp09/pacman.html
 
 
-from learningAgents import ReinforcementAgent
-import random, util
-import pickle
-import numpy as np
 import os
+import pickle
+import random
+import util
+import numpy as np
+
 from featureExtractors import DurakFeatureExtractor
+from learningAgents import ReinforcementAgent
 
 
 class QLearningAgent(ReinforcementAgent):
@@ -140,7 +142,8 @@ class QlearningAgent(QLearningAgent):
         alpha    - learning rate
         epsilon  - exploration rate
         gamma    - discount factor
-        numTraining - number of training episodes, i.e. no learning after these many episodes
+        numTraining -
+        number of training episodes, i.e. no learning after these many episodes
         """
         args = dict()
         args['epsilon'] = epsilon

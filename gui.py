@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 from imageio import imread
+
 from DurakAi import *
 from Player import *
 from game_mechanics import *
@@ -183,7 +184,8 @@ class GuiState(State):
 class GuiStateWithHuman(GuiState):
     def __init__(self, players_list, deck, pile, gui_needed=False):
         super().__init__(players_list, deck, pile, gui_needed)
-        self.human_player = self.attacker if self.attacker.human else self.defender
+        self.human_player = self.attacker if \
+            self.attacker.human else self.defender
         self.attacking = self.attacker.human
         self.count = 0
         self.round_over = False
@@ -465,7 +467,6 @@ class Durak_GUI(tk.Tk):
         self.winner_label = ttk.Label(self.container,
                                       text=win_text,
                                       font=('Helvetica', 25))
-        # self.winner_label = ttk.Label(self.container, text=nickname + " has won!!!!", font=('Helvetica', 25))
         self.winner_label.pack()
 
         self.replay_button = ttk.Button(self.container,
@@ -482,10 +483,11 @@ class Durak_GUI(tk.Tk):
                                             shown=show_all)
         self.enemy_player_hand.grid(row=0, column=1)
 
-        progress_text = "Games played so far: " + str(
-            self.amount_of_games) + "\nWin rate: " + \
-                        str(
-                            self.amount_of_games_won / self.amount_of_games if self.amount_of_games != 0 else 0)
+        progress_text = "Games played so far: " + \
+                        str(self.amount_of_games) + \
+                        "\nWin rate: " + \
+                        str(self.amount_of_games_won / self.amount_of_games if
+                            self.amount_of_games != 0 else 0)
         self.progress_label.configure(text=progress_text)
 
         self.attacking_label.configure(text=status)
@@ -591,8 +593,8 @@ p2 = PureQlearningPlayer(p1, " PureQlearning")
 p1 = SimpleMinmaxPlayer(p2, " SimpleMinmax")
 p3 = SimplePlayer()
 
-# gui = Durak_GUI([p1, p2], None)
-gui = Durak_GUI([p3, human], None)
+gui = Durak_GUI([p1, p2], None)
+# gui = Durak_GUI([p3, human], None)
 
 if __name__ == "__main__":
     gui.mainloop()

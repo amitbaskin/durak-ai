@@ -1,7 +1,8 @@
 import random
-from Player import Player, choose_min_card
-from MinmaxAgent import MiniMaxAgent
 import numpy as np
+
+from Player import Player, choose_min_card
+from MinimaxAgent import MiniMaxAgent
 from qlearningAgents import QlearningAgent, ApproximateQAgent
 from DurakSearchProblem import DurakSearchProblem
 
@@ -112,8 +113,8 @@ class SimpleMinmaxPlayer(Player):
     def __init__(self, opponent, name):
         self.nickname = "Smart Player" + name
         super().__init__(self.nickname, [])
-        self.minmax_agent = MiniMaxAgent(self.state_evaluation, [self, opponent],
-                                         self.nickname)
+        self.minmax_agent = MiniMaxAgent(
+            self.state_evaluation, [self, opponent], self.nickname)
 
     def state_evaluation(self, state):
         my_cards_amount = len(self.get_cards())

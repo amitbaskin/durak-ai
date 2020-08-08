@@ -28,11 +28,13 @@ class ValueEstimationAgent:
 
   def __init__(self, alpha=1.0, epsilon=0.05, gamma=0.8, numTraining = 10):
     """
-    Sets options, which can be passed in via the Pacman command line using -a alpha=0.5,...
+    Sets options, which can be passed in via the Pacman command line using
+    -a alpha=0.5,...
     alpha    - learning rate
     epsilon  - exploration rate
     gamma    - discount factor
-    numTraining - number of training episodes, i.e. no learning after these many episodes
+    numTraining - number of training episodes, i.e. no learning after
+    these many episodes
     """
     self.alpha = float(alpha)
     self.epsilon = float(epsilon)
@@ -153,14 +155,16 @@ class ReinforcementAgent(ValueEstimationAgent):
   def isInTesting(self):
       return not self.isInTraining()
 
-  def __init__(self, actionFn=None, numTraining=100, epsilon=0.5, alpha=0.5, gamma=1, *args):
+  def __init__(self, actionFn=None,
+               numTraining=100, epsilon=0.5, alpha=0.5, gamma=1, *args):
     """
     actionFn: Function which takes a state and returns the list of legal actions
 
     alpha    - learning rate
     epsilon  - exploration rate
     gamma    - discount factor
-    numTraining - number of training episodes, i.e. no learning after these many episodes
+    numTraining -
+    number of training episodes, i.e. no learning after these many episodes
     """
     super().__init__(alpha, epsilon, gamma, numTraining)
     if actionFn == None:
@@ -233,14 +237,19 @@ class ReinforcementAgent(ValueEstimationAgent):
         windowAvg = self.lastWindowAccumRewards / float(NUM_EPS_UPDATE)
         if self.episodesSoFar <= self.numTraining:
             trainAvg = self.accumTrainRewards / float(self.episodesSoFar)
-            print('\tCompleted %d out of %d training episodes' % (self.episodesSoFar,self.numTraining))
+            print('\tCompleted %d out of %d training episodes' %
+                  (self.episodesSoFar,self.numTraining))
             print('\tAverage Rewards over all training: %.2f' % (trainAvg))
         else:
-            testAvg = float(self.accumTestRewards) / (self.episodesSoFar - self.numTraining)
-            print('\tCompleted %d test episodes' % (self.episodesSoFar - self.numTraining))
+            testAvg = float(self.accumTestRewards) / \
+                      (self.episodesSoFar - self.numTraining)
+            print('\tCompleted %d test episodes' %
+                  (self.episodesSoFar - self.numTraining))
             print('\tAverage Rewards over testing: %.2f' % testAvg)
-        print('\tAverage Rewards for last %d episodes: %.2f'  % (NUM_EPS_UPDATE,windowAvg))
-        print('\tEpisode took %.2f seconds' % (time.time() - self.episodeStartTime))
+        print('\tAverage Rewards for last %d episodes: %.2f' %
+              (NUM_EPS_UPDATE,windowAvg))
+        print('\tEpisode took %.2f seconds' %
+              (time.time() - self.episodeStartTime))
         self.lastWindowAccumRewards = 0.0
         self.episodeStartTime = time.time()
 

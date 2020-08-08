@@ -1,9 +1,10 @@
-from game_mechanics import *
-from DurakAi import *
 import pickle
 import sys
 import os
 import re
+
+from game_mechanics import *
+from DurakAi import *
 
 
 def natural_sort(l):

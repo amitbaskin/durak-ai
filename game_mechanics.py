@@ -127,13 +127,6 @@ class Pointer:
         defender_index = attacker_index + 1
         return (attacker_index, defender_index)
 
-    def switch(self):  # useless?
-        self.attacker_id = (self.attacker_id + 1) % 2
-        self.defender_id = (self.defender_id + 1) % 2
-
-    def show(self):
-        return (self.attacker_id, self.defender_id)
-
 
 class CompressedState:
     def __init__(self, state):
