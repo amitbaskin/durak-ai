@@ -9,7 +9,7 @@ class MiniMaxAgent:
         self.searcher = DurakSearchProblem(players_list, nickname)
 
     def minimax(self, depth, state, targetDepthToAdd):
-        def minmax_algorithm(current_depth, current_state, is_max_turn,
+        def minimax_algorithm(current_depth, current_state, is_max_turn,
                              target_depth, alpha, beta, current_action):
             if current_depth == target_depth:
                 return self.evaluation_function(current_state), current_action
@@ -30,7 +30,7 @@ class MiniMaxAgent:
                         tenp_action = possible_card
                     else:
                         tenp_action = current_action
-                    curr_eval = minmax_algorithm(current_depth + 1, temp_state,
+                    curr_eval = minimax_algorithm(current_depth + 1, temp_state,
                                                  False,
                                                  target_depth,
                                                  alpha, beta,
@@ -58,7 +58,7 @@ class MiniMaxAgent:
                         tenp_action = possible_card
                     else:
                         tenp_action = current_action
-                    curr_eval = minmax_algorithm(current_depth + 1, temp_state,
+                    curr_eval = minimax_algorithm(current_depth + 1, temp_state,
                                                  True,
                                                  target_depth,
                                                  alpha, beta,
@@ -73,7 +73,7 @@ class MiniMaxAgent:
                         self.evaluation_function(current_state), current_action
                 return min(possible_states, key=lambda x: x[0])
 
-        return minmax_algorithm(depth, state, True,
+        return minimax_algorithm(depth, state, True,
                                 depth + targetDepthToAdd * 2,
                                 -np.inf, np.inf, None)[1]
 
