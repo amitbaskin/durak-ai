@@ -6,7 +6,6 @@ from imageio import imread
 from DurakAi import *
 from Player import *
 from game_mechanics import *
-from search import *
 
 
 CARD_WIDTH = 69 + 4
@@ -112,7 +111,6 @@ class TableFrame(ttk.Frame):
         self.card_pairs.append(card_pair)
 
     def update_view(self):
-        # assert len(self.card_pairs) <= 6
         for i, card_pair in enumerate(self.card_pairs):
             card_pair.place(x=self.padding * i + (CARD_WIDTH + 15) * i, y=0,
                             anchor="nw")
@@ -195,29 +193,23 @@ class GuiState(State):
             self.pile.update(self.table)
             self.table.clear_cards()
             self.current_player = self.defender
-            self.attacker, self.defender = self.defender, self.attacker
-            self.attacker.attacking, self.defender.attacking = True, False
-            self.attacker.draw_cards(self.deck)
-            self.defender.draw_cards(self.deck)
+            self.swap_players()
+            self.draw_cards()
             self.count = 0
             return self
 
         if card is None:
             if self.defender == self.current_player:
                 self.current_player.grab_table(self.table)
-                self.attacker, self.defender = self.defender, self.attacker
-                self.current_player.attacking, self.defender.attacking = \
-                    True, False
+                self.swap_players()
             else:
                 self.current_player = self.defender
-                self.attacker, self.defender = self.defender, self.attacker
-                self.attacker.attacking, self.defender.attacking = \
-                    True, False
+                self.swap_players()
                 self.pile.update(self.table)
                 self.table.clear_cards()
         else:
             self.table.add_single_card(card)
-            # self.current_player.remove_card(card)
+            self.current_player.remove_card(card)
             self.current_player.draw_cards(self.deck)
 
             if self.defender == self.current_player:
@@ -696,9 +688,8 @@ p2 = PureQlearningPlayer(p1, " PureQlearning")
 p1 = SimpleMinmaxPlayer(p2, " SimpleMinmax")
 p3 = SimplePlayer()
 
-gui = Durak_GUI([p1, p2], None)
-# gui = Durak_GUI([p3, human], None)
-
+# gui = Durak_GUI([p1, p2], None)
+gui = Durak_GUI([p3, human], None)
 
 if __name__ == "__main__":
     gui.mainloop()
