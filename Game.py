@@ -1,15 +1,15 @@
 from game_mechanics import *
-from DurakAi import DumbPlayer, SimpleMinmaxPlayer, QlearningMinmaxPlayer, \
-    SimplePlayer, PureQlearningPlayer
+from DurakAi import *
 import pickle
 import sys
 import os
 import re
 
+
 def natural_sort(l):
     convert = lambda text: int(text) if text.isdigit() else text.lower()
-    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
-    return sorted(l, key = alphanum_key)
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+    return sorted(l, key=alphanum_key)
 
 
 class Game:
@@ -39,7 +39,8 @@ def remove_zero_items(weights):
 
 
 def get_epoch_num(prefix):
-    weight_files = [file for file in os.listdir("pickle") if file.startswith(prefix)]
+    weight_files = [file for file in os.listdir("pickle") if
+                    file.startswith(prefix)]
     if len(weight_files) == 0:
         return 0
     weight_file = natural_sort(weight_files)[-2]
@@ -64,7 +65,8 @@ def train_approx_q_agent(versus_player):
                 num_won += 1
 
         trained_weights = remove_zero_items(agent.qAgent.weights)
-        path = os.path.join("pickle", 'trained_weights_{}_epoch.pickle'.format(i))
+        path = os.path.join("pickle",
+                            'trained_weights_{}_epoch.pickle'.format(i))
         with open(path, 'wb') as handle:
             pickle.dump(trained_weights, handle)
         path = os.path.join("pickle", 'trained_weights_latest.pickle'.format(i))
@@ -73,7 +75,9 @@ def train_approx_q_agent(versus_player):
 
         num_non_zero = sum([1 for w in trained_weights.values() if w != 0])
         with open('approxQAgent_learn_stats.txt', 'a') as handle:
-            handle.write("{} with win rate of {}\n".format(num_non_zero, round(num_won / 100, 2)))
+            handle.write("{} with win rate of {}\n".format(num_non_zero,
+                                                           round(num_won / 100,
+                                                                 2)))
 
 
 def train_q_agent(versus_player):
@@ -94,16 +98,20 @@ def train_q_agent(versus_player):
                 num_won += 1
 
         trained_q_values = remove_zero_items(agent.qAgent.q_values)
-        path = os.path.join("pickle", 'trained_q_values_{}_epoch.pickle'.format(i))
+        path = os.path.join("pickle",
+                            'trained_q_values_{}_epoch.pickle'.format(i))
         with open(path, 'wb') as handle:
             pickle.dump(trained_q_values, handle)
-        path = os.path.join("pickle", 'trained_q_values_latest.pickle'.format(i))
+        path = os.path.join("pickle",
+                            'trained_q_values_latest.pickle'.format(i))
         with open(path, 'wb') as handle:
             pickle.dump(trained_q_values, handle)
 
         num_non_zero = sum([1 for w in trained_q_values.values() if w != 0])
         with open('qAgent_learn_stats.txt', 'a') as handle:
-            handle.write("{} with win rate of {}\n".format(num_non_zero, round(num_won / 100, 2)))
+            handle.write("{} with win rate of {}\n".format(num_non_zero,
+                                                           round(num_won / 100,
+                                                                 2)))
 
 
 def game_instance(list_of_players):

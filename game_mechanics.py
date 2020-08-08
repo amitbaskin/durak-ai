@@ -203,18 +203,18 @@ class State:
     def get_compressed(self):
         return CompressedState(self)
 
-    def state(self):
+    def play_helper(self):
         if self.check_win():
             print(self.status)
             return self.status
-        if self._first_stage():
+        if self.first_stage():
             # If the defender surrenders, we don't go to the
             # the second stage, but begin a new state
-            print("The defender has surrendered, moving to the next state!")
+            print("The defender has surrendered")
             return
         # If the defender fought back then we go to the second stage where
         # the attacker can keep attacking
-        self._second_stage()
+        self.second_stage()
 
     def check_win(self):
         if self.deck.get_cards():
@@ -287,7 +287,7 @@ class State:
         print('pile', len(pile_cards))
         print(pile_cards)
 
-    def _first_stage(self):
+    def first_stage(self):
         self.print_first_stage_log()
         self.get_first_stage_attack()
         defence_card = self.get_defence()
@@ -298,7 +298,7 @@ class State:
         # defender defended successfully
         return False
 
-    def _second_stage(self):
+    def second_stage(self):
         print('\n***Second Stage Begins***\n')
         cnt = 1
         while True and cnt < 6:
@@ -348,14 +348,14 @@ class GameProcess:
                      self.trump_card)
 
     def play(self):
-        r = self.get_initial_state()
+        current_state = self.get_initial_state()
         i = 0
-        while r.status is None:
+        while current_state.status is None:
             print('\n')
             print("state {}".format(i))
-            r.state()
+            current_state.play_helper()
             i += 1
-        return r.status
+        return current_state.status
 
 
 #  TODO: No usage of the classes below

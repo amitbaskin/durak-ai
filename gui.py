@@ -6,12 +6,14 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 from imageio import imread
 
-from DurakAi import SimplePlayer, PureQlearningPlayer
-from game_mechanics import Pointer, Table, Pile, Deck, CompressedState
+from DurakAi import *
+from Player import *
+from game_mechanics import *
 from search import SearchProblem
 
 CARD_WIDTH = 69 + 4
 CARD_HEIGHT = 94 + 4
+
 
 def num_to_suit(num):
     if str(num) == num:
@@ -25,10 +27,8 @@ class CardFrame(ttk.Frame):
         ttk.Frame.__init__(self, parent, width=CARD_WIDTH, height=CARD_HEIGHT)
         self.canvas = tk.Canvas(self, width=CARD_WIDTH, height=CARD_HEIGHT)
         self.canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=False)
-
         if highlighted:
             self.canvas.config(backgstate="blue")
-
         self.original_img = card_image
         self.PIL_image = Image.fromarray(self.original_img)
         self.img = ImageTk.PhotoImage(image=self.PIL_image)
@@ -43,13 +43,16 @@ class BlankCardFrame(CardFrame):
 
 class PlayingCardFrame(CardFrame):
     def __init__(self, parent, card, highlighted=False):
-        self.original_img = imread(os.path.join("cards", str(card.number) + "-" + num_to_suit(card.suit) + ".png"))
+        self.original_img = \
+            imread(os.path.join("cards", str(card.number) +
+                                "-" + num_to_suit(card.suit) + ".png"))
         self.card = card
         CardFrame.__init__(self, parent, self.original_img, highlighted)
 
 
 class InteractablePlayingCard(PlayingCardFrame):
-    def __init__(self, parent, card, num_in_hand, highlighted=False,  click_callback=None):
+    def __init__(self, parent, card, num_in_hand,
+                 highlighted=False, click_callback=None):
         PlayingCardFrame.__init__(self, parent, card, highlighted)
         self.click_callback = click_callback
         self.canvas.bind('<Button-1>', self.click)
@@ -65,18 +68,21 @@ class InteractablePlayingCard(PlayingCardFrame):
 
 class DeckFrame(ttk.Frame):
     def __init__(self, parent, num_cards):
-        ttk.Frame.__init__(self, parent, width=CARD_WIDTH + 25, height=CARD_HEIGHT + 25)
+        ttk.Frame.__init__(self, parent, width=CARD_WIDTH + 25,
+                           height=CARD_HEIGHT + 25)
         if num_cards == 0:
             return
         self.cards = [BlankCardFrame(self) for _ in range(min(5, num_cards))]
 
         for i, card in enumerate(self.cards):
-            card.place(x=i * min(5, num_cards), y=i * min(5, num_cards), anchor="nw")
+            card.place(x=i * min(5, num_cards), y=i * min(5, num_cards),
+                       anchor="nw")
 
 
 class CardPair(ttk.Frame):
     def __init__(self, parent):
-        ttk.Frame.__init__(self, parent, width=CARD_WIDTH + 25, height=CARD_HEIGHT + 25)
+        ttk.Frame.__init__(self, parent, width=CARD_WIDTH + 25,
+                           height=CARD_HEIGHT + 25)
         self.bottom_card = None
         self.top_card = None
 
@@ -107,9 +113,9 @@ class TableFrame(ttk.Frame):
         self.card_pairs.append(card_pair)
 
     def update_view(self):
-        # assert len(self.card_pairs) <= 6
         for i, card_pair in enumerate(self.card_pairs):
-            card_pair.place(x=self.padding * i + (CARD_WIDTH + 15) * i, y=0, anchor="nw")
+            card_pair.place(x=self.padding * i + (CARD_WIDTH + 15) * i, y=0,
+                            anchor="nw")
 
     def reset_table(self):
         for pair in self.card_pairs:
@@ -150,130 +156,36 @@ class PlayerHand(ttk.Frame):
             padding -= self.OVERFLOW_COEFF * cards_over
             padding = max(padding, self.MIN_PADDING)
             for i, card in enumerate(hand):
-                playing_card = InteractablePlayingCard(self, card, i, card in options,self.callback) \
+                playing_card = InteractablePlayingCard(
+                    self, card, i, card in options, self.callback) \
                     if self.shown else BlankCardFrame(self)
-                playing_card.place(x=(CARD_WIDTH + padding) * i, y=0, anchor="nw")
+                playing_card.place(x=(CARD_WIDTH + padding) * i, y=0,
+                                   anchor="nw")
         else:
             for i, card in enumerate(hand):
-                playing_card = InteractablePlayingCard(self, card, i, card in options,self.callback) \
+                playing_card = InteractablePlayingCard(
+                    self, card, i, card in options, self.callback) \
                     if self.shown else BlankCardFrame(self)
-                playing_card.place(x=(CARD_WIDTH + padding) * i, y=0, anchor="nw")
-
-class Card:
-    def __init__(self, number, suit):
-        self.number = number
-        self.suit = suit
-
-    def __repr__(self):
-        return str(self.number) + " of " + self.suit
+                playing_card.place(x=(CARD_WIDTH + padding) * i, y=0,
+                                   anchor="nw")
 
 
-class State(SearchProblem):
+class GuiState(State):
     def __init__(self, players_list, deck, pile, gui_needed=False):
-        self.players_list = players_list
-        self.deck = deck
-        self.table = Table([])
-        self.pile = pile
-        self.gui_needed = gui_needed
-
-        self.draw_card_for_trump()
-
         self.pointer = Pointer(self.players_list, self.trump_card.suit)
-        self.attacker = players_list[self.pointer.attacker_id]
-        self.attacker.attacking = True
-        self.defender = players_list[self.pointer.defender_id]
-        self.defender.attacking = False
-        self.status = None
-        self.count = 0
-        self.current_player = self.attacker
-
-        self.draw_cards_for_players()
-
-    def toState(self):
-        return MiniState(self)
-
-    def get_next_state_given_card(self, card):
-        if self.count >= 7:
-            self.pile.update(self.table)
-            self.table.clear_cards()
-            self.current_player = self.defender
-            self.attacker, self.defender = self.defender, self.attacker
-            self.attacker.attacking, self.defender.attacking = True, False
-            self.attacker.draw_cards(self.deck)
-            self.defender.draw_cards(self.deck)
-            self.count = 0
-            return self
-
-        if card is None:
-            if self.defender == self.current_player:
-                self.current_player.grab_table(self.table)
-                self.attacker, self.defender = self.defender, self.attacker
-                self.current_player.attacking, self.defender.attacking = \
-                    True, False
-            else:
-                self.current_player = self.defender
-                self.attacker, self.defender = self.defender, self.attacker
-                self.attacker.attacking, self.defender.attacking = \
-                    True, False
-                self.pile.update(self.table)
-                self.table.clear_cards()
-        else:
-            self.table.add_single_card(card)
-            # self.current_player.remove_card(card)
-            self.current_player.draw_cards(self.deck)
-
-            if self.defender == self.current_player:
-                self.current_player = self.attacker
-                self.current_player.attacking, self.defender.attacking = \
-                    True, False
-            else:
-                self.defender.attacking = True
-                self.current_player = self.defender
-                self.current_player.attacking = False
-
-        self.count += 1
-        return self
-
-    def state(self):
-        pass
-
-    def draw_card_for_trump(self):
         self.trump_card = self.deck.get_trump()
-
-    def draw_cards_for_players(self):
-        self.attacker.draw_cards(self.deck)
-        self.defender.draw_cards(self.deck)
-
-    def check_winner(self):
-        winners = []
-        if not self.attacker.get_cards():
-            winners.append(self.attacker.nickname)
-        if not self.defender.get_cards() or (len(self.defender.options(self.table, self.trump_card.suit)) == 1 and
-                                             len(self.defender.get_cards()) == 1):
-            winners.append(self.defender.nickname)
-        if winners:
-            if len(winners) == 2:
-                self.status = 'Draw'
-                return 'DRAW'
-            else:
-                self.status = winners[0]
-                return 'WIN'
-
-    def check_win(self):
-        if self.deck.get_cards():
-            return None
-        else:
-            return self.check_winner()
-
-    def copy(self):
-        return deepcopy(self)
+        super().__init__(players_list, self.pointer, deck, pile,
+                         self.trump_card)
+        self.gui_needed = gui_needed
+        self.draw_cards()
 
 
-class stateWithHuman(State):
+class GuiStateWithHuman(GuiState):
     def __init__(self, players_list, deck, pile, gui_needed=False):
-        State.__init__(self, players_list, deck, pile, gui_needed)
-        
-        self.human_player = self.attacker if self.attacker.human else self.defender
+        GuiState.__init__(self, players_list, deck, pile, gui_needed)
+
+        self.human_player = \
+            self.attacker if self.attacker.human else self.defender
         self.attacking = self.attacker.human
         self.count = 0
         self.state_over = False
@@ -289,7 +201,8 @@ class stateWithHuman(State):
             return self.status
         if not self.attacker.human:
             self.attacker.attack(self)
-        gui.build_gui(self, self.card_pick_callback, self.status, is_attacker_first_state=self.attacking)
+        gui.build_gui(self, self.card_pick_callback, self.status,
+                      is_attacker_first_state=self.attacking)
 
     def _first_stage(self, choice, card):
         if self.attacking:
@@ -322,7 +235,7 @@ class stateWithHuman(State):
     def second_stage_reset_state(self):
         self.state_over = True
         print('_second_stage no options for attacker')
-        self.draw_cards_for_players()
+        self.draw_cards()
         self.pile.update(self.table)
         self.table.clear_cards()
 
@@ -346,7 +259,7 @@ class stateWithHuman(State):
         if choice is None:
             self.defender.grab_table(self.table)
 
-            self.draw_cards_for_players()
+            self.draw_cards()
             gui.update_gui(self, self.card_pick_callback, self.status)
             if not self.check_win():
                 self.count = 0
@@ -368,7 +281,8 @@ class stateWithHuman(State):
         else:
             self.second_stage_reset_state()
 
-            gui.update_gui(self, self.card_pick_callback, self.status, is_attacker_first_state=True)
+            gui.update_gui(self, self.card_pick_callback, self.status,
+                           is_attacker_first_state=True)
             if self.check_win():
                 gui.winner_decided(self.status)
                 return
@@ -380,7 +294,7 @@ class stateWithHuman(State):
         else:
             self.pile.update(self.table)
 
-        self.draw_cards_for_players()
+        self.draw_cards()
         self.table.clear_cards()
 
         self.swap_players()
@@ -412,9 +326,9 @@ class stateWithHuman(State):
         gui.update_gui(self, self.card_pick_callback, self.status)
 
 
-class stateWithAI(State):
+class guiStateWithAI(GuiState):
     def __init__(self, players_list, deck, pile, gui_needed=False):
-        State.__init__(self, players_list, deck, pile, gui_needed)
+        GuiState.__init__(self, players_list, deck, pile, gui_needed)
 
         self.status = ""
         self.player_won = False
@@ -441,15 +355,17 @@ class stateWithAI(State):
 
     def _first_stage(self):
         print(self.trump_card)
-        print(self.attacker.nickname, 'num cards', len(self.attacker.get_cards()))
-        print(self.defender.nickname, 'defender num cards', len(self.defender.get_cards()))
+        print(self.attacker.nickname, 'num cards',
+              len(self.attacker.get_cards()))
+        print(self.defender.nickname, 'defender num cards',
+              len(self.defender.get_cards()))
         print('deck num cards', len(self.deck.get_cards()))
         self.current_player = self.attacker
         if self.attacker.attack(self) is None:
             self.pile.update(self.table)
             self.table.clear_cards()
 
-            self.draw_cards_for_players()
+            self.draw_cards()
             self.attacker, self.defender = self.defender, self.attacker
             self.attacker.attacking = True
             self.defender.attacking = False
@@ -508,9 +424,11 @@ class DurakGame:
 
     def state(self):
         if self.is_human_playing:
-            self.curr_state = stateWithHuman(self.player_list, self.deck, self.pile, gui_needed=True)
+            self.curr_state = GuiStateWithHuman(
+                self.player_list, self.deck, self.pile, gui_needed=True)
         else:
-            self.curr_state = stateWithAI(self.player_list, self.deck, self.pile, gui_needed=True)
+            self.curr_state = guiStateWithAI(
+                self.player_list, self.deck, self.pile, gui_needed=True)
 
 
 class Durak_GUI(tk.Tk):
@@ -541,7 +459,8 @@ class Durak_GUI(tk.Tk):
         self.winners.append(nickname)
 
         self.amount_of_games += 1
-        self.amount_of_games_won += 1 if nickname == self.player_list[1].nickname else 0
+        self.amount_of_games_won += 1 if nickname == \
+                                         self.player_list[1].nickname else 0
 
         self.container.destroy()
         self.container = tk.Frame(self)
@@ -550,30 +469,39 @@ class Durak_GUI(tk.Tk):
         if self.amount_of_games < self.stop_at:
             self.after(0, func=self.start_game)
         else:
-            print("Player 2 win rate:", self.amount_of_games_won / self.amount_of_games)
+            print("Player 2 win rate:",
+                  self.amount_of_games_won / self.amount_of_games)
             self.stop_at += self.BASE_AMOUNT_OF_GAMES
 
-        win_text = nickname + " has won " + str(self.amount_of_games_won / self.amount_of_games
-                                                if nickname == self.player_list[1].nickname
-                                                else 1 - self.amount_of_games_won / self.amount_of_games) \
-                   + " of the games"
+        win_text = nickname + " has won " + \
+                   str(self.amount_of_games_won / self.amount_of_games
+                       if nickname == self.player_list[1].nickname
+                       else 1 -
+                            self.amount_of_games_won / self.amount_of_games) + \
+                   " of the games"
         self.winner_label = ttk.Label(self.container,
                                       text=win_text,
                                       font=('Helvetica', 25))
-        # self.winner_label = ttk.Label(self.container, text=nickname + " has won!!!!", font=('Helvetica', 25))
         self.winner_label.pack()
 
-        self.replay_button = ttk.Button(self.container, text="Run again, compound results", command=self.start_game)
+        self.replay_button = ttk.Button(self.container,
+                                        text="Run again, compound results",
+                                        command=self.start_game)
         self.replay_button.pack()
 
-    def update_gui(self, game, choose_card_callback, status, show_all=False, is_attacker_first_state=False):
+    def update_gui(self, game, choose_card_callback, status, show_all=False,
+                   is_attacker_first_state=False):
         self.enemy_player_hand.destroy()
-        self.enemy_player_hand = PlayerHand(self.container, self.player_list[0].get_cards(), [], choose_card_callback,
+        self.enemy_player_hand = PlayerHand(self.container,
+                                            self.player_list[0].get_cards(), [],
+                                            choose_card_callback,
                                             shown=show_all)
         self.enemy_player_hand.grid(row=0, column=1)
 
-        progress_text = "Games played so far: " + str(self.amount_of_games) + "\nWin rate: " + \
-                        str(self.amount_of_games_won / self.amount_of_games if self.amount_of_games != 0 else 0)
+        progress_text = "Games played so far: " + str(
+            self.amount_of_games) + "\nWin rate: " + \
+                        str(self.amount_of_games_won / self.amount_of_games if
+                            self.amount_of_games != 0 else 0)
         self.progress_label.configure(text=progress_text)
 
         self.attacking_label.configure(text=status)
@@ -593,10 +521,13 @@ class Durak_GUI(tk.Tk):
         self.deck = DeckFrame(self.container, len(game.deck.get_cards()))
         self.deck.grid(row=1, column=2)
 
-        playable_cards = self.player_list[1].options(game.table, game.trump_card.suit)
+        playable_cards = self.player_list[1].options(game.table,
+                                                     game.trump_card.suit)
         self.player_hand.destroy()
-        self.player_hand = PlayerHand(self.container, self.player_list[1].get_cards(),
-                                      playable_cards, choose_card_callback, shown=True)
+        self.player_hand = PlayerHand(self.container,
+                                      self.player_list[1].get_cards(),
+                                      playable_cards, choose_card_callback,
+                                      shown=True)
         self.player_hand.grid(row=2, column=1)
 
         if not is_attacker_first_state:
@@ -605,20 +536,26 @@ class Durak_GUI(tk.Tk):
             self.admit_defeat.grid_forget()
         tk.Tk.update(self)
 
-    def build_gui(self, game, choose_card_callback, status, show_all=False, is_attacker_first_state=False):
+    def build_gui(self, game, choose_card_callback, status, show_all=False,
+                  is_attacker_first_state=False):
         if self.container is not None:
             self.container.destroy()
         self.container = tk.Frame(self)
         self.container.pack(side="top", fill="both", expand=True)
 
-        self.enemy_label = ttk.Label(self.container, text=self.player_list[0].nickname)
+        self.enemy_label = ttk.Label(self.container,
+                                     text=self.player_list[0].nickname)
         self.enemy_label.grid(row=0, column=0)
 
-        self.enemy_player_hand = PlayerHand(self.container, self.player_list[0].get_cards(), [], choose_card_callback, shown=show_all)
+        self.enemy_player_hand = PlayerHand(self.container,
+                                            self.player_list[0].get_cards(), [],
+                                            choose_card_callback,
+                                            shown=show_all)
         self.enemy_player_hand.grid(row=0, column=1)
 
         progress_text = "Games played so far: " + str(self.amount_of_games)
-        self.progress_label = ttk.Label(self.container, text=progress_text, font=('Helvetica', 15))
+        self.progress_label = ttk.Label(self.container, text=progress_text,
+                                        font=('Helvetica', 15))
         self.progress_label.grid(row=0, column=2)
 
         self.attacking_label = ttk.Label(self.container, text=status)
@@ -643,26 +580,33 @@ class Durak_GUI(tk.Tk):
         self.trump_card = PlayingCardFrame(self.container, game.trump_card)
         self.trump_card.grid(row=1, column=3)
 
-        self.player_label = ttk.Label(self.container, text=self.player_list[1].nickname)
+        self.player_label = ttk.Label(self.container,
+                                      text=self.player_list[1].nickname)
         self.player_label.grid(row=2, column=0)
 
-        playable_cards = self.player_list[1].options(game.table, game.trump_card.suit)
-        self.player_hand = PlayerHand(self.container, self.player_list[1].get_cards(),
-                                      playable_cards, choose_card_callback, shown=True)
+        playable_cards = self.player_list[1].options(game.table,
+                                                     game.trump_card.suit)
+        self.player_hand = PlayerHand(self.container,
+                                      self.player_list[1].get_cards(),
+                                      playable_cards, choose_card_callback,
+                                      shown=True)
         self.player_hand.grid(row=2, column=1)
 
         self.admit_defeat = ttk.Button(self.container, text="Forfeit state",
-                                       command=lambda: choose_card_callback(None, None))
+                                       command=lambda: choose_card_callback(
+                                           None, None))
         self.admit_defeat.grid(row=2, column=2)
         if is_attacker_first_state:
             self.admit_defeat.grid_forget()
         tk.Tk.update(self)
 
-player2 = None
+
+
 # player2 = HumanPlayer("Eva")
+player2 = None
 player1 = PureQlearningPlayer(player2, "s")
 player2 = SimplePlayer()
-# player2 = PureQAgent(player1, "2")
+# player2 = PureQlearningPlayer(player1, "2")
 gui = Durak_GUI([player1, player2], None)
 
 if __name__ == "__main__":
