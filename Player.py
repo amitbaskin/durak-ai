@@ -133,7 +133,7 @@ class Player(CardsHolder):
         self.grab_table(state.table)
 
     def add_card_minimax(self, possible_cards, state):
-        card_to_add = self.minmax_agent.get_card_to_play(state)
+        card_to_add = self.minmax_agent.get_action(state)
         if card_to_add is None:
             card_to_add = choose_min_card(possible_cards,
                                           state.trump_card.suit)
@@ -158,7 +158,7 @@ class Player(CardsHolder):
 
     def minmax_defence(self, possible_cards, state):
         if possible_cards:
-            defence_card = self.minmax_agent.get_card_to_play(state)
+            defence_card = self.minmax_agent.get_action(state)
             if defence_card is None:
                 defence_card = choose_min_card(possible_cards,
                                                state.trump_card.suit)

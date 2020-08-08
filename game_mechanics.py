@@ -204,16 +204,13 @@ class State:
             self.current_player = self.attacker
 
     def swap_players(self):
-        self.draw_cards()
-        self.next_current_player()
         self.attacker, self.defender = self.defender, self.attacker
         self.attacker.attacking, self.defender.attacking = True, False
 
-
     def prepare_next_state(self):
-        self.draw_cards()
         self.pile.update(self.table)
         self.table.clear_cards()
+        self.draw_cards()
         self.swap_players()
         self.count = 0
 
@@ -235,9 +232,9 @@ class State:
 
     def check_win(self):
         if self.deck.get_cards():
-            pass
+            return
         else:
-            return self.check_winner()
+            return self.check_winner() is not None
 
     def check_winner(self):
         winners = []
@@ -254,16 +251,17 @@ class State:
                 return self.status
 
     def get_next_state_given_card(self, card):
-        if self.count > 6:
-            self.current_player.remove_card(card)
+        if self.count > 12:
+            self.current_player = self.defender
             self.prepare_next_state()
             self.count = 0
             return self
         if card is None:
-            if self.defender == self.current_player:
+            if self.current_player == self.defender:
                 self.current_player.grab_table(self.table)
-                self.next_current_player()
+                self.current_player = self.attacker
             else:
+                self.current_player = self.defender
                 self.prepare_next_state()
         else:
             self.table.add_single_card(card)

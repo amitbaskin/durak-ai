@@ -128,7 +128,7 @@ class SimpleMinmaxPlayer(Player):
         if len(state.deck.get_cards()) == 0:
             if len(possible_cards) == 0:
                 return None
-            attack_card = self.minmax_agent.get_card_to_play(state)
+            attack_card = self.minmax_agent.get_action(state)
             if attack_card is None:
                 attack_card = choose_min_card(
                     possible_cards, state.trump_card.suit)
@@ -145,7 +145,7 @@ class SimpleMinmaxPlayer(Player):
             possible_cards = self.get_defence_options(
                 state.table, state.trump_card.suit)
             if possible_cards:
-                defence_card = self.minmax_agent.get_card_to_play(state)
+                defence_card = self.minmax_agent.get_action(state)
                 if defence_card is not None:
                     return self.defence_helper(defence_card, state)
             return self.no_defence(state)
@@ -162,7 +162,7 @@ class SimpleMinmaxPlayer(Player):
         if len(state.deck.get_cards()) == 0:
             possible_cards = self.adding_card_options(state.table)
             if possible_cards:
-                card_to_add = self.minmax_agent.get_card_to_play(state)
+                card_to_add = self.minmax_agent.get_action(state)
                 if card_to_add is not None:
                     self.add_card_helper(card_to_add, state)
 
@@ -199,7 +199,7 @@ class QlearningMinmaxPlayer(Player):
         if len(state.deck.cards) == 0:
             if len(possible_cards) == 0:
                 return None
-            attack_card = self.minmax_agent.get_card_to_play(state)
+            attack_card = self.minmax_agent.get_action(state)
             if attack_card is None:
                 attack_card = choose_min_card(
                     possible_cards, state.trump_card.suit)
@@ -219,7 +219,7 @@ class QlearningMinmaxPlayer(Player):
                                                   state.trump_card.suit)
         if len(state.deck.cards) == 0:
             if possible_cards:
-                defence_card = self.minmax_agent.get_card_to_play(state)
+                defence_card = self.minmax_agent.get_action(state)
                 if defence_card is None:
                     defence_card = choose_min_card(possible_cards,
                                                    state.trump_card.suit)
