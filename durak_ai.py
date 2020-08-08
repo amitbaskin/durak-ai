@@ -116,7 +116,8 @@ class HandicappedSimplePlayer(Player):
     def adding_card(self, round):
         if len(round.deck.playerCards) == 0:
             if self.adding_card_options(round.table):
-                card_to_add = random.choice(self.adding_card_options(round.table))
+                card_to_add = random.choice(
+                    self.adding_card_options(round.table))
                 return self.add_card_helper(card_to_add, round)
             self.no_cards_msg(round)
         possible_cards = self.adding_card_options(round.table)
@@ -133,12 +134,6 @@ class SmartPlayer(Player):
         self.agent = MiniMaxAgent(self.round_evaluation, [self, opponent],
                                   self.nickname)
 
-
-    def get_opponent(self, round):
-        if self.nickname == round.attacker.nickname:
-            return round.defender
-        return round.attacker
-
     def round_evaluation(self, round):
         my_cards_amount = len(self.get_cards())
         opponent_cards = self.get_opponent(round).get_cards()
@@ -154,7 +149,8 @@ class SmartPlayer(Player):
                 return None
             attack_card = self.agent.get_card_to_play(round)
             if attack_card is None:
-                attack_card = choose_min_card(possible_cards, round.trump_card.suit)
+                attack_card = choose_min_card(
+                    possible_cards, round.trump_card.suit)
             return self.attack_helper(attack_card, round)
 
         if len(possible_cards) == 0:
@@ -165,7 +161,8 @@ class SmartPlayer(Player):
 
     def defend(self, round):
         if len(round.deck.get_cards()) == 0:
-            possible_cards = self.defending_options(round.table, round.trump_card.suit)
+            possible_cards = self.defending_options(
+                round.table, round.trump_card.suit)
             if possible_cards:
                 defence_card = self.agent.get_card_to_play(round)
                 if defence_card is not None:
@@ -205,12 +202,8 @@ class SmartPlayer2(Player):
         super().__init__(self.nickname, [])
         self.minMaxAgent = MiniMaxAgent(self.round_evaluation, [self, opponent],
                                         self.nickname)
-        self.qAgent = DurakQAgent(self.minMaxAgent.searcher.get_possible_cards, numTraining=50)
-
-    def get_opponent(self, round):
-        if self.nickname == round.attacker.nickname:
-            return round.defender
-        return round.attacker
+        self.qAgent = DurakQAgent(
+            self.minMaxAgent.searcher.get_possible_cards, numTraining=50)
 
     def round_evaluation(self, round):
         my_cards_amount = len(self.get_cards())
@@ -227,13 +220,14 @@ class SmartPlayer2(Player):
                 return None
             attack_card = self.minMaxAgent.get_card_to_play(round)
             if attack_card is None:
-                attack_card = choose_min_card(possible_cards, round.trump_card.suit)
+                attack_card = choose_min_card(
+                    possible_cards, round.trump_card.suit)
 
             return self.attack_helper(attack_card, round)
 
         if len(possible_cards) == 0:
             return None
-        attack_card = self.qAgent.getAction(round.copy())
+        attack_card = self.qAgent.getAction(round.deepcopy())
         if attack_card is None:
             attack_card = choose_min_card(possible_cards, round.trump_card.suit)
 
@@ -270,7 +264,8 @@ class PureQAgent(Player):
         self.nickname = "Smart Player" + name
         super().__init__(self.nickname, [])
         self.searcher = DurakSearchProblem([self, opponent], self.nickname)
-        self.qAgent = ApproximateQAgent(self.searcher.get_possible_cards) if approx else \
+        self.qAgent = ApproximateQAgent(
+            self.searcher.get_possible_cards) if approx else \
             DurakQAgent(self.searcher.get_possible_cards)
 
     def get_opponent(self, round):
@@ -284,7 +279,7 @@ class PureQAgent(Player):
 
         if len(possible_cards) == 0:
             return None
-        attack_card = self.qAgent.getAction(round.copy())
+        attack_card = self.qAgent.getAction(round.deepcopy())
         if attack_card is None:
             attack_card = choose_min_card(possible_cards, round.trump_card.suit)
 

@@ -51,7 +51,7 @@ class QLearningAgent(ReinforcementAgent):
           Should return 0.0 if we never seen
           a state or (state,action) tuple
         """
-        state = round.toState()
+        state = round.get_state()
         ret = self.q_values[(state, action)]
         remove_zero_items(self.q_values)
         return ret
@@ -121,10 +121,10 @@ class QLearningAgent(ReinforcementAgent):
         """
         values = []
         for next_action in self.getLegalActions(nextRound):
-            nextState = nextRound.toState()
+            nextState = nextRound.get_state()
             values.append(self.q_values[(nextState, next_action)])
         max_value = max(values) if len(values) != 0 else 0
-        state = round.toState()
+        state = round.get_state()
         coefficient = reward + self.discount * max_value - self.q_values[(state, action)]
         add = self.alpha * coefficient
         if add != 0:

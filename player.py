@@ -11,7 +11,8 @@ ATTACK_MSG = 'attacks with'
 
 def choose_min_card(possible_cards, trump_suit):
     trump_cards = [card for card in possible_cards if card.suit == trump_suit]
-    non_trump_cards = [card for card in possible_cards if card.suit != trump_suit]
+    non_trump_cards = [
+        card for card in possible_cards if card.suit != trump_suit]
 
     non_trump_cards.sort(key=lambda x: x.number)
 
@@ -31,21 +32,30 @@ class Player(CardsHolder):
         self.minMaxAgent = None
         self.qAgent = None
 
+    def get_opponent(self, round):
+        if self.nickname == round.attacker.nickname:
+            return round.defender
+        return round.attacker
+
     def generic_round_evaluation(self, round, get_opponnent_ptr):
         me = round.attacker if self.attacking else round.defender
 
         my_cards_amount = len(me.get_cards())
         opponent_cards = get_opponnent_ptr(round).get_cards()
         opponent_cards_amount = len(opponent_cards)
-        if my_cards_amount == 0 and opponent_cards_amount > 0 and len(round.deck.get_cards()) == 0:
+        if my_cards_amount == 0 and \
+                opponent_cards_amount > 0 and len(round.deck.get_cards()) == 0:
             ret = 100  # Big enough than 36 possible diff
         else:
             ret = len(opponent_cards) - len(self.get_cards())
         return ret
 
-    def round_evaluation_delta(self, first_round, second_round, get_opponnent_ptr):
-        first_score = self.generic_round_evaluation(first_round, get_opponnent_ptr)
-        second_score = self.generic_round_evaluation(second_round, get_opponnent_ptr)
+    def round_evaluation_delta(
+            self, first_round, second_round, get_opponnent_ptr):
+        first_score = \
+            self.generic_round_evaluation(first_round, get_opponnent_ptr)
+        second_score = \
+            self.generic_round_evaluation(second_round, get_opponnent_ptr)
 
         if first_score == 100 and first_score == second_score:
             return first_score
@@ -62,7 +72,7 @@ class Player(CardsHolder):
             return self.defend(round)
 
     def attack_helper(self, attack_card, round):
-        prev_round = round.copy()
+        prev_round = round.deepcopy()
         self.remove_card(attack_card)
         round.table.add_single_card(attack_card)
         print('{} {} {}'.format(self.nickname, ATTACK_MSG,
@@ -70,20 +80,24 @@ class Player(CardsHolder):
         print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
         if self.qAgent is not None:
             # TODO:: Make round evaluation better?
-            delta_reward = self.round_evaluation_delta(prev_round, round, self.get_opponent)
-            self.qAgent.observeTransition(prev_round, attack_card, round, delta_reward)
+            delta_reward = self.round_evaluation_delta(
+                prev_round, round, self.get_opponent)
+            self.qAgent.observeTransition(
+                prev_round, attack_card, round, delta_reward)
         return attack_card
 
     def add_card_helper(self, card_to_add, round):
-        prev_round = round.copy()
+        prev_round = round.deepcopy()
         self.remove_card(card_to_add)
         round.table.add_single_card(card_to_add)
         print('{} {} {}'.format(self.nickname, ADDING_CARD_MSG, card_to_add))
         print(FEATURING_TABLE_MSG, round.table.get_cards())
         if self.qAgent is not None:
             # TODO:: Make round evaluation better?
-            delta_reward = self.round_evaluation_delta(prev_round, round, self.get_opponent)
-            self.qAgent.observeTransition(prev_round, card_to_add, round, delta_reward)
+            delta_reward = self.round_evaluation_delta(
+                prev_round, round, self.get_opponent)
+            self.qAgent.observeTransition(
+                prev_round, card_to_add, round, delta_reward)
         return card_to_add
 
     def no_cards_msg(self, round):
@@ -91,15 +105,17 @@ class Player(CardsHolder):
         print('{} {}'.format(FEATURING_TABLE_MSG, round.table.get_cards()))
 
     def defence_helper(self, defence_card, round):
-        prev_round = round.copy()
+        prev_round = round.deepcopy()
         self.remove_card(defence_card)
         round.table.add_single_card(defence_card)
         print('{} {} {}'.format(self.nickname, DEFENCE_MSG, defence_card))
         print(FEATURING_TABLE_MSG, round.table.get_cards())
         if self.qAgent is not None:
             # TODO:: Make round evaluation better?
-            delta_reward = self.round_evaluation_delta(prev_round, round, self.get_opponent)
-            self.qAgent.observeTransition(prev_round, defence_card, round, delta_reward)
+            delta_reward = self.round_evaluation_delta(
+                prev_round, round, self.get_opponent)
+            self.qAgent.observeTransition(
+                prev_round, defence_card, round, delta_reward)
         return defence_card
 
     def no_defence(self, round):
@@ -201,8 +217,10 @@ class Player(CardsHolder):
 
         # Checking possible options to beat non trump card.
         non_trump_options = [card for card in self.get_cards() if
-                             (card.suit == attacking_card.suit and card.number >= attacking_card.number)]
-        trump_cards = [card for card in self.get_cards() if card.suit == trump_suit]
+                             (card.suit == attacking_card.suit
+                              and card.number >= attacking_card.number)]
+        trump_cards = [card for card in self.get_cards() if
+                       card.suit == trump_suit]
         return non_trump_options + trump_cards
 
     def grab_table(self, table):
@@ -223,7 +241,8 @@ class HumanPlayer(Player):
         #print(table.cards)
         print("Your Turn to attack, {}:".format(self.nickname))
         attack_card_num = input('{}\nPick a card number from 0 till {} '
-                                .format(self.attacking_options(), len(self.attacking_options())-1))
+                                .format(self.attacking_options(),
+                                        len(self.attacking_options())-1))
         attack_card = self.attacking_options()[int(attack_card_num)]
         print('card {} added'.format(attack_card))
         self.remove_card(attack_card)
@@ -237,17 +256,19 @@ class HumanPlayer(Player):
         print(self.cards)
         if self.defending_options(round.table, round.trump_card):
             print("Your Turn to defend, {}:".format(self.nickname))
-            def_card_num = input("{}\nPick a card number from 0 till {}\n'g' to grab cards\n't' to check table\n"
-                                 .format(self.defending_options(round.table, round.trump_card),
-                                         len(self.defending_options(round.table, round.trump_card))-1))
+            def_card_num = input("{}\nPick a card number from 0 till "
+                                 "{}\n'g' to grab cards\n't' to check table\n"
+                                 .format(self.defending_options(
+                round.table, round.trump_card),
+                                         len(self.defending_options(
+                                             round.table, round.trump_card))-1))
             if def_card_num == 'g':
                 self.grab_table(round.table)
                 return None
             elif def_card_num == 't':
                 return 'T: {}'.format(self.defend(round))
-            #elif def_card_num == 'c':
-            #    return self.cards
-            defend_card = self.defending_options(round.table, round.trump_card)[int(def_card_num)]
+            defend_card = self.defending_options(
+                round.table, round.trump_card)[int(def_card_num)]
             print('card {} added'.format(defend_card))
             self.remove_card(defend_card)
             round.table.add_single_card(defend_card)
@@ -257,16 +278,18 @@ class HumanPlayer(Player):
         return None
 
     def adding_card(self, round):
-        #print('n', print(len(self.cards)))
         if self.adding_card_options(round.table):
-            #print('T: {}'.format(table.show()))
             print("Add card, {}:".format(self.nickname))
-            adding_card_num = input("{}\nPick a card number from 0 till {}\n'p' to pass\n"
-                                    .format(self.adding_card_options(round.table),
-                                            len(self.adding_card_options(round.table))-1))
+            adding_card_num = input(
+                "{}\nPick a card number from 0 till {}\n'p' to pass\n"
+                                    .format(
+                    self.adding_card_options(round.table),
+                                            len(self.adding_card_options(
+                                                round.table))-1))
             if adding_card_num == 'p':
                 return None
-            card_to_add = self.adding_card_options(round.table)[int(adding_card_num)]
+            card_to_add = self.adding_card_options(
+                round.table)[int(adding_card_num)]
             print('card {} added'.format(card_to_add))
             self.remove_card(card_to_add)
             round.table.add_single_card(card_to_add)

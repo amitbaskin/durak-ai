@@ -1,10 +1,5 @@
 from search import *
-from game_mechanics import Deck, GameProcess, Pile
-# from gui import RoundWithAI
-
-
-def diff(l1, l2):
-    return [item for item in l1 if item not in l2]
+from game_mechanics import Deck, GameProcess
 
 
 class DurakSearchProblem(SearchProblem):
@@ -41,25 +36,29 @@ class DurakSearchProblem(SearchProblem):
                                             round.trump_card.suit)
 
     def generate_successor(self, round, card):
-        copied_round = round.copy()
+        copied_round = round.deepcopy()
         return copied_round.get_next_state_given_card(card)
 
     def get_successors(self, round):
         self.expanded += 1
         if round.current_player.nickname == self.player_nickname:
-            possible_cards = set(round.current_player.options(round.table, round.trump_card.suit))
+            possible_cards = set(round.current_player.options(
+                round.table, round.trump_card.suit))
         else:
-            player = next(p for p in self.player_list if p is not round.current_player)
+            player = next(
+                p for p in self.player_list if p is not round.current_player)
             possible_cards = player.options(round.table, round.trumpcard.suit)
 
         next_possible_rounds = []
 
         for card in possible_cards:
-            copied_round = round.copy()
-            next_possible_rounds.append(copied_round.get_next_state_given_card(card))
+            copied_round = round.deepcopy()
+            next_possible_rounds.append(
+                copied_round.get_next_state_given_card(card))
 
         if len(round.table.playerCards) != 0:
-            copied_round = round.copy()
-            next_possible_rounds.append(copied_round.get_next_state_given_card(None))
+            copied_round = round.deepcopy()
+            next_possible_rounds.append(
+                copied_round.get_next_state_given_card(None))
 
         return next_possible_rounds

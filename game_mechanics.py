@@ -1,24 +1,5 @@
 import random
-# import sys
-# import time
-# from enum import Enum
-from copy import deepcopy
-import bisect
 
-'''
-1. Add encoding legend +
-2. Add Human player class +
-3. Display trumps and cards left in deck in the begining of the round
-4. Add ability to pick different Ai playstyles +
-5. Encode cards back +
-(6. Add way to collect data)
-(7. Imporve game visualization)
-(8. Make pygame version of a game)
-'''
-
-
-# fix Ai grab option
-# fix Player commands during attack\defence
 
 class Card:
     def __init__(self, number, suit):
@@ -117,7 +98,7 @@ class Pointer:
     def __init__(self, list_of_player_instances, trump_suit):
         self.list_of_player_instances = list_of_player_instances
         self.trump_suit = trump_suit
-        self._move_pointer_condition = self._init_move_pointer()  #
+        self._move_pointer_condition = self._init_move_pointer()
         # Determines who should be the attacker first
         self.attacker_id = self._move_pointer_condition[0]
         self.defender_id = self._move_pointer_condition[1]
@@ -161,10 +142,12 @@ class State:
         self.table = set(round.table.sort_cards())
 
     def __repr__(self):
-        return '{}#{}#{}#{}'.format(self.isAttacking, self.playerCards, self.pile, self.table)
+        return '{}#{}#{}#{}'.format(self.isAttacking, self.playerCards,
+                                    self.pile, self.table)
 
     def __eq__(self, other):
-        return self.playerCards == other.playerCards and self.table == other.table and self.pile == other.pile and \
+        return self.playerCards == other.playerCards and \
+               self.table == other.table and self.pile == other.pile and \
                self.isAttacking == other.isAttacking
 
     def __hash__(self):
@@ -172,7 +155,8 @@ class State:
 
 
 class Round:
-    def __init__(self, players_list, pointer, deck, pile, trump_card, table=None, status=None):
+    def __init__(self, players_list, pointer, deck, pile, trump_card,
+                 table=None, status=None):
         self.players_list = players_list
         self.pointer = pointer
         self.deck = deck
@@ -186,7 +170,37 @@ class Round:
         self.current_player = self.attacker
         self.count = 0
 
-    def toState(self):
+    def get_first_stage_attack(self):
+        self.current_player = self.attacker
+        self.current_player.attacking = True
+        self.defender.attacking = False
+        self.attacker.attack()
+
+    def get_second_stage_attack(self):
+        self.current_player = self.attacker
+        self.current_player.attacking = True
+        return self.attacker.adding_card()
+
+    def get_defence(self):
+        self.current_player = self.defender
+        self.current_player.attacking = False
+        return self.defender.defend(self)
+
+    def draw_cards(self):
+        self.attacker.draw_cards(self.deck)
+        self.defender.draw_cards(self.deck)
+
+    def update_players(self):
+        self.attacker, self.defender = self.defender, self.attacker
+        self.attacker.attacking, self.defender.attacking = True, False
+
+    def prepare_next_round(self):
+        self.draw_cards()
+        self.pile.update(self.table)
+        self.table.clear_cards()
+        self.update_players()
+
+    def get_state(self):
         return State(self)
 
     def round(self):
@@ -197,7 +211,7 @@ class Round:
             # If the defender surrenders, we don't go to the
             # the second stage, but begin a new round
             print("The defender has surrendered, moving to the next round!")
-            return None
+            return
         # If the defender fought back then we go to the second stage where
         # the attacker can keep attacking
         self._second_stage()
@@ -228,48 +242,31 @@ class Round:
 
     def get_next_state_given_card(self, card):
         if self.count >= 7:
-            self.pile.update(self.table)
-            self.table.clear_cards()
-            self.current_player = self.defender
-            self.attacker, self.defender = self.defender, self.attacker
-            self.attacker.attacking, self.defender.attacking = True, False
-            self.attacker.draw_cards(self.deck)
-            self.defender.draw_cards(self.deck)
+            self.prepare_next_round()
             self.count = 0
             return self
-
         if card is None:
             if self.defender == self.current_player:
                 self.current_player.grab_table(self.table)
-                self.attacker, self.defender = self.defender, self.attacker
-                self.current_player.attacking, self.defender.attacking = \
-                    True, False
+                self.update_players()
             else:
-                self.current_player = self.defender
-                self.attacker, self.defender = self.defender, self.attacker
-                self.attacker.attacking, self.defender.attacking = \
-                    True, False
-                self.pile.update(self.table)
-                self.table.clear_cards()
+                self.prepare_next_round()
         else:
             self.table.add_single_card(card)
-            # self.current_player.remove_card(card)
-            self.current_player.draw_cards(self.deck)
-
-            if self.defender == self.current_player:
-                self.current_player = self.attacker
-                self.current_player.attacking, self.defender.attacking = \
-                    True, False
-            else:
-                self.defender.attacking = True
-                self.current_player = self.defender
-                self.current_player.attacking = False
-
+            #  TODO: Why draw cards here?
+            # self.current_player.draw_cards(self.deck)
+            self.update_players()
+            #  TODO: Commented lines below make no sense
+            # if self.defender == self.current_player:
+            #     self.update_players()
+            # else:
+                # self.defender.attacking = True
+                # self.current_player = self.defender
+                # self.current_player.attacking = False
         self.count += 1
         return self
 
-    def _first_stage(self):
-
+    def print_first_stage_log(self):
         print('\n***First Stage Begins***\n')
         print('trump_card: ', self.trump_card)
 
@@ -293,15 +290,12 @@ class Round:
         print('pile', len(pile_cards))
         print(pile_cards)
 
-        self.current_player = self.attacker
-        self.current_player.attacking = True
-        self.defender.attacking = False
+    def _first_stage(self):
+        self.print_first_stage_log()
+        self.get_first_stage_attack()
+        defence_card = self.get_defence()
 
-        self.attacker.attack(self)
-
-        self.current_player = self.defender
-        self.current_player.attacking = False
-        if self.defender.defend(self) is None:
+        if defence_card is None:
             self.attacker.draw_cards(self.deck)
             return True
         # defender defended successfully
@@ -311,35 +305,24 @@ class Round:
         print('\n***Second Stage Begins***\n')
         cnt = 1
         while True and cnt < 6:
-            self.current_player = self.attacker
-            self.current_player.attacking = True
-            if self.attacker.adding_card(self) is not None:
+            attack_card = self.get_second_stage_attack()
+            if attack_card is not None:
                 cnt += 1
-                self.current_player = self.defender
-                self.current_player.attacking = False
-                if self.defender.defend(self) is None:
+                defence_card = self.get_defence()
+                if defence_card is None:
                     # The defender surrendered
-                    self.attacker.draw_cards(self.deck)
-                    self.defender.draw_cards(self.deck)
-                    print("The defender has surrendered, moving to the next round!")
+                    self.draw_cards()
+                    print(
+                        "The defender has surrendered, "
+                        "moving to the next round!")
                     return
             else:
                 print("{} doesn't add anymore cards".format(
                     self.attacker.nickname), '\nmoving to the next round!')
-                self.attacker.draw_cards(self.deck)
-                self.defender.draw_cards(self.deck)
-                self.pile.update(self.table)
-                self.table.clear_cards()
-                self.attacker, self.defender = self.defender, self.attacker
-                self.attacker.attacking, self.defender.attacking = True, False
+                self.prepare_next_round()
                 return
         print("No more attacking allowed, moving to the next round!")
-        self.attacker.draw_cards(self.deck)
-        self.defender.draw_cards(self.deck)
-
-
-    def copy(self):
-        return deepcopy(self)
+        self.prepare_next_round()
 
 
 class GameProcess:
@@ -353,9 +336,9 @@ class GameProcess:
         self.pile = Pile([])
 
     def draw_card_for_trump(self):
-         return self.deck.get_trump()
+        return self.deck.get_trump()
 
-    def _refresh_game(self):
+    def refresh_game(self):
         for p in self.players_list:
             p._refresh()
 
@@ -364,7 +347,8 @@ class GameProcess:
             player.draw_cards(self.deck)
 
     def get_initial_round(self):
-        return Round(self.players_list, self.pointer, self.deck, self.pile, self.trump_card)
+        return Round(self.players_list, self.pointer, self.deck, self.pile,
+                     self.trump_card)
 
     def play(self):
         r = self.get_initial_round()
@@ -377,6 +361,7 @@ class GameProcess:
         return r.status
 
 
+#  TODO: No usage of the classes below
 class DeckEncoder:
     '''
     Encoding all str to numerical
@@ -393,7 +378,8 @@ class DeckEncoder:
         suits_except_trump = list(set(suits))
         suits_except_trump.remove(trump)
         encode_dict = {trump: 0}
-        encode_dict.update(dict([(val, num + 1) for num, val in enumerate(suits_except_trump)]))
+        encode_dict.update(dict(
+            [(val, num + 1) for num, val in enumerate(suits_except_trump)]))
         # self.deck_instance.encode_legend = encode_dict
         return encode_dict
 
@@ -415,10 +401,13 @@ class DeckDecoder:
         self.deck_instance = deck_instance
 
     def decode(self):
-        encode_legend_rev = dict([[v, k] for k, v in self.deck_instance.encode_legend.items()])
+        encode_legend_rev = dict(
+            [[v, k] for k, v in self.deck_instance.encode_legend.items()])
         decoded_deck = [str(i[0]) + '_' + str(encode_legend_rev[i[1]]) \
                         for i in self.deck_instance.encoded_cards]
         self.deck_instance.playerCards = decoded_deck
 
     def example(self):
-        return ('input:\n{}\noutput:\n{}'.format(self.deck_instance.encoded_cards, self.deck_instance.playerCards))
+        return (
+            'input:\n{}\noutput:\n{}'.format(self.deck_instance.encoded_cards,
+                                             self.deck_instance.playerCards))
