@@ -1,11 +1,9 @@
-# import logging
-# import os
 from game_mechanics import *
-from durak_ai import SmartPlayer, SmartPlayer2, SimplePlayer, PureQAgent
+from DurakAi import DumbPlayer, SimpleMinmaxPlayer, QlearningMinmaxPlayer, \
+    SimplePlayer, PureQlearningPlayer
 import pickle
 import sys
 import os
-# from player import HumanPlayer
 import re
 
 def natural_sort(l):
@@ -18,22 +16,22 @@ class Game:
     def __init__(self, players_list):
         self.players_list = players_list
 
-#
-# # p1 = AiPlayerDumb()
-# # p2 = SimplePlayer()
-# p2 = None
-# p3 = SmartPlayer2(p2, " one")
-# p2 = SmartPlayer2(p3, " two")
-# p4 = None
-# p5 = SmartPlayer(p4, " one")
-# p4 = SmartPlayer(p5, " two")
-# # players_list = [p1, p2]
-# smart_players_2_list = [p2, p3]
-# smart_players_list = [p4, p5]
-# # p6 = None
-# p7 = SimplePlayer()
-# p6 = PureQAgent(p7, " two")
-# mixed_smart_list = [p6, p7]
+
+p0 = DumbPlayer()
+p1 = SimplePlayer()
+p2 = None
+p3 = QlearningMinmaxPlayer(p2, " one")
+p2 = QlearningMinmaxPlayer(p3, " two")
+p4 = None
+p5 = SimpleMinmaxPlayer(p4, " one")
+p4 = SimpleMinmaxPlayer(p5, " two")
+players_list = [p1, p2]
+smart_players_2_list = [p2, p3]
+smart_players_list = [p4, p5]
+p6 = None
+p7 = SimpleMinmaxPlayer(p6, "SimpleMinmaxPlayer")
+p6 = PureQlearningPlayer(p7, " PureQlearningPlayer")
+mixed_smart_list = [p6, p7]
 
 
 def remove_zero_items(weights):
@@ -51,7 +49,7 @@ def get_epoch_num(prefix):
 def train_approx_q_agent(versus_player):
     sys.stdout = open('log.txt', 'w')
     sys.stderr = open('log_err.txt', 'w')
-    agent = PureQAgent(versus_player, "")
+    agent = PureQlearningPlayer(versus_player, "")
     list_of_players = [agent, versus_player]
 
     start = get_epoch_num("trained_weights_")
@@ -81,7 +79,7 @@ def train_approx_q_agent(versus_player):
 def train_q_agent(versus_player):
     sys.stdout = open('log.txt', 'w')
     sys.stderr = open('log_err.txt', 'w')
-    agent = PureQAgent(versus_player, "", False)
+    agent = PureQlearningPlayer(versus_player, "", False)
     list_of_players = [agent, versus_player]
 
     start = get_epoch_num("trained_q_values_")

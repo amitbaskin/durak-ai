@@ -1,12 +1,12 @@
 import random
-from player import Player, choose_min_card
-from Agents import MiniMaxAgent
+from Player import Player, choose_min_card
+from MinmaxAgent import MiniMaxAgent
 import numpy as np
 from qlearningAgents import QlearningAgent, ApproximateQAgent
 from DurakSearchProblem import DurakSearchProblem
 
 
-class AiPlayerDumb(Player):
+class DumbPlayer(Player):
     def __init__(self):
         self.nickname = "Random Player"
         super().__init__(self.nickname, [])
@@ -108,7 +108,7 @@ class HandicappedSimplePlayer(Player):
         self.no_cards_msg(state)
 
 
-class SmartPlayer(Player):
+class SimpleMinmaxPlayer(Player):
     def __init__(self, opponent, name):
         self.nickname = "Smart Player" + name
         super().__init__(self.nickname, [])
@@ -177,7 +177,7 @@ class SmartPlayer(Player):
         self.no_cards_msg(state)
 
 
-class SmartPlayer2(Player):
+class QlearningMinmaxPlayer(Player):
     def __init__(self, opponent, name):
         self.nickname = "Smart Player" + name
         super().__init__(self.nickname, [])
@@ -240,7 +240,7 @@ class SmartPlayer2(Player):
         return self.add_card_q_learning(possible_cards, state)
 
 
-class PureQAgent(Player):
+class PureQlearningPlayer(Player):
     def __init__(self, opponent, name, approx=True):
         self.nickname = "Smart Player" + name
         super().__init__(self.nickname, [])

@@ -1,29 +1,11 @@
-import abc
 import numpy as np
 from DurakSearchProblem import DurakSearchProblem
 
 
-class Agent:
-
-    @abc.abstractmethod
-    def get_card_to_play(self, state):
-        return
-
-
-class MultiAgentSearchAgent(Agent):
-    def __init__(self, evaluation_function, depth=5):
-        super().__init__()
+class MiniMaxAgent:
+    def __init__(self, evaluation_function, players_list, nickname, depth=5):
         self.evaluation_function = evaluation_function
         self.depth = depth
-
-    @abc.abstractmethod
-    def get_card_to_play(self, state):
-        return
-
-
-class MiniMaxAgent(MultiAgentSearchAgent):
-    def __init__(self, evaluation_function, players_list, nickname):
-        super().__init__(evaluation_function)
         self.searcher = DurakSearchProblem(players_list, nickname)
 
     def minmax(self, current_depth, current_state,

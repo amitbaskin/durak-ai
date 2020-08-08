@@ -222,8 +222,6 @@ class State:
         else:
             return self.check_winner()
 
-        return None
-
     def check_winner(self):
         winners = []
         if not self.attacker.get_cards():
@@ -238,8 +236,6 @@ class State:
                 self.status = winners[0]
                 return self.status
 
-        return None
-
     def get_next_state_given_card(self, card):
         if self.count >= 7:
             self.prepare_next_state()
@@ -253,6 +249,7 @@ class State:
                 self.prepare_next_state()
         else:
             self.table.add_single_card(card)
+            self.current_player.remove_card(card)
             #  TODO: Why draw cards here?
             # self.current_player.draw_cards(self.deck)
             self.update_players()

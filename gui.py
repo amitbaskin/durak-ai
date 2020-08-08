@@ -6,9 +6,8 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 from imageio import imread
 
-from durak_ai import HandicappedSimplePlayer, SmartPlayer, SmartPlayer2, AiPlayerDumb, SimplePlayer, PureQAgent
-from player import HumanPlayer
-from game_mechanics import Pointer, Table, Pile, Deck, MiniState
+from DurakAi import SimplePlayer, PureQlearningPlayer
+from game_mechanics import Pointer, Table, Pile, Deck, CompressedState
 from search import SearchProblem
 
 CARD_WIDTH = 69 + 4
@@ -28,7 +27,7 @@ class CardFrame(ttk.Frame):
         self.canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=False)
 
         if highlighted:
-            self.canvas.config(background="blue")
+            self.canvas.config(backgstate="blue")
 
         self.original_img = card_image
         self.PIL_image = Image.fromarray(self.original_img)
@@ -169,7 +168,7 @@ class Card:
         return str(self.number) + " of " + self.suit
 
 
-class Round(SearchProblem):
+class State(SearchProblem):
     def __init__(self, players_list, deck, pile, gui_needed=False):
         self.players_list = players_list
         self.deck = deck
@@ -235,7 +234,7 @@ class Round(SearchProblem):
         self.count += 1
         return self
 
-    def round(self):
+    def state(self):
         pass
 
     def draw_card_for_trump(self):
@@ -270,27 +269,27 @@ class Round(SearchProblem):
         return deepcopy(self)
 
 
-class RoundWithHuman(Round):
+class stateWithHuman(State):
     def __init__(self, players_list, deck, pile, gui_needed=False):
-        Round.__init__(self, players_list, deck, pile, gui_needed)
+        State.__init__(self, players_list, deck, pile, gui_needed)
         
         self.human_player = self.attacker if self.attacker.human else self.defender
         self.attacking = self.attacker.human
         self.count = 0
-        self.round_over = False
+        self.state_over = False
 
         self.status = "Attacking" if self.attacking else "Defending"
 
-        self.round()
+        self.state()
 
-    def round(self):
+    def state(self):
         if self.check_win():
             print(self.status)
             gui.winner_decided(self.status)
             return self.status
         if not self.attacker.human:
             self.attacker.attack(self)
-        gui.build_gui(self, self.card_pick_callback, self.status, is_attacker_first_round=self.attacking)
+        gui.build_gui(self, self.card_pick_callback, self.status, is_attacker_first_state=self.attacking)
 
     def _first_stage(self, choice, card):
         if self.attacking:
@@ -305,7 +304,7 @@ class RoundWithHuman(Round):
             if choice is None:
                 self.attacker.draw_cards(self.deck)
                 self.defender.grab_table(self.table)
-                self.round_over = True
+                self.state_over = True
             else:
                 self.table.add_single_card(card)
                 self.defender.remove_card(card)
@@ -320,8 +319,8 @@ class RoundWithHuman(Round):
         self.attacking = not self.attacking
         self.status = "Attacking" if self.attacking else "Defending"
 
-    def second_stage_reset_round(self):
-        self.round_over = True
+    def second_stage_reset_state(self):
+        self.state_over = True
         print('_second_stage no options for attacker')
         self.draw_cards_for_players()
         self.pile.update(self.table)
@@ -332,7 +331,7 @@ class RoundWithHuman(Round):
     def second_stage_attacking(self, choice, card):
         self.current_player = self.attacker
         if choice is None:
-            self.second_stage_reset_round()
+            self.second_stage_reset_state()
             self.attacker.attack(self)
         else:
             self.table.add_single_card(card)
@@ -340,7 +339,7 @@ class RoundWithHuman(Round):
             self.count += 1
             if self.defender.defend(self) is None:
                 self.attacker.draw_cards(self.deck)
-                self.round_over = True
+                self.state_over = True
 
     def second_stage_defending(self, choice, card):
         self.current_player = self.defender
@@ -367,15 +366,15 @@ class RoundWithHuman(Round):
                 gui.winner_decided(self.status)
             return
         else:
-            self.second_stage_reset_round()
+            self.second_stage_reset_state()
 
-            gui.update_gui(self, self.card_pick_callback, self.status, is_attacker_first_round=True)
+            gui.update_gui(self, self.card_pick_callback, self.status, is_attacker_first_state=True)
             if self.check_win():
                 gui.winner_decided(self.status)
                 return
             return False
 
-    def second_stage_round_over(self, choice):
+    def second_stage_state_over(self, choice):
         if choice is None:
             self.defender.grab_table(self.table)
         else:
@@ -393,9 +392,9 @@ class RoundWithHuman(Round):
             gui.winner_decided(self.status)
             return
 
-        if self.round_over:
+        if self.state_over:
             self.count = 0
-            self.round_over = False
+            self.state_over = False
 
         if self.count == 0:
             self._first_stage(choice, card)
@@ -405,7 +404,7 @@ class RoundWithHuman(Round):
             else:
                 return self.second_stage_defending(choice, card)
         else:
-            self.second_stage_round_over(choice)
+            self.second_stage_state_over(choice)
 
         if self.check_win():
             gui.winner_decided(self.status)
@@ -413,9 +412,9 @@ class RoundWithHuman(Round):
         gui.update_gui(self, self.card_pick_callback, self.status)
 
 
-class RoundWithAI(Round):
+class stateWithAI(State):
     def __init__(self, players_list, deck, pile, gui_needed=False):
-        Round.__init__(self, players_list, deck, pile, gui_needed)
+        State.__init__(self, players_list, deck, pile, gui_needed)
 
         self.status = ""
         self.player_won = False
@@ -423,9 +422,9 @@ class RoundWithAI(Round):
 
         if gui_needed:
             gui.build_gui(self, None, self.status, True)
-            self.round()
+            self.state()
 
-    def round(self):
+    def state(self):
         gui.update_gui(self, None, self.status, True)
         if self.check_win():
             print(self.status)
@@ -433,12 +432,12 @@ class RoundWithAI(Round):
             return self.status
         if self._first_stage() == True:
             gui.update_gui(self, None, self.status, True)
-            self.round()
+            self.state()
             return "first_stage_finish"
         gui.update_gui(self, None, self.status, True)
         self._second_stage()
 
-        self.round()
+        self.state()
 
     def _first_stage(self):
         print(self.trump_card)
@@ -487,7 +486,7 @@ class RoundWithAI(Round):
                 self.defender.attacking = False
                 gui.update_gui(self, None, self.status, True)
                 return False
-        print("No more attacking allowed, moving to the next round!")
+        print("No more attacking allowed, moving to the next state!")
         self.attacker.draw_cards(self.deck)
         self.defender.draw_cards(self.deck)
 
@@ -503,15 +502,15 @@ class DurakGame:
             if player.human:
                 self.is_human_playing = True
 
-        self.curr_round = None
+        self.curr_state = None
         if self.gui is not None:
-            self.round()
+            self.state()
 
-    def round(self):
+    def state(self):
         if self.is_human_playing:
-            self.curr_round = RoundWithHuman(self.player_list, self.deck, self.pile, gui_needed=True)
+            self.curr_state = stateWithHuman(self.player_list, self.deck, self.pile, gui_needed=True)
         else:
-            self.curr_round = RoundWithAI(self.player_list, self.deck, self.pile, gui_needed=True)
+            self.curr_state = stateWithAI(self.player_list, self.deck, self.pile, gui_needed=True)
 
 
 class Durak_GUI(tk.Tk):
@@ -567,7 +566,7 @@ class Durak_GUI(tk.Tk):
         self.replay_button = ttk.Button(self.container, text="Run again, compound results", command=self.start_game)
         self.replay_button.pack()
 
-    def update_gui(self, game, choose_card_callback, status, show_all=False, is_attacker_first_round=False):
+    def update_gui(self, game, choose_card_callback, status, show_all=False, is_attacker_first_state=False):
         self.enemy_player_hand.destroy()
         self.enemy_player_hand = PlayerHand(self.container, self.player_list[0].get_cards(), [], choose_card_callback,
                                             shown=show_all)
@@ -600,13 +599,13 @@ class Durak_GUI(tk.Tk):
                                       playable_cards, choose_card_callback, shown=True)
         self.player_hand.grid(row=2, column=1)
 
-        if not is_attacker_first_round:
+        if not is_attacker_first_state:
             self.admit_defeat.grid(row=2, column=2)
         else:
             self.admit_defeat.grid_forget()
         tk.Tk.update(self)
 
-    def build_gui(self, game, choose_card_callback, status, show_all=False, is_attacker_first_round=False):
+    def build_gui(self, game, choose_card_callback, status, show_all=False, is_attacker_first_state=False):
         if self.container is not None:
             self.container.destroy()
         self.container = tk.Frame(self)
@@ -652,16 +651,16 @@ class Durak_GUI(tk.Tk):
                                       playable_cards, choose_card_callback, shown=True)
         self.player_hand.grid(row=2, column=1)
 
-        self.admit_defeat = ttk.Button(self.container, text="Forfeit round",
+        self.admit_defeat = ttk.Button(self.container, text="Forfeit state",
                                        command=lambda: choose_card_callback(None, None))
         self.admit_defeat.grid(row=2, column=2)
-        if is_attacker_first_round:
+        if is_attacker_first_state:
             self.admit_defeat.grid_forget()
         tk.Tk.update(self)
 
 player2 = None
 # player2 = HumanPlayer("Eva")
-player1 = PureQAgent(player2, "s")
+player1 = PureQlearningPlayer(player2, "s")
 player2 = SimplePlayer()
 # player2 = PureQAgent(player1, "2")
 gui = Durak_GUI([player1, player2], None)

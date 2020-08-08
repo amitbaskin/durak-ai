@@ -1,8 +1,8 @@
 import logging
 import time
 import os
-from durak_ai import AiPlayerDumb
-from game import game_instance
+from DurakAi import DumbPlayer
+from Game import game_instance
 
 if os.path.isfile('game.log'):
     os.remove('game.log')
@@ -11,8 +11,8 @@ logger = logging.getLogger('logging_games')
 logger.setLevel(logging.INFO)
 fh = logging.FileHandler('game.log')
 
-P1 = AiPlayerDumb('WALL E')
-P2 = AiPlayerDumb('EVA')
+P1 = DumbPlayer('WALL E')
+P2 = DumbPlayer('EVA')
 players_list = [P1, P2]
 i = 0
 t = time.time()
