@@ -27,8 +27,8 @@ class Player(CardsHolder):
         self.nickname = nickname
         self.human = False
         self.attacking = False
-        self.minMaxAgent = None
-        self.qAgent = None
+        self.minmax_agent = None
+        self.q_agent = None
 
     @abc.abstractmethod
     def attack(self, state):
@@ -88,10 +88,10 @@ class Player(CardsHolder):
         print('{} {} {}'.format(self.nickname, ATTACK_MSG,
                                 attack_card.__repr__()))
         print('{} {}'.format(FEATURING_TABLE_MSG, state.table.get_cards()))
-        if self.qAgent is not None:
+        if self.q_agent is not None:
             delta_reward = self.state_evaluation_delta(
                 prev_state, state, self.get_opponent)
-            self.qAgent.observeTransition(
+            self.q_agent.observeTransition(
                 prev_state, attack_card, state, delta_reward)
         return attack_card
 
@@ -101,11 +101,11 @@ class Player(CardsHolder):
         state.table.add_single_card(card_to_add)
         print('{} {} {}'.format(self.nickname, ADDING_CARD_MSG, card_to_add))
         print(FEATURING_TABLE_MSG, state.table.get_cards())
-        if self.qAgent is not None:
+        if self.q_agent is not None:
             # TODO:: Make state evaluation better?
             delta_reward = self.state_evaluation_delta(
                 prev_state, state, self.get_opponent)
-            self.qAgent.observeTransition(
+            self.q_agent.observeTransition(
                 prev_state, card_to_add, state, delta_reward)
         return card_to_add
 
@@ -119,11 +119,11 @@ class Player(CardsHolder):
         state.table.add_single_card(defence_card)
         print('{} {} {}'.format(self.nickname, DEFENCE_MSG, defence_card))
         print(FEATURING_TABLE_MSG, state.table.get_cards())
-        if self.qAgent is not None:
+        if self.q_agent is not None:
             # TODO:: Make state evaluation better?
             delta_reward = self.state_evaluation_delta(
                 prev_state, state, self.get_opponent)
-            self.qAgent.observeTransition(
+            self.q_agent.observeTransition(
                 prev_state, defence_card, state, delta_reward)
         return defence_card
 
@@ -133,7 +133,7 @@ class Player(CardsHolder):
         self.grab_table(state.table)
 
     def add_card_minimax(self, possible_cards, state):
-        card_to_add = self.minMaxAgent.get_card_to_play(state)
+        card_to_add = self.minmax_agent.get_card_to_play(state)
         if card_to_add is None:
             card_to_add = choose_min_card(possible_cards,
                                           state.trump_card.suit)
@@ -141,7 +141,7 @@ class Player(CardsHolder):
 
     def add_card_q_learning(self, possible_cards, state):
         if possible_cards:
-            card_to_add = self.qAgent.getAction(state)
+            card_to_add = self.q_agent.getAction(state)
             if card_to_add is None:
                 card_to_add = choose_min_card(possible_cards,
                                               state.trump_card.suit)
@@ -149,7 +149,7 @@ class Player(CardsHolder):
 
     def q_learning_defence(self, possible_cards, state):
         if possible_cards:
-            defence_card = self.qAgent.getAction(state)
+            defence_card = self.q_agent.getAction(state)
             if defence_card is None:
                 defence_card = choose_min_card(possible_cards,
                                               state.trump_card.suit)
@@ -158,7 +158,7 @@ class Player(CardsHolder):
 
     def minmax_defence(self, possible_cards, state):
         if possible_cards:
-            defence_card = self.minMaxAgent.get_card_to_play(state)
+            defence_card = self.minmax_agent.get_card_to_play(state)
             if defence_card is None:
                 defence_card = choose_min_card(possible_cards,
                                                state.trump_card.suit)

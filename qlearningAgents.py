@@ -129,7 +129,7 @@ class QLearningAgent(ReinforcementAgent):
             self.q_values[(compressed_state, action)] += add
 
 
-class DurakQAgent(QLearningAgent):
+class QlearningAgent(QLearningAgent):
     def __init__(self, legalActions_ptr, 
                  epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0,):
         """
@@ -165,7 +165,7 @@ def remove_zero_items(weights):
     return util.Counter(dict(filter(lambda x: x[1] != 0, weights.items())))
 
 
-class ApproximateQAgent(DurakQAgent):
+class ApproximateQAgent(QlearningAgent):
     """
        ApproximateQLearningAgent
 
@@ -177,8 +177,8 @@ class ApproximateQAgent(DurakQAgent):
     def __init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8, alpha=0.2,
                  numTraining=0, **args):
         self.featExtractor = DurakFeatueExtractor()
-        DurakQAgent.__init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8, 
-                             alpha=0.2, numTraining=0, **args)
+        QlearningAgent.__init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8,
+                                alpha=0.2, numTraining=0, **args)
 
         # You might want to initialize weights here.
         self.weights = util.Counter()

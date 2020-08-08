@@ -1,8 +1,8 @@
 import random
-from player import Player
+from player import Player, choose_min_card
 from Agents import MiniMaxAgent
 import numpy as np
-from qlearningAgents import DurakQAgent, ApproximateQAgent
+from qlearningAgents import QlearningAgent, ApproximateQAgent
 from DurakSearchProblem import DurakSearchProblem
 
 
@@ -112,8 +112,8 @@ class SmartPlayer(Player):
     def __init__(self, opponent, name):
         self.nickname = "Smart Player" + name
         super().__init__(self.nickname, [])
-        self.agent = MiniMaxAgent(self.state_evaluation, [self, opponent],
-                                  self.nickname)
+        self.minmax_agent = MiniMaxAgent(self.state_evaluation, [self, opponent],
+                                         self.nickname)
 
     def state_evaluation(self, state):
         my_cards_amount = len(self.get_cards())
@@ -128,7 +128,7 @@ class SmartPlayer(Player):
         if len(state.deck.get_cards()) == 0:
             if len(possible_cards) == 0:
                 return None
-            attack_card = self.agent.get_card_to_play(state)
+            attack_card = self.minmax_agent.get_card_to_play(state)
             if attack_card is None:
                 attack_card = choose_min_card(
                     possible_cards, state.trump_card.suit)
@@ -145,7 +145,7 @@ class SmartPlayer(Player):
             possible_cards = self.get_defence_options(
                 state.table, state.trump_card.suit)
             if possible_cards:
-                defence_card = self.agent.get_card_to_play(state)
+                defence_card = self.minmax_agent.get_card_to_play(state)
                 if defence_card is not None:
                     return self.defence_helper(defence_card, state)
             return self.no_defence(state)
@@ -162,7 +162,7 @@ class SmartPlayer(Player):
         if len(state.deck.get_cards()) == 0:
             possible_cards = self.adding_card_options(state.table)
             if possible_cards:
-                card_to_add = self.agent.get_card_to_play(state)
+                card_to_add = self.minmax_agent.get_card_to_play(state)
                 if card_to_add is not None:
                     self.add_card_helper(card_to_add, state)
 
@@ -181,10 +181,10 @@ class SmartPlayer2(Player):
     def __init__(self, opponent, name):
         self.nickname = "Smart Player" + name
         super().__init__(self.nickname, [])
-        self.minMaxAgent = MiniMaxAgent(self.state_evaluation, [self, opponent],
-                                        self.nickname)
-        self.qAgent = DurakQAgent(
-            self.minMaxAgent.searcher.get_possible_cards, numTraining=50)
+        self.minmax_agent = MiniMaxAgent(self.state_evaluation,
+                                         [self, opponent], self.nickname)
+        self.q_agent = QlearningAgent(
+            self.minmax_agent.searcher.get_possible_cards, numTraining=50)
 
     def state_evaluation(self, state):
         my_cards_amount = len(self.get_cards())
@@ -199,7 +199,7 @@ class SmartPlayer2(Player):
         if len(state.deck.cards) == 0:
             if len(possible_cards) == 0:
                 return None
-            attack_card = self.minMaxAgent.get_card_to_play(state)
+            attack_card = self.minmax_agent.get_card_to_play(state)
             if attack_card is None:
                 attack_card = choose_min_card(
                     possible_cards, state.trump_card.suit)
@@ -208,7 +208,7 @@ class SmartPlayer2(Player):
 
         if len(possible_cards) == 0:
             return None
-        attack_card = self.qAgent.getAction(state.deepcopy())
+        attack_card = self.q_agent.getAction(state.deepcopy())
         if attack_card is None:
             attack_card = choose_min_card(possible_cards, state.trump_card.suit)
 
@@ -219,7 +219,7 @@ class SmartPlayer2(Player):
                                                   state.trump_card.suit)
         if len(state.deck.cards) == 0:
             if possible_cards:
-                defence_card = self.minMaxAgent.get_card_to_play(state)
+                defence_card = self.minmax_agent.get_card_to_play(state)
                 if defence_card is None:
                     defence_card = choose_min_card(possible_cards,
                                                    state.trump_card.suit)
@@ -247,7 +247,7 @@ class PureQAgent(Player):
         self.searcher = DurakSearchProblem([self, opponent], self.nickname)
         self.qAgent = ApproximateQAgent(
             self.searcher.get_possible_cards) if approx else \
-            DurakQAgent(self.searcher.get_possible_cards)
+            QlearningAgent(self.searcher.get_possible_cards)
 
     def get_opponent(self, state):
         if self.nickname == state.attacker.nickname:
