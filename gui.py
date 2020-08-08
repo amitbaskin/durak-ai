@@ -232,7 +232,7 @@ class GuiState(State):
         self.count += 1
         return self
 
-    def round(self):
+    def gui_helper(self):
         pass
 
     def draw_card_for_trump(self):
@@ -270,7 +270,7 @@ class GuiState(State):
         return deepcopy(self)
 
 
-class GuiStateWithHuman(GuiState):
+class RoundWithHuman(GuiState):
     def __init__(self, players_list, deck, pile, gui_needed=False):
         GuiState.__init__(self, players_list, deck, pile, gui_needed)
 
@@ -360,7 +360,7 @@ class GuiStateWithHuman(GuiState):
             self.table.add_single_card(card)
 
         self.current_player = self.attacker
-        if self.attacker.adding_card(self) is not None:
+        if self.attacker.add_card(self) is not None:
             self.count += 1
 
             gui.update_gui(self, self.card_pick_callback, self.status)
@@ -415,7 +415,7 @@ class GuiStateWithHuman(GuiState):
         gui.update_gui(self, self.card_pick_callback, self.status)
 
 
-class GuiStateWithAI(GuiState):
+class RoundWithAI(GuiState):
     def __init__(self, players_list, deck, pile, gui_needed=False):
         GuiState.__init__(self, players_list, deck, pile, gui_needed)
 
@@ -513,11 +513,11 @@ class DurakGame:
 
     def round(self):
         if self.is_human_playing:
-            self.curr_round = GuiStateWithHuman(self.player_list, self.deck,
-                                                self.pile, gui_needed=True)
-        else:
-            self.curr_round = GuiStateWithAI(self.player_list, self.deck,
+            self.curr_round = RoundWithHuman(self.player_list, self.deck,
                                              self.pile, gui_needed=True)
+        else:
+            self.curr_round = RoundWithAI(self.player_list, self.deck,
+                                          self.pile, gui_needed=True)
 
 
 class Durak_GUI(tk.Tk):
