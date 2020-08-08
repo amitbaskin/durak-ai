@@ -290,7 +290,7 @@ class State:
         # defender defended successfully
         return False
 
-    def second_stage(self, is_gui=False):
+    def second_stage(self):
         print('\n***Second Stage Begins***\n')
         cnt = 1
         while True and cnt < 6:
