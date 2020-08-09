@@ -26,8 +26,8 @@ class MultiAgentSearchAgent(Agent):
 
 
 class MiniMaxAgent(MultiAgentSearchAgent):
-    def __init__(self, evaluation_function, players_list, nickname):
-        super().__init__(evaluation_function)
+    def __init__(self, evaluation_function, players_list, nickname, depth=5):
+        super().__init__(evaluation_function, depth=depth)
         self.searcher = DurakSearchProblem(players_list, nickname)
 
     def minimax(self, currentDepth, current_round,  targetDepthToAdd):

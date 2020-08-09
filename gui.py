@@ -6,7 +6,7 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 from imageio import imread
 
-from durak_ai import HandicappedSimplePlayer, SmartPlayer, SmartPlayer2, AiPlayerDumb, SimplePlayer, PureQAgent
+from durak_ai import HandicappedSimplePlayer, SmartPlayer, AiPlayerDumb, SimplePlayer, PureQAgent
 from player import HumanPlayer
 from game_mechanics import Pointer, Table, Pile, Deck, State
 from search import SearchProblem
@@ -220,7 +220,7 @@ class Round(SearchProblem):
                 self.table.clear_cards()
         else:
             self.table.add_single_card(card)
-            # self.current_player.remove_card(card)
+            self.current_player.remove_card(card)
             self.current_player.draw_cards(self.deck)
 
             if self.defender == self.current_player:
@@ -475,6 +475,9 @@ class RoundWithAI(Round):
                 self.current_player = self.defender
                 if self.defender.defend(self) is None:
                     print('_second_stage no options for defender')
+                    self.attacker.draw_cards(self.deck)
+                    self.defender.grab_table(self.table)
+                    self.defender.draw_cards(self.deck)
                     return False
             else:
                 print('_second_stage no options for attacker')
@@ -659,11 +662,11 @@ class Durak_GUI(tk.Tk):
             self.admit_defeat.grid_forget()
         tk.Tk.update(self)
 
-player2 = None
-# player2 = HumanPlayer("Eva")
-player1 = PureQAgent(player2, "s")
-player2 = SimplePlayer()
-# player2 = PureQAgent(player1, "2")
+# player2 = None
+# player1 = AiPlayerDumb()
+# player1 = PureQAgent(player2, "s")
+player1 = SimplePlayer()
+player2 = PureQAgent(player1, "2", for_train=False)
 gui = Durak_GUI([player1, player2], None)
 
 if __name__ == "__main__":

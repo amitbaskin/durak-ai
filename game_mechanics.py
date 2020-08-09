@@ -253,7 +253,7 @@ class Round:
                 self.table.clear_cards()
         else:
             self.table.add_single_card(card)
-            # self.current_player.remove_card(card)
+            self.current_player.remove_card(card)
             self.current_player.draw_cards(self.deck)
 
             if self.defender == self.current_player:
@@ -320,6 +320,7 @@ class Round:
                 if self.defender.defend(self) is None:
                     # The defender surrendered
                     self.attacker.draw_cards(self.deck)
+                    self.defender.grab_table(self.table)
                     self.defender.draw_cards(self.deck)
                     print("The defender has surrendered, moving to the next round!")
                     return

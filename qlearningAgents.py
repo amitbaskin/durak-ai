@@ -91,6 +91,15 @@ class QLearningAgent(ReinforcementAgent):
                 max_value = value
         return random.choice(max_actions) if len(max_actions) != 0 else None
 
+    def min_action(self, possible_actions, trump_suit):
+        trump_cards = [card for card in possible_actions if card.suit == trump_suit]
+        non_trump_cards = [card for card in possible_actions if card.suit != trump_suit]
+        non_trump_cards.sort(key=lambda x: x.number)
+        if len(non_trump_cards) == 0:
+            trump_cards.sort(key=lambda x: x.number)
+            return trump_cards[0]
+        return non_trump_cards[0]
+
     def getAction(self, round):
         """
           Compute the action to take in the current state.  With
@@ -107,6 +116,7 @@ class QLearningAgent(ReinforcementAgent):
             return None
         if util.flipCoin(self.epsilon):
             return random.choice(legalActions)
+            # return self.min_action(legalActions, round.trump_card.suit)
         else:
             return self.getPolicy(round)
 
@@ -132,7 +142,7 @@ class QLearningAgent(ReinforcementAgent):
 
 
 class DurakQAgent(QLearningAgent):
-    def __init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0,):
+    def __init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0):
         """
         These default parameters can be changed from the pacman.py command line.
         For example, to change the exploration rate, try:
@@ -153,8 +163,8 @@ class DurakQAgent(QLearningAgent):
         QLearningAgent.__init__(self, **args)
         self.weights = None
 
-        if os.path.isfile(os.path.join("pickle", "trained_q_values_latest.pickle")):
-            with open(os.path.join("pickle", "trained_q_values_latest.pickle"), 'rb') as handle:
+        if os.path.isfile(os.path.join("qValues", "trained_q_values_latest.pickle")):
+            with open(os.path.join("qValues", "trained_q_values_latest.pickle"), 'rb') as handle:
                 self.q_values = util.Counter(pickle.load(handle))
 
         self.getLegalActions = legalActions_ptr
@@ -173,10 +183,9 @@ class ApproximateQAgent(DurakQAgent):
        should work as is.
     """
 
-    def __init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8, alpha=0.2,
-                 numTraining=0, **args):
+    def __init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8, alpha=0.2, **args):
         self.featExtractor = DurakFeatueExtractor()
-        DurakQAgent.__init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0, **args)
+        DurakQAgent.__init__(self, legalActions_ptr, epsilon=0.2, gamma=0.6, alpha=0.7, **args)
 
         # You might want to initialize weights here.
         self.weights = util.Counter()
@@ -192,7 +201,7 @@ class ApproximateQAgent(DurakQAgent):
         """
         features = self.featExtractor.getFeatures(state, action)
         ret = self.weights * features
-        self.weights = remove_zero_items(self.weights)
+        # self.weights = remove_zero_items(self.weights)
         return ret
 
     def update(self, round, action, nextRound, reward):
@@ -207,5 +216,4 @@ class ApproximateQAgent(DurakQAgent):
         features = self.featExtractor.getFeatures(round, action)
         for feature, value in features.items():
             w = self.alpha * correction * value
-            final = self.weights[feature] + w
             self.weights[feature] += w

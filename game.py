@@ -1,12 +1,13 @@
 # import logging
 # import os
 from game_mechanics import *
-from durak_ai import SmartPlayer, SmartPlayer2, SimplePlayer, PureQAgent
+from durak_ai import SmartPlayer, AiPlayerDumb, SimplePlayer, PureQAgent
 import pickle
 import sys
 import os
 # from player import HumanPlayer
 import re
+import matplotlib.pyplot as plt
 
 def natural_sort(l):
     convert = lambda text: int(text) if text.isdigit() else text.lower()
@@ -40,8 +41,8 @@ def remove_zero_items(weights):
     return dict(filter(lambda x: x[1] != 0, weights.items()))
 
 
-def get_epoch_num(prefix):
-    weight_files = [file for file in os.listdir("pickle") if file.startswith(prefix)]
+def get_epoch_num(prefix, dir):
+    weight_files = [file for file in os.listdir(dir) if file.startswith(prefix)]
     if len(weight_files) == 0:
         return 0
     weight_file = natural_sort(weight_files)[-2]
@@ -49,13 +50,14 @@ def get_epoch_num(prefix):
 
 
 def train_approx_q_agent(versus_player):
-    sys.stdout = open('log.txt', 'w')
+    # sys.stdout = open('log.txt', 'w')
     sys.stderr = open('log_err.txt', 'w')
     agent = PureQAgent(versus_player, "")
     list_of_players = [agent, versus_player]
+    win_rates = []
 
-    start = get_epoch_num("trained_weights_")
-    for i in range(start + 1, start + 101):
+    start = get_epoch_num("trained_weights_", "pickle")
+    for i in range(start + 1, start + 5001):
         num_won = 0
         for _ in range(100):
             for player in list_of_players:
@@ -64,7 +66,7 @@ def train_approx_q_agent(versus_player):
             g = GameProcess(list_of_players, deck)
             if g.play() == agent.nickname:
                 num_won += 1
-
+        win_rates.append(round(num_won / 100, 2))
         trained_weights = remove_zero_items(agent.qAgent.weights)
         path = os.path.join("pickle", 'trained_weights_{}_epoch.pickle'.format(i))
         with open(path, 'wb') as handle:
@@ -77,15 +79,19 @@ def train_approx_q_agent(versus_player):
         with open('approxQAgent_learn_stats.txt', 'a') as handle:
             handle.write("{} with win rate of {}\n".format(num_non_zero, round(num_won / 100, 2)))
 
+    plt.ylim(0, 1)
+    plt.plot(win_rates)
+    plt.show()
+
 
 def train_q_agent(versus_player):
-    sys.stdout = open('log.txt', 'w')
-    sys.stderr = open('log_err.txt', 'w')
+    # sys.stdout = open('log.txt', 'w')
+    # sys.stderr = open('log_err.txt', 'w')
     agent = PureQAgent(versus_player, "", False)
     list_of_players = [agent, versus_player]
 
-    start = get_epoch_num("trained_q_values_")
-    for i in range(start + 1, start + 101):
+    start = get_epoch_num("trained_q_values_", "qValues")
+    for i in range(start + 1, start + 30):
         num_won = 0
         for _ in range(100):
             for player in list_of_players:
@@ -96,10 +102,10 @@ def train_q_agent(versus_player):
                 num_won += 1
 
         trained_q_values = remove_zero_items(agent.qAgent.q_values)
-        path = os.path.join("pickle", 'trained_q_values_{}_epoch.pickle'.format(i))
+        path = os.path.join("qValues", 'trained_q_values_{}_epoch.pickle'.format(i))
         with open(path, 'wb') as handle:
             pickle.dump(trained_q_values, handle)
-        path = os.path.join("pickle", 'trained_q_values_latest.pickle'.format(i))
+        path = os.path.join("qValues", 'trained_q_values_latest.pickle'.format(i))
         with open(path, 'wb') as handle:
             pickle.dump(trained_q_values, handle)
 
@@ -116,9 +122,68 @@ def game_instance(list_of_players):
     g.play()
 
 
-# # print(game_instance(players_list))
-# print(game_instance(smart_players_2_list))
-# print(game_instance(smart_players_list))
-# print(game_instance(mixed_smart_list))
+def reflex_against_all():
+    agent = SimplePlayer()
+    agent.nickname = "Reflex"
+    for opponent in [SmartPlayer(agent, "", depth=6), AiPlayerDumb()]:
+        win_amount = 0
+        list_of_players = [agent, opponent]
+        for i in range(100):
+            for player in list_of_players:
+                player._refresh()
+            deck = Deck([])
+            g = GameProcess(list_of_players, deck)
+            winner = g.play()
+            if winner == "Reflex":
+                win_amount += 1
+            with open('reflex_agent_win_rate2.txt', 'a') as handle:
+                handle.write("Winner {}\n".format(winner))
+        with open('reflex_agent_win_rate.txt2', 'a') as handle:
+            handle.write("Win rate of {} against {}\n".format(round(win_amount / 100, 2), opponent.nickname))
 
-train_approx_q_agent(SimplePlayer())
+
+def approxQ_against_all():
+    opponent = None
+    agent = PureQAgent(opponent, "")
+    agent.nickname = "Reflex"
+    for opponent in [SimplePlayer(), AiPlayerDumb()]:
+        win_amount = 0
+        list_of_players = [agent, opponent]
+        for i in range(100):
+            for player in list_of_players:
+                player._refresh()
+            deck = Deck([])
+            g = GameProcess(list_of_players, deck)
+            winner = g.play()
+            if winner == "Reflex":
+                win_amount += 1
+            with open('approxQ_agent_win_rate2.txt', 'a') as handle:
+                handle.write("Winner {}\n".format(winner))
+        with open('approxQ_agent_win_rate.txt2', 'a') as handle:
+            handle.write("Win rate of {} against {}\n".format(round(win_amount / 100, 2), opponent.nickname))
+
+
+def min_max_against_all():
+    opponent = None
+    agent = SmartPlayer(opponent, "", depth=5)
+    agent.nickname = "MinMax"
+    for opponent in [SimplePlayer(), SmartPlayer(agent, "", depth=3), AiPlayerDumb()]:
+        win_amount = 0
+        list_of_players = [agent, opponent]
+        for i in range(100):
+            # with open('min_max_agent_win_rate2.txt', 'a') as handle:
+            #     handle.write("Round Number {}\n".format(i))
+            for player in list_of_players:
+                player._refresh()
+            deck = Deck([])
+            g = GameProcess(list_of_players, deck)
+            if g.play() == "MinMax":
+                win_amount += 1
+        with open('min_max_agent_win_rate2.txt', 'a') as handle:
+            handle.write("Win rate of {} against {}\n".format(round(win_amount / 100, 2), opponent.nickname))
+
+
+train_approx_q_agent(AiPlayerDumb())
+
+# min_max_against_all()
+# reflex_against_all()

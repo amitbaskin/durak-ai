@@ -41,7 +41,7 @@ class Player(CardsHolder):
             ret = 100  # Big enough than 36 possible diff
         else:
             ret = len(opponent_cards) - len(self.get_cards())
-        return ret
+        return ret * 0.01
 
     def round_evaluation_delta(self, first_round, second_round, get_opponnent_ptr):
         first_score = self.generic_round_evaluation(first_round, get_opponnent_ptr)
