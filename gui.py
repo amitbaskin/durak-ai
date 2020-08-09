@@ -665,9 +665,11 @@ class Durak_GUI(tk.Tk):
 # player2 = None
 # player1 = AiPlayerDumb()
 # player1 = PureQAgent(player2, "s")
+human = HumanPlayer("Eva")
 player1 = SimplePlayer()
 player2 = PureQAgent(player1, "2", for_train=False)
-gui = Durak_GUI([player1, player2], None)
+# gui = Durak_GUI([player1, player2], None)
+gui = Durak_GUI([player1, human], None)
 
 if __name__ == "__main__":
     gui.mainloop()

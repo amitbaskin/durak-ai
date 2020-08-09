@@ -67,7 +67,7 @@ def train_approx_q_agent(versus_player):
             if g.play() == agent.nickname:
                 num_won += 1
         win_rates.append(round(num_won / 100, 2))
-        trained_weights = remove_zero_items(agent.qAgent.weights)
+        trained_weights = remove_zero_items(agent.q_agent.weights)
         path = os.path.join("pickle", 'trained_weights_{}_epoch.pickle'.format(i))
         with open(path, 'wb') as handle:
             pickle.dump(trained_weights, handle)
@@ -101,7 +101,7 @@ def train_q_agent(versus_player):
             if g.play() == agent.nickname:
                 num_won += 1
 
-        trained_q_values = remove_zero_items(agent.qAgent.q_values)
+        trained_q_values = remove_zero_items(agent.q_agent.q_values)
         path = os.path.join("qValues", 'trained_q_values_{}_epoch.pickle'.format(i))
         with open(path, 'wb') as handle:
             pickle.dump(trained_q_values, handle)
