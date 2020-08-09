@@ -4,7 +4,7 @@ import os
 import re
 import matplotlib.pyplot as plt
 
-from game_mechanics import *
+from GameMechanics import *
 from DurakAi import *
 
 

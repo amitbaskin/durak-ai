@@ -1,4 +1,4 @@
-# qlearningAgents.py
+# QlearningAgents.py
 # ------------------
 # Licensing Information: Please do not distribute or publish solutions to this
 # project. You are free to use and extend these projects for educational
@@ -10,11 +10,11 @@
 import os
 import pickle
 import random
-import util
+import Util
 import numpy as np
 
-from featureExtractors import DurakFeatureExtractor
-from learningAgents import ReinforcementAgent
+from FeatureExtractors import DurakFeatureExtractor
+from LearningAgents import ReinforcementAgent
 
 
 class QLearningAgent(ReinforcementAgent):
@@ -42,7 +42,7 @@ class QLearningAgent(ReinforcementAgent):
     def __init__(self, **args):
         "You can initialize Q-values here..."
         ReinforcementAgent.__init__(self, **args)
-        self.q_values = util.Counter()
+        self.q_values = Util.Counter()
 
     def getQValue(self, compressed_state, action):
         """
@@ -104,7 +104,7 @@ class QLearningAgent(ReinforcementAgent):
         legalActions = self.getLegalActions(state)
         if len(legalActions) == 0:
             return None
-        if util.flipCoin(self.epsilon):
+        if Util.flipCoin(self.epsilon):
             return random.choice(legalActions)
         else:
             return self.getPolicy(state)
@@ -159,13 +159,13 @@ class DurakQAgent(QLearningAgent):
                                        "trained_q_values_latest.pickle")):
             with open(os.path.join("qValues", "trained_q_values_latest.pickle"),
                       'rb') as handle:
-                self.q_values = util.Counter(pickle.load(handle))
+                self.q_values = Util.Counter(pickle.load(handle))
 
         self.getLegalActions = legalActions_ptr
 
 
 def remove_zero_items(weights):
-    return util.Counter(dict(filter(lambda x: x[1] != 0, weights.items())))
+    return Util.Counter(dict(filter(lambda x: x[1] != 0, weights.items())))
 
 
 class ApproximateQAgent(DurakQAgent):
@@ -184,13 +184,13 @@ class ApproximateQAgent(DurakQAgent):
                                 alpha=0.7, **args)
 
         # You might want to initialize weights here.
-        self.weights = util.Counter()
+        self.weights = Util.Counter()
 
         if os.path.isfile(os.path.join("pickle", 
                                        "trained_weights_latest.pickle")):
             with open(os.path.join("pickle", "trained_weights_latest.pickle"), 
                       'rb') as handle:
-                self.weights = util.Counter(pickle.load(handle))
+                self.weights = Util.Counter(pickle.load(handle))
 
     def getQValue(self, compressed_state, action):
         """

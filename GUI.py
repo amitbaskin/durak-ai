@@ -6,7 +6,7 @@ from imageio import imread
 
 from DurakAi import *
 from Player import *
-from game_mechanics import *
+from GameMechanics import *
 
 
 CARD_WIDTH = 69 + 4

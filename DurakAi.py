@@ -3,7 +3,7 @@ import numpy as np
 
 from Player import Player, choose_min_card
 from MinimaxAgent import MiniMaxAgent
-from qlearningAgents import DurakQAgent, ApproximateQAgent
+from QlearningAgents import DurakQAgent, ApproximateQAgent
 from DurakSearchProblem import DurakSearchProblem
 
 
@@ -116,6 +116,7 @@ class SimpleMinmaxPlayer(Player):
         self.minmax_agent = MiniMaxAgent(
             self.state_evaluation, [self, opponent], self.nickname, depth)
 
+    #  TODO: Use state_evaluation_delta instead?
     def state_evaluation(self, state):
         me = state.attacker if self.attacking else state.defender
         my_cards_amount = len(me.get_cards())
@@ -123,7 +124,7 @@ class SimpleMinmaxPlayer(Player):
         opponent_cards_amount = len(opponent_cards)
         if my_cards_amount == 0 and opponent_cards_amount > 0:
             return np.inf
-        if opponent_cards_amount == 0:
+        if opponent_cards_amount == 0 and my_cards_amount > 0:
             return -np.inf
         ret = (opponent_cards_amount - my_cards_amount)  # * 5
         return ret
@@ -188,7 +189,7 @@ class QlearningMinmaxPlayer(Player):
         super().__init__(self.nickname, [])
         self.minmax_agent = MiniMaxAgent(self.state_evaluation,
                                          [self, opponent], self.nickname)
-        self.q_agent = QlearningAgent(
+        self.q_agent = DurakQAgent(
             self.minmax_agent.searcher.get_possible_cards, numTraining=50)
 
     def state_evaluation(self, state):

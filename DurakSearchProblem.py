@@ -1,4 +1,4 @@
-from game_mechanics import Deck, GameProcess
+from GameMechanics import Deck, GameProcess
 
 
 class DurakSearchProblem:
