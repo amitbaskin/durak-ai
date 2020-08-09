@@ -192,27 +192,27 @@ class ApproximateQAgent(DurakQAgent):
                       'rb') as handle:
                 self.weights = Util.Counter(pickle.load(handle))
 
-    def getQValue(self, compressed_state, action):
+    def getQValue(self, state, action):
         """
           Should return Q(state,action) = w * featureVector
           where * is the dotProduct operator
         """
-        features = self.featExtractor.getFeatures(compressed_state, action)
+        features = self.featExtractor.getFeatures(state, action)
         ret = self.weights * features
         # self.weights = remove_zero_items(self.weights)
         return ret
 
-    def update(self, compressed_state, action, nextstate, reward):
+    def update(self, state, action, next_state, reward):
         """
            Should update your weights based on transition
         """
         values = []
-        for next_action in self.getLegalActions(nextstate):
-            values.append(self.getQValue(nextstate, next_action))
+        for next_action in self.getLegalActions(next_state):
+            values.append(self.getQValue(next_state, next_action))
         max_value = max(values) if len(values) != 0 else 0
         correction = reward + self.discount * max_value - \
-                     self.getQValue(compressed_state, action)
-        features = self.featExtractor.getFeatures(compressed_state, action)
+                     self.getQValue(state, action)
+        features = self.featExtractor.getFeatures(state, action)
         for feature, value in features.items():
             w = self.alpha * correction * value
             self.weights[feature] += w
