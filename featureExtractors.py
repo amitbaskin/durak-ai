@@ -6,10 +6,9 @@
 # John DeNero (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # For more info, see http://inst.eecs.berkeley.edu/~cs188/sp09/pacman.html
 
-"Feature extractors for Pacman game states"
 
-# from game import Directions, Actions
 import util
+from Player import choose_min_card
 
 
 class FeatureExtractor:
@@ -67,9 +66,25 @@ class LightWeightState:
 class DurakFeatureExtractor(FeatureExtractor):
     def getFeatures(self, state, action):
         feats = util.Counter()
-        stateFeatures = \
-            LightWeightState(state.current_player.cards,
-                             state.table.sort_cards(), state.pile.sort_cards(),
-                             state.trump_card.suit)
-        feats[(stateFeatures, action)] = 1.0
+        stateFeatures = LightWeightState(state.current_player.cards,
+                                         state.table.sort_cards(),
+                                         state.pile.sort_cards(),
+                                         state.trump_card.suit)
+        # feats["over_ten_reg_cards"] = roundFeatures.over_ten_reg_cards / 12
+        # feats["over_ten_trump_cards"] = roundFeatures.over_ten_trump_cards / 4
+        # feats["num_cards_in_pile"] = len(round.pile.get_cards()) / 36
+        # feats["table_cards"] = roundFeatures.table_cards / 12
+        amount_cards = len(state.current_player.get_opponent(state).get_cards())
+        feats[
+            "amnt_trump"] = stateFeatures.amnt_trump / amount_cards if amount_cards != 0 else 0
+        # feats["amnt_non_trump"] = roundFeatures.amnt_non_trump / 27
+        # feats["amnt_cards"] = -len(round.current_player.get_opponent(round).get_cards()) /
+
+        feats["cards_diff"] = (len(
+            state.current_player.get_opponent(state).get_cards()) -
+                               len(state.current_player.get_cards())) / 36
+        feats["is_card_minimum"] = 1 if action == choose_min_card(
+            state.current_player.options(state.table,
+                                         state.trump_card.suit),
+            state.trump_card.suit) else 0
         return feats

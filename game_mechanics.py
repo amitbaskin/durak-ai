@@ -247,6 +247,7 @@ class State:
                 return 'WIN'
 
     def get_next_state(self, card):
+        #  TODO: Should be 12 instead of 6?
         if self.count > 12:
             self.current_player = self.defender
             self.prepare_next_state()
@@ -304,13 +305,15 @@ class State:
     def second_stage(self):
         print('\n***Second Stage Begins***\n')
         cnt = 1
-        while True and cnt < 6:
+        #  TODO: Should be 12 instead of 6?
+        while True and cnt < 12:
             attack_card = self.get_second_stage_attack()
             if attack_card is not None:
                 cnt += 1
                 defence_card = self.get_defence()
                 if defence_card is None:
                     # The defender surrendered
+                    self.defender.grab_table(self.table)
                     self.draw_cards()
                     print("The defender has surrendered")
                     return

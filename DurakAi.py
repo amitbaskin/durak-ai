@@ -7,7 +7,7 @@ from qlearningAgents import QlearningAgent, ApproximateQAgent
 from DurakSearchProblem import DurakSearchProblem
 
 
-class DumbPlayer(Player):
+class RandomPlayer(Player):
     def __init__(self):
         self.nickname = "Random Player"
         super().__init__(self.nickname, [])
@@ -110,19 +110,23 @@ class HandicapSimplePlayer(Player):
 
 
 class SimpleMinmaxPlayer(Player):
-    def __init__(self, opponent, name):
+    def __init__(self, opponent, name, depth=5):
         self.nickname = "Smart Player" + name
         super().__init__(self.nickname, [])
         self.minmax_agent = MiniMaxAgent(
-            self.state_evaluation, [self, opponent], self.nickname)
+            self.state_evaluation, [self, opponent], self.nickname, depth)
 
     def state_evaluation(self, state):
-        my_cards_amount = len(self.get_cards())
+        me = state.attacker if self.attacking else state.defender
+        my_cards_amount = len(me.get_cards())
         opponent_cards = self.get_opponent(state).get_cards()
         opponent_cards_amount = len(opponent_cards)
         if my_cards_amount == 0 and opponent_cards_amount > 0:
             return np.inf
-        return len(opponent_cards) - len(self.get_cards())
+        if opponent_cards_amount == 0:
+            return -np.inf
+        ret = (opponent_cards_amount - my_cards_amount)  # * 5
+        return ret
 
     def attack(self, state):
         possible_cards = self.get_attack_options(state.table)
@@ -242,19 +246,22 @@ class QlearningMinmaxPlayer(Player):
 
 
 class PureQlearningPlayer(Player):
-    def __init__(self, opponent, name, approx=True):
+    def __init__(self, opponent, name, approx=True, for_train=True):
         self.nickname = "Smart Player" + name
         super().__init__(self.nickname, [])
         self.searcher = DurakSearchProblem([self, opponent], self.nickname)
-        self.q_agent = ApproximateQAgent(
-            self.searcher.get_possible_cards) if approx else \
-            QlearningAgent(self.searcher.get_possible_cards)
+        if for_train:
+            self.qAgent = ApproximateQAgent(self.searcher.get_possible_cards) \
+                if approx else QlearningAgent(self.searcher.get_possible_cards)
+        else:
+            self.qAgent = ApproximateQAgent(self.searcher.get_possible_cards,
+                                            epsilon=0, gamma=0, alpha=0) if \
+                approx else QlearningAgent(self.searcher.get_possible_cards)
 
     def get_opponent(self, state):
         if self.nickname == state.attacker.nickname:
             return state.defender
         return state.attacker
-
 
     def attack(self, state):
         possible_cards = self.get_attack_options(state.table)

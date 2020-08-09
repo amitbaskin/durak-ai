@@ -131,9 +131,9 @@ class QLearningAgent(ReinforcementAgent):
             self.q_values[(compressed_state, action)] += add
 
 
-class QlearningAgent(QLearningAgent):
+class DurakQAgent(QLearningAgent):
     def __init__(self, legalActions_ptr, 
-                 epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0,):
+                 epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0):
         """
         These default parameters can be changed from the pacman.py command line.
         For example, to change the exploration rate, try:
@@ -155,9 +155,9 @@ class QlearningAgent(QLearningAgent):
         QLearningAgent.__init__(self, **args)
         self.weights = None
 
-        if os.path.isfile(os.path.join("pickle", 
+        if os.path.isfile(os.path.join("qValues",
                                        "trained_q_values_latest.pickle")):
-            with open(os.path.join("pickle", "trained_q_values_latest.pickle"), 
+            with open(os.path.join("qValues", "trained_q_values_latest.pickle"),
                       'rb') as handle:
                 self.q_values = util.Counter(pickle.load(handle))
 
@@ -168,7 +168,7 @@ def remove_zero_items(weights):
     return util.Counter(dict(filter(lambda x: x[1] != 0, weights.items())))
 
 
-class ApproximateQAgent(QlearningAgent):
+class ApproximateQAgent(DurakQAgent):
     """
        ApproximateQLearningAgent
 
@@ -180,8 +180,8 @@ class ApproximateQAgent(QlearningAgent):
     def __init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8, alpha=0.2,
                  numTraining=0, **args):
         self.featExtractor = DurakFeatureExtractor()
-        QlearningAgent.__init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8,
-                                alpha=0.2, numTraining=0, **args)
+        DurakQAgent.__init__(self, legalActions_ptr, epsilon=0.2, gamma=0.6,
+                                alpha=0.7, **args)
 
         # You might want to initialize weights here.
         self.weights = util.Counter()
@@ -199,7 +199,7 @@ class ApproximateQAgent(QlearningAgent):
         """
         features = self.featExtractor.getFeatures(compressed_state, action)
         ret = self.weights * features
-        self.weights = remove_zero_items(self.weights)
+        # self.weights = remove_zero_items(self.weights)
         return ret
 
     def update(self, compressed_state, action, nextstate, reward):
@@ -215,5 +215,4 @@ class ApproximateQAgent(QlearningAgent):
         features = self.featExtractor.getFeatures(compressed_state, action)
         for feature, value in features.items():
             w = self.alpha * correction * value
-            final = self.weights[feature] + w
             self.weights[feature] += w

@@ -372,7 +372,8 @@ class StateWithAI(GuiState):
 
     def _second_stage(self):
         cnt = 1
-        while True and cnt < 6:
+        #  TODO: Should be 12 instead of 6?
+        while True and cnt < 12:
             gui.update_gui(self, None, self.status, True)
             self.current_player = self.attacker
             if self.attacker.add_card(self) is not None:
@@ -380,6 +381,8 @@ class StateWithAI(GuiState):
                 self.current_player = self.defender
                 if self.defender.defend(self) is None:
                     print('_second_stage no options for defender')
+                    self.defender.grab_table(self.table)
+                    self.draw_cards()
                     return False
             else:
                 print('_second_stage no options for attacker')
@@ -592,6 +595,7 @@ p1 = None
 p2 = PureQlearningPlayer(p1, " PureQlearning")
 p1 = SimpleMinmaxPlayer(p2, " SimpleMinmax")
 p3 = SimplePlayer()
+p4 = RandomPlayer()
 
 gui = Durak_GUI([p1, p2], None)
 # gui = Durak_GUI([p3, human], None)

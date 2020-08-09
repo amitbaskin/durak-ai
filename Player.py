@@ -57,7 +57,7 @@ class Player(CardsHolder):
             ret = 100  # Big enough than 36 possible diff
         else:
             ret = len(opponent_cards) - len(self.get_cards())
-        return ret
+        return ret * 0.01
 
     # TODO:: Make state evaluation better?
     def state_evaluation_delta(

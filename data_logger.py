@@ -1,7 +1,7 @@
 import logging
 import time
 import os
-from DurakAi import DumbPlayer
+from DurakAi import RandomPlayer
 from Game import game_instance
 
 if os.path.isfile('game.log'):
@@ -11,8 +11,8 @@ logger = logging.getLogger('logging_games')
 logger.setLevel(logging.INFO)
 fh = logging.FileHandler('game.log')
 
-P1 = DumbPlayer('WALL E')
-P2 = DumbPlayer('EVA')
+P1 = RandomPlayer('WALL E')
+P2 = RandomPlayer('EVA')
 players_list = [P1, P2]
 i = 0
 t = time.time()
