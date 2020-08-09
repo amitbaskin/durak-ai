@@ -3,7 +3,7 @@ import numpy as np
 
 from Player import Player, choose_min_card
 from MinimaxAgent import MiniMaxAgent
-from qlearningAgents import QlearningAgent, ApproximateQAgent
+from qlearningAgents import DurakQAgent, ApproximateQAgent
 from DurakSearchProblem import DurakSearchProblem
 
 
@@ -34,8 +34,8 @@ class RandomPlayer(Player):
 
 
 class SimplePlayer(Player):
-    def __init__(self):
-        self.nickname = "Simple Player"
+    def __init__(self, name):
+        self.nickname = "Simple Player " + name
         super().__init__(self.nickname, [])
 
     def attack(self, state):
@@ -251,12 +251,12 @@ class PureQlearningPlayer(Player):
         super().__init__(self.nickname, [])
         self.searcher = DurakSearchProblem([self, opponent], self.nickname)
         if for_train:
-            self.qAgent = ApproximateQAgent(self.searcher.get_possible_cards) \
-                if approx else QlearningAgent(self.searcher.get_possible_cards)
+            self.q_agent = ApproximateQAgent(self.searcher.get_possible_cards) \
+                if approx else DurakQAgent(self.searcher.get_possible_cards)
         else:
-            self.qAgent = ApproximateQAgent(self.searcher.get_possible_cards,
-                                            epsilon=0, gamma=0, alpha=0) if \
-                approx else QlearningAgent(self.searcher.get_possible_cards)
+            self.q_agent = ApproximateQAgent(self.searcher.get_possible_cards,
+                                             epsilon=0, gamma=0, alpha=0) if \
+                approx else DurakQAgent(self.searcher.get_possible_cards)
 
     def get_opponent(self, state):
         if self.nickname == state.attacker.nickname:

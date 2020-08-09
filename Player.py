@@ -16,6 +16,8 @@ def choose_min_card(possible_cards, trump_suit):
         card for card in possible_cards if card.suit != trump_suit]
     non_trump_cards.sort(key=lambda x: x.number)
     if len(non_trump_cards) == 0:
+        if len(trump_cards) == 0:
+            return
         trump_cards.sort(key=lambda x: x.number)
         return trump_cards[0]
     return non_trump_cards[0]

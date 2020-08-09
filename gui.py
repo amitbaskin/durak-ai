@@ -594,11 +594,13 @@ human = HumanPlayer("Eva")
 p1 = None
 p2 = PureQlearningPlayer(p1, " PureQlearning")
 p1 = SimpleMinmaxPlayer(p2, " SimpleMinmax")
-p3 = SimplePlayer()
+p3 = SimplePlayer("3")
 p4 = RandomPlayer()
+p5 = SimplePlayer("4")
 
-gui = Durak_GUI([p1, p2], None)
-# gui = Durak_GUI([p3, human], None)
+# gui = Durak_GUI([p1, p2], None)
+# gui = Durak_GUI([p3, p5], None)
+gui = Durak_GUI([p3, human], None)
 
 if __name__ == "__main__":
     gui.mainloop()
