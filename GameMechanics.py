@@ -200,11 +200,14 @@ class State:
         self.attacker, self.defender = self.defender, self.attacker
         self.attacker.attacking, self.defender.attacking = True, False
 
-    def prepare_next_state(self):
+    def prepare_next_state(self, is_gui=False, swap_players_ptr=None):
         self.pile.update(self.table)
         self.table.clear_cards()
         self.draw_cards()
-        self.swap_players()
+        if is_gui:
+            swap_players_ptr()
+        else:
+            self.swap_players()
         self.count = 0
 
     def get_compressed(self):

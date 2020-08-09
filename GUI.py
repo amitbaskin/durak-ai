@@ -220,7 +220,9 @@ class GuiStateWithHuman(GuiState):
                 self.table.add_single_card(card)
                 self.defender.remove_card(card)
             self.current_player = self.attacker
-            self.attacker.attack(self)
+            if self.attacker.attack(self) is None:
+                self.prepare_next_state(is_gui=True,
+                                        swap_players_ptr=self.gui_swap_players)
         self.count += 1
 
     def gui_swap_players(self):
