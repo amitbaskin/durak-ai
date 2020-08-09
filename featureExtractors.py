@@ -32,28 +32,38 @@ class IdentityExtractor(FeatureExtractor):
 
 class LightWeightState:
     def __init__(self, player_hand, table_cards, pile_cards, trump_suit):
-        self.over_ten_reg_cards = len([card.number for card in player_hand if card.suit != trump_suit and
-                                   card.number > 10])
-        self.over_ten_trump_cards = len([card.number for card in player_hand if card.suit == trump_suit and
-                                     card.number > 10])
+        self.over_ten_reg_cards = len(
+            [card.number for card in player_hand if card.suit != trump_suit and
+             card.number > 10])
+        self.over_ten_trump_cards = len(
+            [card.number for card in player_hand if card.suit == trump_suit and
+             card.number > 10])
 
-        self.over_ten_reg_cards_in_pile = len([card.number for card in pile_cards if card.suit != trump_suit and
-                                           card.number > 10])
-        self.over_ten_trump_cards_in_pile = len([card.number for card in pile_cards if card.suit == trump_suit and
-                                             card.number > 10])
+        self.over_ten_reg_cards_in_pile = len(
+            [card.number for card in pile_cards if card.suit != trump_suit and
+             card.number > 10])
+        self.over_ten_trump_cards_in_pile = len(
+            [card.number for card in pile_cards if card.suit == trump_suit and
+             card.number > 10])
 
         self.table_cards = len(table_cards)
 
-        self.amnt_trump = sum(1 for card in player_hand if card.suit == trump_suit)
-        self.amnt_non_trump = sum(1 for card in player_hand if card.suit != trump_suit)
+        self.amnt_trump = sum(
+            1 for card in player_hand if card.suit == trump_suit)
+        self.amnt_non_trump = sum(
+            1 for card in player_hand if card.suit != trump_suit)
 
     def __repr__(self):
-        return "{},{},{},{},{},{},{}".format(self.over_ten_reg_cards, self.over_ten_trump_cards,
-                                             self.over_ten_reg_cards_in_pile, self.over_ten_trump_cards_in_pile,
-                                             self.table_cards, self.amnt_trump, self.amnt_non_trump)
+        return "{},{},{},{},{},{},{}".\
+            format(self.over_ten_reg_cards,
+                   self.over_ten_trump_cards,
+                   self.over_ten_reg_cards_in_pile,
+                   self.over_ten_trump_cards_in_pile,
+                   self.table_cards, self.amnt_trump, self.amnt_non_trump)
 
     def __hash__(self):
         return hash(repr(self))
+
 
 def choose_min_card(possible_cards, trump_suit):
     trump_cards = [card for card in possible_cards if card.suit == trump_suit]
@@ -66,6 +76,7 @@ def choose_min_card(possible_cards, trump_suit):
         trump_cards.sort(key=lambda x: x.number)
         return trump_cards[0]
     return non_trump_cards[0]
+
 
 class DurakFeatueExtractor(FeatureExtractor):
     # def getFeatures(self, round, action):
