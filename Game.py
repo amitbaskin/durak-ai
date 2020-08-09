@@ -19,22 +19,22 @@ class Game:
         self.players_list = players_list
 
 
-p0 = RandomPlayer()
-p1 = SimplePlayer()
-p2 = None
-p3 = QlearningMinmaxPlayer(p2, " one")
-p2 = QlearningMinmaxPlayer(p3, " two")
-p4 = None
-p5 = SimpleMinmaxPlayer(p4, " one")
-p4 = SimpleMinmaxPlayer(p5, " two")
-players_list = [p1, p2]
-smart_players_2_list = [p2, p3]
-smart_players_list = [p4, p5]
-p6 = None
-p7 = SimpleMinmaxPlayer(p6, " SimpleMinmax")
-p6 = PureQlearningPlayer(p7, " PureQlearning")
-simple_minmax_and_pure_qlearning = [p6, p7]
-simple_minmax_players = [p4, p5]
+# p0 = RandomPlayer()
+# p1 = SimplePlayer()
+# p2 = None
+# p3 = QlearningMinmaxPlayer(p2, " one")
+# p2 = QlearningMinmaxPlayer(p3, " two")
+# p4 = None
+# p5 = SimpleMinmaxPlayer(p4, " one")
+# p4 = SimpleMinmaxPlayer(p5, " two")
+# players_list = [p1, p2]
+# smart_players_2_list = [p2, p3]
+# smart_players_list = [p4, p5]
+# p6 = None
+# p7 = SimpleMinmaxPlayer(p6, " SimpleMinmax")
+# p6 = PureQlearningPlayer(p7, " PureQlearning")
+# simple_minmax_and_pure_qlearning = [p6, p7]
+# simple_minmax_players = [p4, p5]
 
 
 def remove_zero_items(weights):
@@ -51,21 +51,25 @@ def get_epoch_num(prefix, dir):
 
 def train_approx_q_agent(versus_player):
     # sys.stdout = open('log.txt', 'w')
-    sys.stderr = open('log_err.txt', 'w')
+    # sys.stderr = open('log_err.txt', 'w')
     agent = PureQlearningPlayer(versus_player, "")
     list_of_players = [agent, versus_player]
     win_rates = []
 
     start = get_epoch_num("trained_weights_", "pickle")
-    for i in range(start + 1, start + 5001):
+    for i in range(start + 1, start + 100):
         num_won = 0
-        for _ in range(100):
+        for j in range(100):
             for player in list_of_players:
                 player.clear_cards()
             deck = Deck([])
             g = GameProcess(list_of_players, deck)
             if g.play() == agent.nickname:
                 num_won += 1
+
+            # with open('approxQAgent_learn_stats.txt', 'a') as handle:
+            #     handle.write("Running winrate {}\n".format(round(num_won / (j+1), 2)))
+
         win_rates.append(round(num_won / 100, 2))
         trained_weights = remove_zero_items(agent.q_agent.weights)
         path = os.path.join("pickle",
@@ -197,5 +201,6 @@ def game_instance(list_of_players):
 # min_max_against_all()
 # reflex_against_all()
 # print(game_instance(simple_minmax_and_pure_qlearning))
-print(game_instance(simple_minmax_players))
-# train_approx_q_agent(SimplePlayer())
+# print(game_instance(simple_minmax_players))
+train_approx_q_agent(SimplePlayer("1"))
+# train_approx_q_agent(RandomPlayer())

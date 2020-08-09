@@ -180,8 +180,7 @@ class ApproximateQAgent(DurakQAgent):
     def __init__(self, legalActions_ptr, epsilon=0.05, gamma=0.8, alpha=0.2,
                  numTraining=0, **args):
         self.featExtractor = DurakFeatureExtractor()
-        DurakQAgent.__init__(self, legalActions_ptr, epsilon=0.2, gamma=0.6,
-                                alpha=0.7, **args)
+        DurakQAgent.__init__(self, legalActions_ptr, epsilon=0.05, gamma=0.4, alpha=0.08, **args)
 
         # You might want to initialize weights here.
         self.weights = Util.Counter()

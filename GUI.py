@@ -593,8 +593,8 @@ class Durak_GUI(tk.Tk):
 
 
 human = HumanPlayer("Eva")
-p1 = None
-p2 = PureQlearningPlayer(p1, " PureQlearning")
+p3 = None
+p2 = PureQlearningPlayer(p3, " PureQlearning", for_train=False)
 p1 = SimpleMinmaxPlayer(p2, " SimpleMinmax")
 p3 = SimplePlayer("3")
 p4 = RandomPlayer()
@@ -602,7 +602,7 @@ p5 = SimplePlayer("4")
 
 # gui = Durak_GUI([p1, p2], None)
 # gui = Durak_GUI([p3, p5], None)
-gui = Durak_GUI([p3, human], None)
+gui = Durak_GUI([p3, p2], None)
 
 if __name__ == "__main__":
     gui.mainloop()
