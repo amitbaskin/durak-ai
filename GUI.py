@@ -221,9 +221,7 @@ class GuiStateWithHuman(GuiState):
                 self.table.add_single_card(card)
                 self.defender.remove_card(card)
             self.current_player = self.attacker
-            if self.attacker.attack(self) is None:
-                self.prepare_next_state(is_gui=True,
-                                        swap_players_ptr=self.gui_swap_players)
+            self.attacker.attack(self)
         self.count += 1
 
     def gui_swap_players(self):
@@ -275,7 +273,6 @@ class GuiStateWithHuman(GuiState):
             gui.update_gui(self, self.card_pick_callback, self.status)
             if self.check_win():
                 gui.winner_decided(self.status)
-            gui.update_gui(self, self.card_pick_callback, self.status)
             return
         else:
             self.second_stage_reset_round()
@@ -311,15 +308,13 @@ class GuiStateWithHuman(GuiState):
 
         if self.count == 0:
             self.gui_first_stage(choice, card)
-        elif 1 <= self.count < 6:
+        elif 1 <= self.count < 12:
             if self.attacking:
                 self.second_stage_attacking(choice, card)
             else:
                 return self.second_stage_defending(choice, card)
         else:
             self.second_stage_round_over(choice)
-            gui.update_gui(self, self.card_pick_callback, self.status, is_attacker_first_round=self.attacking)
-            return
 
         if self.check_win():
             gui.winner_decided(self.status)
@@ -378,7 +373,8 @@ class StateWithAI(GuiState):
 
     def _second_stage(self):
         cnt = 1
-        while True and cnt < 6:
+        #  TODO: Should be 12 instead of 6?
+        while True and cnt < 12:
             gui.update_gui(self, None, self.status, True)
             self.current_player = self.attacker
             if self.attacker.add_card(self) is not None:
@@ -438,11 +434,12 @@ class Durak_GUI(tk.Tk):
         self.amount_of_games = 0
         self.amount_of_games_won = 0
 
-    def set_player_list(self, players_list, num_games):
-        self.player_list = players_list
+        self.after(0, func=self.start_game)
+
+    def set_player_list(self, player_list, num_games):
+        self.player_list = player_list
         self.num_games = num_games
         self.stop_at = self.num_games
-        self.after(0, func=self.start_game)
 
     def start_game(self):
         for player in self.player_list:
@@ -482,7 +479,7 @@ class Durak_GUI(tk.Tk):
                                         command=self.start_game)
         self.replay_button.pack()
 
-    def update_gui(self, game, choose_card_callback, status, show_all=True,
+    def update_gui(self, game, choose_card_callback, status, show_all=False,
                    is_attacker_first_round=False):
         self.enemy_player_hand.destroy()
         self.enemy_player_hand = PlayerHand(self.container,
@@ -593,6 +590,7 @@ class Durak_GUI(tk.Tk):
         if is_attacker_first_round:
             self.admit_defeat.grid_forget()
         tk.Tk.update(self)
+
 
 
 player1 = None
