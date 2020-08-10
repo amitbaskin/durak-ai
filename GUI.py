@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 from imageio import imread
+from sys import argv
 
 from DurakAi import *
 from Player import *
@@ -274,6 +275,7 @@ class GuiStateWithHuman(GuiState):
             gui.update_gui(self, self.card_pick_callback, self.status)
             if self.check_win():
                 gui.winner_decided(self.status)
+            gui.update_gui(self, self.card_pick_callback, self.status)
             return
         else:
             self.second_stage_reset_round()
@@ -309,13 +311,15 @@ class GuiStateWithHuman(GuiState):
 
         if self.count == 0:
             self.gui_first_stage(choice, card)
-        elif 1 <= self.count < 12:
+        elif 1 <= self.count < 6:
             if self.attacking:
                 self.second_stage_attacking(choice, card)
             else:
                 return self.second_stage_defending(choice, card)
         else:
             self.second_stage_round_over(choice)
+            gui.update_gui(self, self.card_pick_callback, self.status, is_attacker_first_round=self.attacking)
+            return
 
         if self.check_win():
             gui.winner_decided(self.status)
@@ -374,8 +378,7 @@ class StateWithAI(GuiState):
 
     def _second_stage(self):
         cnt = 1
-        #  TODO: Should be 12 instead of 6?
-        while True and cnt < 12:
+        while True and cnt < 6:
             gui.update_gui(self, None, self.status, True)
             self.current_player = self.attacker
             if self.attacker.add_card(self) is not None:
@@ -423,22 +426,22 @@ class DurakGame:
 
 
 class Durak_GUI(tk.Tk):
-    BASE_AMOUNT_OF_GAMES = 50
-
-    def __init__(self, players_list, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
         tk.Tk.wm_title(self, "Durak")
 
         self.container = tk.Frame(self)
         self.container.pack(side="top", fill="both", expand=True)
-        self.player_list = players_list
 
         self.winners = []
         self.amount_of_games = 0
         self.amount_of_games_won = 0
-        self.stop_at = self.BASE_AMOUNT_OF_GAMES
 
+    def set_player_list(self, players_list, num_games):
+        self.player_list = players_list
+        self.num_games = num_games
+        self.stop_at = self.num_games
         self.after(0, func=self.start_game)
 
     def start_game(self):
@@ -462,7 +465,7 @@ class Durak_GUI(tk.Tk):
         else:
             print("Player 2 win rate:",
                   self.amount_of_games_won / self.amount_of_games)
-            self.stop_at += self.BASE_AMOUNT_OF_GAMES
+            self.stop_at += self.num_games
 
         win_text = nickname + " has won " + str(
             self.amount_of_games_won / self.amount_of_games
@@ -479,7 +482,7 @@ class Durak_GUI(tk.Tk):
                                         command=self.start_game)
         self.replay_button.pack()
 
-    def update_gui(self, game, choose_card_callback, status, show_all=False,
+    def update_gui(self, game, choose_card_callback, status, show_all=True,
                    is_attacker_first_round=False):
         self.enemy_player_hand.destroy()
         self.enemy_player_hand = PlayerHand(self.container,
@@ -592,17 +595,41 @@ class Durak_GUI(tk.Tk):
         tk.Tk.update(self)
 
 
-human = HumanPlayer("Eva")
-p3 = None
-p2 = PureQlearningPlayer(p3, " PureQlearning", for_train=False)
-p1 = SimpleMinmaxPlayer(p2, " SimpleMinmax")
-p3 = SimplePlayer("3")
-p4 = RandomPlayer()
-p5 = SimplePlayer("4")
+player1 = None
+player2 = None
+gui = Durak_GUI()
 
-# gui = Durak_GUI([p1, p2], None)
-# gui = Durak_GUI([p3, p5], None)
-gui = Durak_GUI([p3, p2], None)
+players_first = {
+    "q": PureQlearningPlayer(player2, " PureQlearning P1", for_train=False),
+    "reflex": SimplePlayer("Reflex P1"),
+    "minimax": SimpleMinmaxPlayer(player2, " SimpleMinimax P1"),
+    "random": RandomPlayer("P1")
+}
+
+players_second = {
+    "q": PureQlearningPlayer(player1, " PureQlearning P2", for_train=False),
+    "reflex": SimplePlayer("Reflex P2"),
+    "minimax": SimpleMinmaxPlayer(player1, " SimpleMinimax P2"),
+    "random": RandomPlayer("P2"),
+    "human": HumanPlayer("Human")
+}
+
+
+def main():
+    if len(argv) < 4:
+        print("Usage: python3 GUI.py <p1> <p2> <num_games_in_a_row>")
+        print("Where p1 can be 'q', 'reflex', 'minimax' or 'random', and p2 can be the same plus 'human'.")
+        print("num_games_in_a_row indicates how many games should be played before the winner is decided.")
+        print("Note: ImageTk must be installed.")
+        return
+    assert argv[1] in players_first.keys() and argv[2] in players_second.keys(), "One or more player types are wrong."
+
+    player1 = players_first[argv[1]]
+    player2 = players_second[argv[2]]
+
+    gui.set_player_list([player1, player2], int(argv[3]))
+    gui.mainloop()
+
 
 if __name__ == "__main__":
-    gui.mainloop()
+    main()

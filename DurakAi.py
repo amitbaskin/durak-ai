@@ -8,8 +8,8 @@ from DurakSearchProblem import DurakSearchProblem
 
 
 class RandomPlayer(Player):
-    def __init__(self):
-        self.nickname = "Random Player"
+    def __init__(self, nickname_extra=""):
+        self.nickname = "Random Player" + " " + nickname_extra
         super().__init__(self.nickname, [])
 
     def attack(self, state):
@@ -111,12 +111,11 @@ class HandicapSimplePlayer(Player):
 
 class SimpleMinmaxPlayer(Player):
     def __init__(self, opponent, name, depth=5):
-        self.nickname = "Smart Player" + name
+        self.nickname = "MiniMax Player" + name
         super().__init__(self.nickname, [])
         self.minmax_agent = MiniMaxAgent(
             self.state_evaluation, [self, opponent], self.nickname, depth)
 
-    #  TODO: Use state_evaluation_delta instead?
     def state_evaluation(self, state):
         me = state.attacker if self.attacking else state.defender
         my_cards_amount = len(me.get_cards())
@@ -248,7 +247,7 @@ class QlearningMinmaxPlayer(Player):
 
 class PureQlearningPlayer(Player):
     def __init__(self, opponent, name, approx=True, for_train=True):
-        self.nickname = "Smart Player" + name
+        self.nickname = "ApproxQ Player" + name
         super().__init__(self.nickname, [])
         self.searcher = DurakSearchProblem([self, opponent], self.nickname)
         if for_train:

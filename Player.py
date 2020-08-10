@@ -61,7 +61,6 @@ class Player(CardsHolder):
             ret = len(opponent_cards) - len(self.get_cards())
         return ret * 0.01
 
-    # TODO: Make state evaluation better?
     def state_evaluation_delta(
             self, first_state, second_state, get_opponnent_ptr):
         first_score = \
@@ -111,7 +110,6 @@ class Player(CardsHolder):
         print('{} {} {}'.format(self.nickname, DEFENCE_MSG, defence_card))
         print(FEATURING_TABLE_MSG, state.table.get_cards())
         if self.q_agent is not None:
-            # TODO:: Make state evaluation better?
             delta_reward = self.state_evaluation_delta(
                 prev_state, state, self.get_opponent)
             self.q_agent.observeTransition(

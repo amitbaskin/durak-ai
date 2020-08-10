@@ -128,7 +128,7 @@ class DurakFeatureExtractor(FeatureExtractor):
                                                                      state.trump_card.suit) else 0
 
         if len(state.deck.get_cards()) < 6:
-            features["cards_on_hand"] = -amount_cards / (36 * len(state.deck.get_cards()))
+            features["cards_on_hand"] = -amount_cards / (36 * (len(state.deck.get_cards()) + 1))
 
         if len(state.deck.get_cards()) == 0:
             opponent_hand = state.current_player.get_opponent(state).get_cards()

@@ -57,7 +57,7 @@ def train_approx_q_agent(versus_player):
     win_rates = []
 
     start = get_epoch_num("trained_weights_", "pickle")
-    for i in range(start + 1, start + 100):
+    for i in range(start + 1, start + 2000):
         num_won = 0
         for j in range(100):
             for player in list_of_players:
@@ -85,9 +85,9 @@ def train_approx_q_agent(versus_player):
             handle.write("{} with win rate of {}\n".format(num_non_zero,
                                                            round(num_won / 100,
                                                                  2)))
-        plt.ylim(0, 1)
-        plt.plot(win_rates)
-        plt.show()
+    plt.ylim(0, 1)
+    plt.plot(win_rates)
+    plt.show()
 
 
 def train_q_agent(versus_player):
@@ -198,9 +198,27 @@ def game_instance(list_of_players):
     g.play()
 
 
-# min_max_against_all()
+def min_max_against_Q():
+    player1 = None
+    player2 = SimpleMinmaxPlayer(player1, "")
+    player1 = PureQlearningPlayer(player2, "", for_train=False)
+    list_of_players = [player1, player2]
+    wins = 0
+    for i in range(100):
+        for player in list_of_players:
+            player.clear_cards()
+        deck = Deck([])
+        g = GameProcess(list_of_players, deck)
+        if g.play() == "ApproxQ Player":
+            wins += 1
+
+        with open('min_max_agent_win_rate.txt', 'a') as handle:
+            handle.write("Win rate of {}\n".format(round(wins / (i+1), 2)))
+
+
+min_max_against_Q()
 # reflex_against_all()
 # print(game_instance(simple_minmax_and_pure_qlearning))
 # print(game_instance(simple_minmax_players))
-train_approx_q_agent(SimplePlayer("1"))
+# train_approx_q_agent(SimplePlayer("1"))
 # train_approx_q_agent(RandomPlayer())

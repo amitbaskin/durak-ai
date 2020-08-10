@@ -250,8 +250,7 @@ class State:
                 return 'WIN'
 
     def get_next_state(self, card):
-        #  TODO: Should be 12 instead of 6?
-        if self.count > 12:
+        if self.count > 6:
             self.current_player = self.defender
             self.prepare_next_state()
             self.count = 0
@@ -308,8 +307,7 @@ class State:
     def second_stage(self):
         print('\n***Second Stage Begins***\n')
         cnt = 1
-        #  TODO: Should be 12 instead of 6?
-        while True and cnt < 12:
+        while True and cnt < 6:
             attack_card = self.get_second_stage_attack()
             if attack_card is not None:
                 cnt += 1
